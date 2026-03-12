@@ -1,7 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
 import { SearchBar } from '@/components/shared/search-bar';
-import { FilterChips } from '@/components/shared/filter-chips';
 import { SectionHeader } from '@/components/shared/section-header';
 import { TourCard } from '@/components/shared/tour-card';
 import { AgencyCard } from '@/components/shared/agency-card';
@@ -9,14 +8,23 @@ import { TourListSkeleton } from '@/components/shared/loading-skeleton';
 import { Button } from '@/components/ui/button';
 import { getFeaturedTours, getTours } from '@/features/tours/queries';
 import { getVerifiedAgencies } from '@/features/agencies/queries';
+import { HomeFilterChipsClient } from './home-filter-chips';
 import { ChevronRight } from 'lucide-react';
 
 export default async function HomePage() {
-  const [featuredTours, recentTours, agencies] = await Promise.all([
-    getFeaturedTours(),
-    getTours({ sortBy: 'newest' }),
-    getVerifiedAgencies(6),
-  ]);
+  let featuredTours: Awaited<ReturnType<typeof getFeaturedTours>> = [];
+  let recentTours: Awaited<ReturnType<typeof getTours>> = [];
+  let agencies: Awaited<ReturnType<typeof getVerifiedAgencies>> = [];
+
+  try {
+    [featuredTours, recentTours, agencies] = await Promise.all([
+      getFeaturedTours(),
+      getTours({ sortBy: 'newest' }),
+      getVerifiedAgencies(6),
+    ]);
+  } catch (error) {
+    console.error('HomePage data fetch error:', error);
+  }
 
   return (
     <div className="px-4 py-4 space-y-6">
@@ -35,7 +43,7 @@ export default async function HomePage() {
 
       {/* Category Chips */}
       <Suspense>
-        <HomeFilterChips />
+        <HomeFilterChipsClient />
       </Suspense>
 
       {/* Featured Tours */}
@@ -97,10 +105,3 @@ export default async function HomePage() {
     </div>
   );
 }
-
-/** Client wrapper for filter chips on home page (navigates to /tours) */
-function HomeFilterChips() {
-  return <HomeFilterChipsClient />;
-}
-
-import { HomeFilterChipsClient } from './home-filter-chips';

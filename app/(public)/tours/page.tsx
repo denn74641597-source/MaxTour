@@ -20,7 +20,12 @@ export default async function ToursPage({ searchParams }: Props) {
     visaFree: params.visaFree === 'true',
   };
 
-  const tours = await getTours(filters);
+  let tours: Awaited<ReturnType<typeof getTours>> = [];
+  try {
+    tours = await getTours(filters);
+  } catch (error) {
+    console.error('ToursPage data fetch error:', error);
+  }
 
   return (
     <div className="px-4 py-4 space-y-4">

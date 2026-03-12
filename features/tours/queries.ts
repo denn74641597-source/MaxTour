@@ -42,14 +42,17 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   }
 
   const { data, error } = await query.limit(50);
-  if (error) throw error;
+  if (error) {
+    console.error('getTours error:', error);
+    return [];
+  }
   return data ?? [];
 }
 
 /** Fetch a single tour by slug */
 export async function getTourBySlug(slug: string): Promise<Tour | null> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('tours')
     .select(
       '*, agency:agencies(id, name, slug, logo_url, is_verified, phone, telegram_username), images:tour_images(id, image_url, sort_order)'
@@ -58,13 +61,17 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
     .eq('status', 'published')
     .single();
 
+  if (error) {
+    console.error('getTourBySlug error:', error);
+    return null;
+  }
   return data;
 }
 
 /** Fetch featured tours */
 export async function getFeaturedTours(): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('tours')
     .select('*, agency:agencies(id, name, slug, logo_url, is_verified)')
     .eq('status', 'published')
@@ -72,26 +79,34 @@ export async function getFeaturedTours(): Promise<Tour[]> {
     .order('created_at', { ascending: false })
     .limit(8);
 
+  if (error) {
+    console.error('getFeaturedTours error:', error);
+    return [];
+  }
   return data ?? [];
 }
 
 /** Fetch tours by agency */
 export async function getToursByAgency(agencyId: string): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('tours')
     .select('*')
     .eq('agency_id', agencyId)
     .eq('status', 'published')
     .order('created_at', { ascending: false });
 
+  if (error) {
+    console.error('getToursByAgency error:', error);
+    return [];
+  }
   return data ?? [];
 }
 
 /** Fetch similar tours (same country, different tour) */
 export async function getSimilarTours(tour: Tour, limit = 4): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('tours')
     .select('*, agency:agencies(id, name, slug, logo_url, is_verified)')
     .eq('status', 'published')
@@ -99,5 +114,9 @@ export async function getSimilarTours(tour: Tour, limit = 4): Promise<Tour[]> {
     .neq('id', tour.id)
     .limit(limit);
 
+  if (error) {
+    console.error('getSimilarTours error:', error);
+    return [];
+  }
   return data ?? [];
 }
