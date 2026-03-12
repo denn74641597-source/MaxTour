@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { SearchBar } from '@/components/shared/search-bar';
-import { TourCard } from '@/components/shared/tour-card';
+import { TourCardCatalog } from '@/components/shared/tour-card-catalog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { TourListSkeleton } from '@/components/shared/loading-skeleton';
 import { getTours } from '@/features/tours/queries';
@@ -28,27 +28,37 @@ export default async function ToursPage({ searchParams }: Props) {
   }
 
   return (
-    <div className="px-4 py-4 space-y-4">
-      <Suspense>
-        <SearchBar />
-      </Suspense>
-
-      <Suspense>
-        <ToursFilterBar />
-      </Suspense>
-
-      {tours.length > 0 ? (
-        <div className="grid grid-cols-2 gap-3">
-          {tours.map((tour) => (
-            <TourCard key={tour.id} tour={tour} />
-          ))}
+    <div>
+      {/* Sticky search + filters header area */}
+      <div className="sticky top-[56px] z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
+        <div className="px-4 py-3">
+          <Suspense>
+            <SearchBar
+              placeholder="Search tours, destinations..."
+              variant="compact"
+            />
+          </Suspense>
         </div>
-      ) : (
-        <EmptyState
-          title="No tours found"
-          description="Try adjusting your filters or search query."
-        />
-      )}
+        <div className="px-4 pb-4">
+          <Suspense>
+            <ToursFilterBar />
+          </Suspense>
+        </div>
+      </div>
+
+      {/* Tour list */}
+      <div className="p-4 space-y-6">
+        {tours.length > 0 ? (
+          tours.map((tour) => (
+            <TourCardCatalog key={tour.id} tour={tour} />
+          ))
+        ) : (
+          <EmptyState
+            title="No tours found"
+            description="Try adjusting your filters or search query."
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Compass, ListFilter, Heart, Wallet } from 'lucide-react';
+import { Compass, Ticket, Heart, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Explore', icon: Compass },
-  { href: '/tours', label: 'Catalog', icon: ListFilter },
-  { href: '/favorites', label: 'Favorites', icon: Heart },
-  { href: '/agency', label: 'My Tours', icon: Wallet },
+  { href: '/tours', label: 'Bookings', icon: Ticket },
+  { href: '/favorites', label: 'Wishlist', icon: Heart },
+  { href: '/agency', label: 'Profile', icon: User },
 ];
 
 export function BottomNav() {

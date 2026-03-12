@@ -2,6 +2,7 @@ export { AppHeader } from './app-header';
 export { BottomNav } from './bottom-nav';
 export { SectionHeader } from './section-header';
 export { TourCard } from './tour-card';
+export { TourCardCatalog } from './tour-card-catalog';
 export { TourCardHorizontal } from './tour-card-horizontal';
 export { AgencyCard } from './agency-card';
 export { HeroBanner } from './hero-banner';
