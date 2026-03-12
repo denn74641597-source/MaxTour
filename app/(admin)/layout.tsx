@@ -1,5 +1,7 @@
 import { DashboardNav } from '@/components/shared/dashboard-nav';
 
+export const dynamic = 'force-dynamic';
+
 export default function AdminLayout({
   children,
 }: {
