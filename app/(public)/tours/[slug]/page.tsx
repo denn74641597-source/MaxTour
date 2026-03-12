@@ -2,20 +2,11 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  MapPin, CalendarDays, Clock, Users, Hotel, Utensils, Plane,
-  FileCheck, FileX, Share2, Heart, MessageCircle, ChevronRight, Star,
+  MapPin, CalendarDays, Clock, Users, Plane, Car, Hotel,
+  ArrowLeft, Share2, Send, Star, BadgeCheck, X,
 } from 'lucide-react';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { SectionHeader } from '@/components/shared/section-header';
-import { TourCard } from '@/components/shared/tour-card';
-import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { PriceBlock } from '@/components/shared/price-block';
-import { LeadForm } from '@/components/shared/lead-form';
-import { getTourBySlug, getSimilarTours } from '@/features/tours/queries';
-import { cn, formatDate, placeholderImage } from '@/lib/utils';
+import { getTourBySlug } from '@/features/tours/queries';
+import { formatDate, placeholderImage } from '@/lib/utils';
 import type { Metadata } from 'next';
 
 interface Props {
@@ -32,12 +23,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
+/** Map included service text to an icon */
+function serviceIcon(service: string) {
+  const s = service.toLowerCase();
+  if (s.includes('flight') || s.includes('avia')) return Plane;
+  if (s.includes('hotel') || s.includes('accommodation')) return Hotel;
+  if (s.includes('transfer') || s.includes('transport')) return Car;
+  return Plane;
+}
+
 export default async function TourDetailsPage({ params }: Props) {
   const { slug } = await params;
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
 
-  const similarTours = await getSimilarTours(tour, 4);
   const agency = tour.agency;
   const images = tour.images ?? [];
   const allImages = [
@@ -52,9 +51,23 @@ export default async function TourDetailsPage({ params }: Props) {
     : null;
 
   return (
-    <div className="pb-6">
-      {/* Image Gallery */}
-      <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+    <div className="pb-24 bg-[#f6f6f8]">
+      {/* Top App Bar */}
+      <div className="sticky top-0 z-50 flex items-center bg-white/80 backdrop-blur-md p-4 justify-between border-b border-slate-200">
+        <Link
+          href="/tours"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+        >
+          <ArrowLeft className="h-5 w-5 text-slate-900" />
+        </Link>
+        <h2 className="text-lg font-bold tracking-tight text-slate-900">Tour Details</h2>
+        <button className="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+          <Share2 className="h-5 w-5 text-slate-900" />
+        </button>
+      </div>
+
+      {/* Hero Image */}
+      <div className="relative min-h-[400px] w-full overflow-hidden bg-slate-200">
         <Image
           src={allImages[0]}
           alt={tour.title}
@@ -63,203 +76,217 @@ export default async function TourDetailsPage({ params }: Props) {
           priority
           sizes="100vw"
         />
-        {tour.is_featured && (
-          <Badge className="absolute top-3 left-3 bg-amber-500 text-white">
-            Featured
-          </Badge>
-        )}
-        {images.length > 0 && (
-          <div className="absolute bottom-3 right-3 bg-black/60 text-white text-xs px-2 py-1 rounded">
-            1/{allImages.length}
+        {/* Pagination Dots */}
+        {allImages.length > 1 && (
+          <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-2">
+            {allImages.slice(0, 5).map((_, i) => (
+              <div
+                key={i}
+                className={`size-2 rounded-full ${i === 0 ? 'bg-white' : 'bg-white/50'}`}
+              />
+            ))}
           </div>
         )}
       </div>
 
-      {/* Additional thumbnail row */}
-      {allImages.length > 1 && (
-        <div className="flex gap-1. px-4 mt-2 overflow-x-auto no-scrollbar">
-          {allImages.slice(1, 5).map((url, i) => (
-            <div key={i} className="relative h-16 w-20 rounded-md overflow-hidden shrink-0 bg-muted">
-              <Image src={url} alt={`${tour.title} ${i + 2}`} fill className="object-cover" sizes="80px" />
+      {/* Header Info: Title + Price */}
+      <div className="px-4 pt-6 bg-white">
+        <div className="flex justify-between items-start">
+          <div className="flex-1 mr-4">
+            <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900">
+              {tour.title}
+            </h1>
+            <div className="flex items-center gap-1 mt-1">
+              <MapPin className="h-4 w-4 text-primary" />
+              <p className="text-slate-600 text-sm font-medium">
+                {tour.city ? `${tour.city}, ` : ''}
+                {tour.country}
+              </p>
             </div>
-          ))}
+          </div>
+          <div className="text-right shrink-0">
+            <p className="text-primary text-2xl font-bold">${tour.price.toLocaleString()}</p>
+            <p className="text-slate-500 text-xs">per person</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-3 px-4 mt-6">
+        {tour.duration_days && (
+          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col items-center">
+            <Clock className="h-5 w-5 text-primary mb-1" />
+            <span className="text-[10px] uppercase tracking-wider text-slate-500">Duration</span>
+            <span className="text-sm font-bold text-slate-900">{tour.duration_days} Days</span>
+          </div>
+        )}
+        {tour.departure_date && (
+          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col items-center">
+            <CalendarDays className="h-5 w-5 text-primary mb-1" />
+            <span className="text-[10px] uppercase tracking-wider text-slate-500">Departure</span>
+            <span className="text-sm font-bold text-slate-900">{formatDate(tour.departure_date)}</span>
+          </div>
+        )}
+        {tour.seats_left !== null && (
+          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col items-center">
+            <Users className="h-5 w-5 text-primary mb-1" />
+            <span className="text-[10px] uppercase tracking-wider text-slate-500">Seats left</span>
+            <span className={`text-sm font-bold ${tour.seats_left <= 5 ? 'text-red-500' : 'text-slate-900'}`}>
+              {tour.seats_left} left
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Agency Profile Card */}
+      {agency && (
+        <div className="px-4 mt-8">
+          <div className="bg-primary/5 rounded-xl p-4 flex items-center justify-between border border-primary/10">
+            <div className="flex items-center gap-3">
+              <div className="size-12 rounded-full bg-slate-200 overflow-hidden relative shrink-0">
+                <Image
+                  src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
+                  alt={agency.name}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-1">
+                  <h4 className="font-bold text-slate-900">{agency.name}</h4>
+                  {agency.is_verified && (
+                    <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />
+                  )}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                  <span className="text-sm font-medium">4.8</span>
+                  <span className="text-slate-500 text-xs">(124 reviews)</span>
+                </div>
+              </div>
+            </div>
+            <Link
+              href={`/agencies/${agency.slug}`}
+              className="text-primary font-bold text-sm hover:underline"
+            >
+              View Profile
+            </Link>
+          </div>
         </div>
       )}
 
-      <div className="px-4 space-y-4 mt-4">
-        {/* Title & Price */}
-        <div>
-          <h1 className="text-xl font-bold leading-tight">{tour.title}</h1>
-          <div className="flex items-center gap-1. mt-1 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            <span>
-              {tour.city ? `${tour.city}, ` : ''}
-              {tour.country}
-            </span>
-          </div>
-          <div className="mt-2">
-            <PriceBlock price={tour.price} currency={tour.currency} className="text-lg" />
-            <span className="text-xs text-muted-foreground ml-1">per person</span>
-          </div>
-        </div>
-
-        {/* Key Details Grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {tour.duration_days && (
-            <DetailItem icon={Clock} label="Duration" value={`${tour.duration_days} days`} />
-          )}
-          {tour.departure_date && (
-            <DetailItem icon={CalendarDays} label="Departure" value={formatDate(tour.departure_date)} />
-          )}
-          {tour.seats_left !== null && (
-            <DetailItem icon={Users} label="Seats Left" value={`${tour.seats_left}${tour.seats_total ? `/${tour.seats_total}` : ''}`} />
-          )}
-          {tour.hotel_name && (
-            <DetailItem icon={Hotel} label="Hotel" value={`${tour.hotel_name}${tour.hotel_stars ? ` (${tour.hotel_stars}★)` : ''}`} />
-          )}
-          <DetailItem icon={Utensils} label="Meals" value={tour.meal_type.replace('_', ' ')} />
-          <DetailItem icon={Plane} label="Transport" value={tour.transport_type} />
-        </div>
-
-        {tour.visa_required && (
-          <Badge variant="secondary" className="bg-amber-50 text-amber-700 border-amber-200">
-            Visa Required
-          </Badge>
-        )}
-
-        <Separator />
-
-        {/* Description */}
+      {/* Content Sections */}
+      <div className="px-4 mt-8 space-y-8">
+        {/* About */}
         {tour.full_description && (
-          <div>
-            <h2 className="font-semibold mb-2">About This Tour</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+          <section>
+            <h3 className="text-lg font-bold mb-3 text-slate-900">About this tour</h3>
+            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
               {tour.full_description}
             </p>
-          </div>
+          </section>
         )}
 
-        {/* Included / Excluded */}
+        {/* What's Included */}
         {includedServices.length > 0 && (
-          <div>
-            <h2 className="font-semibold mb-2 flex items-center gap-1">
-              <FileCheck className="h-4 w-4 text-emerald-500" /> Included
-            </h2>
-            <ul className="space-y-1">
-              {includedServices.map((s, i) => (
-                <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <span className="text-emerald-500 mt-0.5">✓</span> {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {excludedServices.length > 0 && (
-          <div>
-            <h2 className="font-semibold mb-2 flex items-center gap-1">
-              <FileX className="h-4 w-4 text-red-400" /> Not Included
-            </h2>
-            <ul className="space-y-1">
-              {excludedServices.map((s, i) => (
-                <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                  <span className="text-red-400 mt-0.5">✕</span> {s}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <Separator />
-
-        {/* Agency Card */}
-        {agency && (
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-full bg-muted overflow-hidden relative">
-                  <Image
-                    src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
-                    alt={agency.name}
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="font-semibold text-sm">{agency.name}</span>
-                    {agency.is_verified && <VerifiedBadge size="sm" />}
+          <section>
+            <h3 className="text-lg font-bold mb-4 text-slate-900">What&apos;s included</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {includedServices.map((service, i) => {
+                const Icon = serviceIcon(service);
+                return (
+                  <div
+                    key={i}
+                    className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-100"
+                  >
+                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <span className="font-medium text-slate-900">{service}</span>
                   </div>
-                  {agency.phone && (
-                    <p className="text-xs text-muted-foreground">{agency.phone}</p>
-                  )}
-                </div>
-                <Link href={`/agencies/${agency.slug}`}>
-                  <Button variant="outline" size="sm" className="text-xs">
-                    View <ChevronRight className="h-3 w-3 ml-0.5" />
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+                );
+              })}
+            </div>
+          </section>
         )}
 
-        {/* CTA Buttons */}
-        <div className="flex gap-2">
-          {telegramLink && (
-            <a href={telegramLink} target="_blank" rel="noopener noreferrer" className={cn(buttonVariants(), 'flex-1')}>
-              <MessageCircle className="h-4 w-4 mr-2" />
-              Contact on Telegram
-            </a>
-          )}
-          <Button variant="outline" size="icon">
-            <Heart className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon">
-            <Share2 className="h-4 w-4" />
-          </Button>
-        </div>
-
-        <Separator />
-
-        {/* Lead Request Form */}
-        <div>
-          <h2 className="font-semibold mb-3">Leave a Request</h2>
-          <LeadForm tourId={tour.id} agencyId={tour.agency_id} />
-        </div>
-
-        {/* Similar Tours */}
-        {similarTours.length > 0 && (
-          <section className="mt-6">
-            <SectionHeader title="Similar Tours" />
-            <div className="grid grid-cols-2 gap-3">
-              {similarTours.map((t) => (
-                <TourCard key={t.id} tour={t} />
+        {/* What's Excluded */}
+        {excludedServices.length > 0 && (
+          <section>
+            <h3 className="text-lg font-bold mb-3 text-slate-900">What&apos;s excluded</h3>
+            <ul className="space-y-2">
+              {excludedServices.map((service, i) => (
+                <li key={i} className="flex items-start gap-2 text-slate-600">
+                  <X className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                  <span>{service}</span>
+                </li>
               ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Hotel Info */}
+        {tour.hotel_name && (
+          <section>
+            <h3 className="text-lg font-bold mb-3 text-slate-900">Hotel Info</h3>
+            <div className="rounded-xl overflow-hidden border border-slate-200 bg-white">
+              {/* Hotel image — use second tour image if available, else placeholder */}
+              <div className="h-48 w-full bg-slate-200 relative">
+                <Image
+                  src={allImages[1] || placeholderImage(800, 400, tour.hotel_name)}
+                  alt={tour.hotel_name}
+                  fill
+                  className="object-cover"
+                  sizes="100vw"
+                />
+              </div>
+              <div className="p-4">
+                <h4 className="font-bold text-lg text-slate-900">{tour.hotel_name}</h4>
+                {tour.hotel_stars && (
+                  <div className="flex items-center gap-0.5 mb-2">
+                    {Array.from({ length: tour.hotel_stars }).map((_, i) => (
+                      <Star key={i} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                    ))}
+                  </div>
+                )}
+                {tour.short_description && (
+                  <p className="text-sm text-slate-600 leading-relaxed">
+                    {tour.short_description}
+                  </p>
+                )}
+              </div>
             </div>
           </section>
         )}
       </div>
-    </div>
-  );
-}
 
-function DetailItem({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-start gap-2 text-sm">
-      <Icon className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
-      <div>
-        <p className="text-muted-foreground text-xs">{label}</p>
-        <p className="font-medium capitalize">{value}</p>
+      {/* Fixed Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-4 z-50">
+        <div className="max-w-2xl mx-auto flex gap-3">
+          <Link
+            href={`/tours/${tour.slug}#request`}
+            className="flex-1 bg-slate-100 text-slate-900 font-bold py-4 rounded-xl text-center hover:bg-slate-200 transition-colors text-sm"
+          >
+            Leave Request
+          </Link>
+          {telegramLink ? (
+            <a
+              href={telegramLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-[1.5] bg-primary text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm"
+            >
+              <Send className="h-4 w-4" />
+              Contact on Telegram
+            </a>
+          ) : (
+            <button className="flex-[1.5] bg-primary text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm">
+              <Send className="h-4 w-4" />
+              Contact on Telegram
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
