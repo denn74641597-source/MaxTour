@@ -1,9 +1,11 @@
 name = "maxtour-app"
+main = ".open-next/worker/index.mjs"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# OpenNext build output
-pages_build_output_dir = ".open-next/worker"
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
 
 [vars]
 NEXT_PUBLIC_APP_NAME = "MaxTour"
