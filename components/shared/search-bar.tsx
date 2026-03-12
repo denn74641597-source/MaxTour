@@ -1,7 +1,6 @@
 'use client';
 
 import { Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
@@ -11,7 +10,7 @@ interface SearchBarProps {
 }
 
 export function SearchBar({
-  placeholder = 'Search tours, destinations...',
+  placeholder = 'Where to?',
   className,
 }: SearchBarProps) {
   const router = useRouter();
@@ -27,15 +26,18 @@ export function SearchBar({
 
   return (
     <form onSubmit={handleSubmit} className={className}>
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
+      <label className="relative group">
+        <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-slate-400 group-focus-within:text-primary transition-colors" />
+        </div>
+        <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
-          className="pl-9 h-10 bg-muted/50 border-0 rounded-full"
+          className="w-full h-14 pl-12 pr-4 bg-white border-none rounded-xl shadow-sm focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 text-slate-900 transition-all outline-none"
+          type="text"
         />
-      </div>
+      </label>
     </form>
   );
 }

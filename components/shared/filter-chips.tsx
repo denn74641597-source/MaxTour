@@ -1,8 +1,23 @@
 'use client';
 
-import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
-import { TOUR_CATEGORIES, type TourCategory } from '@/types';
+import { TOUR_CATEGORIES } from '@/types';
+import {
+  Umbrella, HeartHandshake, Users, Heart, Wallet,
+  Crown, ShieldCheck, Mountain, Landmark,
+} from 'lucide-react';
+
+const CATEGORY_ICONS: Record<string, React.ElementType> = {
+  Beach: Umbrella,
+  Umrah: Landmark,
+  Family: Users,
+  Honeymoon: Heart,
+  Budget: Wallet,
+  Premium: Crown,
+  'Visa-free': ShieldCheck,
+  Adventure: Mountain,
+  Cultural: Landmark,
+};
 
 interface FilterChipsProps {
   selected?: string;
@@ -11,20 +26,26 @@ interface FilterChipsProps {
 
 export function FilterChips({ selected, onSelect }: FilterChipsProps) {
   return (
-    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
-      {TOUR_CATEGORIES.map((cat) => (
-        <Badge
-          key={cat}
-          variant={selected === cat ? 'default' : 'secondary'}
-          className={cn(
-            'cursor-pointer whitespace-nowrap shrink-0 text-xs px-3 py-1',
-            selected === cat && 'bg-primary text-primary-foreground'
-          )}
-          onClick={() => onSelect(selected === cat ? undefined : cat)}
-        >
-          {cat}
-        </Badge>
-      ))}
+    <div className="flex gap-3 overflow-x-auto no-scrollbar py-1">
+      {TOUR_CATEGORIES.map((cat) => {
+        const Icon = CATEGORY_ICONS[cat] ?? HeartHandshake;
+        const isActive = selected === cat;
+        return (
+          <button
+            key={cat}
+            onClick={() => onSelect(isActive ? undefined : cat)}
+            className={cn(
+              'flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-sm font-medium transition-colors',
+              isActive
+                ? 'bg-primary text-white font-semibold'
+                : 'bg-white text-slate-700 border border-slate-100 hover:border-primary/30'
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {cat}
+          </button>
+        );
+      })}
     </div>
   );
 }
