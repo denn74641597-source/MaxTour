@@ -1,0 +1,10 @@
+name = "maxtour-app"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# OpenNext build output
+pages_build_output_dir = ".open-next/worker"
+
+[vars]
+NEXT_PUBLIC_APP_NAME = "MaxTour"
+NEXT_PUBLIC_APP_URL = "https://maxtour-app.pages.dev"

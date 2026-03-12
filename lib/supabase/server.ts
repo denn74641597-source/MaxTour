@@ -27,8 +27,8 @@ export async function createServerSupabaseClient() {
 }
 
 /** Admin client with service role — use only in server actions / API routes */
-export function createAdminClient() {
-  const { createClient } = require('@supabase/supabase-js');
+export async function createAdminClient() {
+  const { createClient } = await import('@supabase/supabase-js');
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
