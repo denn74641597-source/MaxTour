@@ -2,6 +2,32 @@
 -- Run this after the schema migration for local/demo development
 
 -- ============================================================
+-- Create dummy auth.users first (required for profiles FK)
+-- ============================================================
+INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, confirmation_token, recovery_token)
+VALUES
+  ('aaaaaaaa-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'aziz@demo.maxtour.uz', crypt('demo123456', gen_salt('bf')), now(), now(), now(), '', ''),
+  ('aaaaaaaa-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'nilufar@demo.maxtour.uz', crypt('demo123456', gen_salt('bf')), now(), now(), now(), '', ''),
+  ('aaaaaaaa-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'sardor@demo.maxtour.uz', crypt('demo123456', gen_salt('bf')), now(), now(), now(), '', ''),
+  ('aaaaaaaa-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'kamola@demo.maxtour.uz', crypt('demo123456', gen_salt('bf')), now(), now(), now(), '', ''),
+  ('aaaaaaaa-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'bobur@demo.maxtour.uz', crypt('demo123456', gen_salt('bf')), now(), now(), now(), '', ''),
+  ('aaaaaaaa-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'admin@demo.maxtour.uz', crypt('demo123456', gen_salt('bf')), now(), now(), now(), '', ''),
+  ('aaaaaaaa-0000-0000-0000-000000000011', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'user@demo.maxtour.uz', crypt('demo123456', gen_salt('bf')), now(), now(), now(), '', '')
+ON CONFLICT (id) DO NOTHING;
+
+-- Also insert into auth.identities (required by Supabase Auth)
+INSERT INTO auth.identities (id, user_id, provider_id, provider, identity_data, last_sign_in_at, created_at, updated_at)
+VALUES
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'email', jsonb_build_object('sub', 'aaaaaaaa-0000-0000-0000-000000000001', 'email', 'aziz@demo.maxtour.uz'), now(), now(), now()),
+  ('aaaaaaaa-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000002', 'aaaaaaaa-0000-0000-0000-000000000002', 'email', jsonb_build_object('sub', 'aaaaaaaa-0000-0000-0000-000000000002', 'email', 'nilufar@demo.maxtour.uz'), now(), now(), now()),
+  ('aaaaaaaa-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000003', 'aaaaaaaa-0000-0000-0000-000000000003', 'email', jsonb_build_object('sub', 'aaaaaaaa-0000-0000-0000-000000000003', 'email', 'sardor@demo.maxtour.uz'), now(), now(), now()),
+  ('aaaaaaaa-0000-0000-0000-000000000004', 'aaaaaaaa-0000-0000-0000-000000000004', 'aaaaaaaa-0000-0000-0000-000000000004', 'email', jsonb_build_object('sub', 'aaaaaaaa-0000-0000-0000-000000000004', 'email', 'kamola@demo.maxtour.uz'), now(), now(), now()),
+  ('aaaaaaaa-0000-0000-0000-000000000005', 'aaaaaaaa-0000-0000-0000-000000000005', 'aaaaaaaa-0000-0000-0000-000000000005', 'email', jsonb_build_object('sub', 'aaaaaaaa-0000-0000-0000-000000000005', 'email', 'bobur@demo.maxtour.uz'), now(), now(), now()),
+  ('aaaaaaaa-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000010', 'aaaaaaaa-0000-0000-0000-000000000010', 'email', jsonb_build_object('sub', 'aaaaaaaa-0000-0000-0000-000000000010', 'email', 'admin@demo.maxtour.uz'), now(), now(), now()),
+  ('aaaaaaaa-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000011', 'aaaaaaaa-0000-0000-0000-000000000011', 'email', jsonb_build_object('sub', 'aaaaaaaa-0000-0000-0000-000000000011', 'email', 'user@demo.maxtour.uz'), now(), now(), now())
+ON CONFLICT DO NOTHING;
+
+-- ============================================================
 -- Subscription Plans
 -- ============================================================
 INSERT INTO subscription_plans (id, name, slug, price_monthly, max_active_tours, can_feature, has_priority_support) VALUES
@@ -10,12 +36,8 @@ INSERT INTO subscription_plans (id, name, slug, price_monthly, max_active_tours,
   ('00000000-0000-0000-0000-000000000003', 'Premium', 'premium', 99, 50, true, true);
 
 -- ============================================================
--- Demo Profiles (using fixed UUIDs for referential integrity)
--- In production, these would be created via auth.users
+-- Demo Profiles
 -- ============================================================
--- NOTE: These inserts assume you've created matching auth.users in Supabase
--- or you're running with RLS disabled for seeding.
--- For quick demo, you can run this with the service_role key.
 
 INSERT INTO profiles (id, role, full_name, telegram_username, phone) VALUES
   ('aaaaaaaa-0000-0000-0000-000000000001', 'agency_manager', 'Aziz Karimov', '@aziz_travel', '+998901234567'),
