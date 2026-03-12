@@ -1,0 +1,55 @@
+import { notFound } from 'next/navigation';
+import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { TourForm } from '../../tour-form';
+
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export default async function EditTourPage({ params }: Props) {
+  const { id } = await params;
+  const supabase = await createServerSupabaseClient();
+
+  const { data: tour } = await supabase
+    .from('tours')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (!tour) notFound();
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-xl font-bold">Edit Tour</h1>
+        <p className="text-sm text-muted-foreground">{tour.title}</p>
+      </div>
+      <TourForm
+        tourId={tour.id}
+        initialData={{
+          title: tour.title,
+          slug: tour.slug,
+          short_description: tour.short_description ?? undefined,
+          full_description: tour.full_description ?? undefined,
+          country: tour.country,
+          city: tour.city ?? undefined,
+          departure_date: tour.departure_date ?? undefined,
+          return_date: tour.return_date ?? undefined,
+          duration_days: tour.duration_days ?? undefined,
+          price: tour.price,
+          currency: tour.currency,
+          seats_total: tour.seats_total ?? undefined,
+          seats_left: tour.seats_left ?? undefined,
+          hotel_name: tour.hotel_name ?? undefined,
+          hotel_stars: tour.hotel_stars ?? undefined,
+          meal_type: tour.meal_type,
+          transport_type: tour.transport_type,
+          visa_required: tour.visa_required,
+          included_services: tour.included_services ?? [],
+          excluded_services: tour.excluded_services ?? [],
+          status: tour.status,
+        }}
+      />
+    </div>
+  );
+}
