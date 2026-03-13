@@ -7,7 +7,13 @@ import type { TourFormData } from '@/lib/validators';
 interface EditTourContentProps {
   tourId: string;
   tourTitle: string;
-  initialData: Partial<TourFormData>;
+  initialData: Partial<TourFormData> & {
+    cover_image_url?: string | null;
+    hotel_images?: string[];
+    destinations?: string[];
+    airline?: string | null;
+    extra_charges?: { name: string; amount: number }[];
+  };
 }
 
 export function EditTourContent({ tourId, tourTitle, initialData }: EditTourContentProps) {
