@@ -392,6 +392,11 @@ export const uz: Translations = {
     roleAdmin: 'Administrator',
     profileUpdated: 'Profil yangilandi',
     saving: 'Saqlanmoqda...',
+    loginAsAgency: 'Agentlik sifatida kirish',
+    loginAsAgencyHint: 'Allaqachon ro\'yxatdan o\'tgan agentliklar uchun',
+    loggingIn: 'Kirilmoqda...',
+    agencyLoginTitle: 'Agentlik hisobiga kirish',
+    registerOrLogin: 'Ro\'yxatdan o\'ting yoki tizimga kiring',
   },
 
   // ─── Metadata ───

@@ -392,6 +392,11 @@ export const ru: Translations = {
     roleAdmin: 'Администратор',
     profileUpdated: 'Профиль обновлён',
     saving: 'Сохранение...',
+    loginAsAgency: 'Войти как агентство',
+    loginAsAgencyHint: 'Для уже зарегистрированных агентств',
+    loggingIn: 'Вход...',
+    agencyLoginTitle: 'Вход в аккаунт агентства',
+    registerOrLogin: 'Зарегистрируйтесь или войдите',
   },
 
   // ─── Metadata ───

@@ -339,6 +339,11 @@ export interface Translations {
     roleAdmin: string;
     profileUpdated: string;
     saving: string;
+    loginAsAgency: string;
+    loginAsAgencyHint: string;
+    loggingIn: string;
+    agencyLoginTitle: string;
+    registerOrLogin: string;
   };
   metadata: {
     title: string;

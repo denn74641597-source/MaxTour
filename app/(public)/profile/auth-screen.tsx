@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import type { UserRole } from '@/types';
 
-type AuthStep = 'role-select' | 'register-form';
+type AuthStep = 'role-select' | 'register-form' | 'agency-login';
 
 export function AuthScreen() {
   const { t } = useTranslation();
@@ -28,10 +28,23 @@ export function AuthScreen() {
 
   const supabase = createClient();
 
+  const resetForm = () => {
+    setError('');
+    setPhone('');
+    setFullName('');
+    setPassword('');
+    setShowPassword(false);
+  };
+
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
-    setError('');
+    resetForm();
     setStep('register-form');
+  };
+
+  const handleAgencyLoginSelect = () => {
+    resetForm();
+    setStep('agency-login');
   };
 
   // Normalize phone to E.164 for use as a fake email identifier
@@ -223,6 +236,37 @@ export function AuthScreen() {
     }
   };
 
+  // Login existing agency (phone + password)
+  const handleAgencyLogin = async () => {
+    const trimmedPhone = phone.trim();
+    const trimmedPassword = password.trim();
+    if (!trimmedPhone || !trimmedPassword) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const email = phoneToEmail(trimmedPhone);
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password: trimmedPassword,
+      });
+
+      if (signInError) {
+        setError(t.auth.wrongPassword);
+        return;
+      }
+
+      router.push('/agency');
+    } catch (err) {
+      console.error('Agency login error:', err);
+      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSubmit = () => {
     if (selectedRole === 'user') {
       handleUserRegister();
@@ -245,7 +289,7 @@ export function AuthScreen() {
             <h1 className="text-2xl font-bold text-slate-900">
               {t.auth.welcome}
             </h1>
-            <p className="text-sm text-slate-500">{t.auth.chooseRole}</p>
+            <p className="text-sm text-slate-500">{t.auth.registerOrLogin}</p>
           </div>
 
           <div className="space-y-3">
@@ -283,6 +327,35 @@ export function AuthScreen() {
                   </h3>
                   <p className="text-sm text-slate-500">
                     {t.auth.registerAsAgencyHint}
+                  </p>
+                </div>
+                <ArrowRight className="h-5 w-5 text-slate-400" />
+              </CardContent>
+            </Card>
+
+            <div className="relative py-2">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200" />
+              </div>
+              <div className="relative flex justify-center">
+                <span className="bg-white px-3 text-xs text-slate-400">{t.auth.alreadyHaveAccount}</span>
+              </div>
+            </div>
+
+            <Card
+              className="cursor-pointer border-2 border-transparent hover:border-emerald-300 transition-all"
+              onClick={handleAgencyLoginSelect}
+            >
+              <CardContent className="flex items-center gap-4 p-5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                  <Lock className="h-6 w-6 text-amber-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-semibold text-slate-900">
+                    {t.auth.loginAsAgency}
+                  </h3>
+                  <p className="text-sm text-slate-500">
+                    {t.auth.loginAsAgencyHint}
                   </p>
                 </div>
                 <ArrowRight className="h-5 w-5 text-slate-400" />
@@ -396,15 +469,111 @@ export function AuthScreen() {
             <button
               onClick={() => {
                 setStep('role-select');
-                setError('');
-                setPhone('');
-                setFullName('');
-                setPassword('');
+                resetForm();
               }}
               className="w-full text-sm text-slate-500 hover:text-slate-700"
             >
               {t.common.back}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3: Agency Login */}
+      {step === 'agency-login' && (
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 mx-auto">
+              <Building2 className="h-8 w-8 text-amber-600" />
+            </div>
+            <h1 className="text-xl font-bold text-slate-900">
+              {t.auth.agencyLoginTitle}
+            </h1>
+            <p className="text-sm text-slate-500">
+              {t.auth.loginAsAgencyHint}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="loginPhone">{t.auth.phone}</Label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  id="loginPhone"
+                  type="tel"
+                  placeholder={t.auth.phonePlaceholder}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="pl-10 h-12 text-lg"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="loginPassword">{t.auth.password}</Label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  id="loginPassword"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder={t.auth.passwordPlaceholder}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAgencyLogin()}
+                  className="pl-10 pr-10 h-12"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+
+            <Button
+              onClick={handleAgencyLogin}
+              disabled={!phone.trim() || !password.trim() || loading}
+              className="w-full h-12 text-base"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  {t.auth.loggingIn}
+                </>
+              ) : (
+                t.auth.login
+              )}
+            </Button>
+
+            <button
+              onClick={() => {
+                setStep('role-select');
+                resetForm();
+              }}
+              className="w-full text-sm text-slate-500 hover:text-slate-700"
+            >
+              {t.common.back}
+            </button>
+
+            <p className="text-center text-xs text-slate-400">
+              {t.auth.noAccount}{' '}
+              <button
+                onClick={() => {
+                  resetForm();
+                  handleRoleSelect('agency_manager');
+                }}
+                className="text-primary hover:underline"
+              >
+                {t.auth.register}
+              </button>
+            </p>
           </div>
         </div>
       )}
