@@ -1,5 +1,26 @@
+import { cache } from 'react';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import type { Agency, Review } from '@/types';
+
+/**
+ * Get the current user's agency (cached per request via React.cache).
+ * Deduplicates auth + agency lookup across server components in the same render.
+ */
+export const getMyAgency = cache(async (): Promise<Agency | null> => {
+  const supabase = await createServerSupabaseClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
+  const { data } = await supabase
+    .from('agencies')
+    .select('*')
+    .eq('owner_id', user.id)
+    .single();
+
+  return data;
+});
 
 /** Fetch a single agency by slug */
 export async function getAgencyBySlug(slug: string): Promise<Agency | null> {

@@ -1,37 +1,34 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getMyAgency } from '@/features/agencies/queries';
 import { SubscriptionContent } from './subscription-content';
 
 async function getSubscriptionData() {
   const supabase = await createServerSupabaseClient();
 
-  const { data: plans } = await supabase
-    .from('subscription_plans')
-    .select('*')
-    .order('price_monthly', { ascending: true });
+  // Fetch plans and agency in parallel
+  const [plansRes, agency] = await Promise.all([
+    supabase
+      .from('subscription_plans')
+      .select('*')
+      .order('price_monthly', { ascending: true }),
+    getMyAgency(),
+  ]);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const plans = plansRes.data ?? [];
+
   let currentSub = null;
-  if (user) {
-    const { data: agency } = await supabase
-      .from('agencies')
-      .select('id')
-      .eq('owner_id', user.id)
+  if (agency) {
+    const { data } = await supabase
+      .from('agency_subscriptions')
+      .select('*, plan:subscription_plans(*)')
+      .eq('agency_id', agency.id)
+      .eq('status', 'active')
+      .limit(1)
       .single();
-    if (agency) {
-      const { data } = await supabase
-        .from('agency_subscriptions')
-        .select('*, plan:subscription_plans(*)')
-        .eq('agency_id', agency.id)
-        .eq('status', 'active')
-        .limit(1)
-        .single();
-      currentSub = data;
-    }
+    currentSub = data;
   }
 
-  return { plans: plans ?? [], currentSub };
+  return { plans, currentSub };
 }
 
 export default async function SubscriptionPage() {

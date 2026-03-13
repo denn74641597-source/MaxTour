@@ -1,20 +1,12 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getMyAgency } from '@/features/agencies/queries';
 import { AgencyToursContent } from './agency-tours-content';
 
 async function getAgencyTours() {
-  const supabase = await createServerSupabaseClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return [];
-
-  const { data: agency } = await supabase
-    .from('agencies')
-    .select('id')
-    .eq('owner_id', user.id)
-    .single();
+  const agency = await getMyAgency();
   if (!agency) return [];
 
+  const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from('tours')
     .select('*')

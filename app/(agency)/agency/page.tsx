@@ -1,22 +1,12 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getMyAgency } from '@/features/agencies/queries';
 import { AgencyDashboardContent } from './agency-dashboard-content';
 
 async function getAgencyDashboardData() {
-  const supabase = await createServerSupabaseClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data: agency } = await supabase
-    .from('agencies')
-    .select('*')
-    .eq('owner_id', user.id)
-    .single();
-
+  const agency = await getMyAgency();
   if (!agency) return null;
 
+  const supabase = await createServerSupabaseClient();
   const [toursRes, leadsRes, featuredRes, subRes] = await Promise.all([
     supabase.from('tours').select('id', { count: 'exact', head: true }).eq('agency_id', agency.id).eq('status', 'published'),
     supabase.from('leads').select('*, tour:tours(title)').eq('agency_id', agency.id).order('created_at', { ascending: false }).limit(5),

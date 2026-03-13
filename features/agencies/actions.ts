@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getMyAgency } from './queries';
 
 export async function upsertAgencyProfileAction(payload: {
   name: string;
@@ -49,18 +50,5 @@ export async function upsertAgencyProfileAction(payload: {
 }
 
 export async function getMyAgencyAction() {
-  const supabase = await createServerSupabaseClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return null;
-
-  const { data } = await supabase
-    .from('agencies')
-    .select('*')
-    .eq('owner_id', user.id)
-    .single();
-
-  return data;
+  return getMyAgency();
 }
