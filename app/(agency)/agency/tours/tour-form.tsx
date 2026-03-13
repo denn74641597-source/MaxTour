@@ -25,14 +25,14 @@ import { useTranslation } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
 
 interface TourFormProps {
-  initialData?: Partial<TourFormData>;
+  initialData?: Partial<TourFormData> & { cover_image_url?: string | null };
   tourId?: string;
 }
 
 export function TourForm({ initialData, tourId }: TourFormProps) {
   const router = useRouter();
   const { t } = useTranslation();
-  const [coverUrl, setCoverUrl] = useState(initialData?.slug ?? '');
+  const [coverUrl, setCoverUrl] = useState(initialData?.cover_image_url ?? '');
   const [includedServices, setIncludedServices] = useState<string[]>(
     initialData?.included_services ?? []
   );
@@ -115,6 +115,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     const payload = {
       title: data.title,
       slug: data.slug,
+      cover_image_url: coverUrl || null,
       short_description: data.short_description || null,
       full_description: data.full_description || null,
       country: data.country,

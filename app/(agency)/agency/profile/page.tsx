@@ -10,17 +10,20 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ImageUploader } from '@/components/shared/image-uploader';
 import { agencyProfileSchema, type AgencyProfileData } from '@/lib/validators';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/lib/i18n';
+import { upsertAgencyProfileAction, getMyAgencyAction } from '@/features/agencies/actions';
 
 export default function AgencyProfilePage() {
   const [logoUrl, setLogoUrl] = useState('');
+  const [loading, setLoading] = useState(true);
   const { t } = useTranslation();
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<AgencyProfileData>({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,10 +33,54 @@ export default function AgencyProfilePage() {
     },
   });
 
+  useEffect(() => {
+    getMyAgencyAction().then((agency) => {
+      if (agency) {
+        reset({
+          name: agency.name,
+          slug: agency.slug,
+          description: agency.description ?? '',
+          phone: agency.phone ?? '',
+          telegram_username: agency.telegram_username ?? '',
+          instagram_url: agency.instagram_url ?? '',
+          website_url: agency.website_url ?? '',
+          address: agency.address ?? '',
+          city: agency.city ?? '',
+          country: agency.country ?? 'Uzbekistan',
+        });
+        setLogoUrl(agency.logo_url ?? '');
+      }
+      setLoading(false);
+    });
+  }, [reset]);
+
   async function onSubmit(data: AgencyProfileData) {
-    // In production, this would call a server action to upsert the agency profile
-    console.log('Agency profile data:', { ...data, logo_url: logoUrl });
-    toast.success(t.agencyProfileForm.profileSaved);
+    const result = await upsertAgencyProfileAction({
+      name: data.name,
+      slug: data.slug,
+      logo_url: logoUrl || null,
+      description: data.description || null,
+      phone: data.phone || null,
+      telegram_username: data.telegram_username || null,
+      instagram_url: data.instagram_url || null,
+      website_url: data.website_url || null,
+      address: data.address || null,
+      city: data.city || null,
+      country: data.country || 'Uzbekistan',
+    });
+    if (result.error) {
+      toast.error(result.error);
+    } else {
+      toast.success(t.agencyProfileForm.profileSaved);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -52,6 +99,7 @@ export default function AgencyProfilePage() {
               value={logoUrl}
               onChange={setLogoUrl}
               label={t.agencyProfileForm.uploadLogo}
+              folder="logos"
             />
           </CardContent>
         </Card>

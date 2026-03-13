@@ -1,45 +1,64 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Upload, X, ImageIcon } from 'lucide-react';
+import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { uploadImageAction } from '@/features/upload/actions';
 
 interface ImageUploaderProps {
   value?: string;
   onChange: (url: string) => void;
   className?: string;
   label?: string;
+  folder?: string;
 }
 
-/**
- * Image uploader component.
- * In MVP, this handles preview from local files.
- * For production, integrate with Supabase Storage upload.
- */
 export function ImageUploader({
   value,
   onChange,
   className,
   label,
+  folder = 'tours',
 }: ImageUploaderProps) {
   const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
+  const [uploading, setUploading] = useState(false);
 
   const displayLabel = label ?? t.imageUploader.uploadImage;
 
-  function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Create local preview
-    const url = URL.createObjectURL(file);
-    setPreview(url);
+    // Show local preview immediately
+    const localUrl = URL.createObjectURL(file);
+    setPreview(localUrl);
+    setUploading(true);
 
-    // In production, upload to Supabase Storage here and call onChange with the public URL
-    onChange(url);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('folder', folder);
+
+      const result = await uploadImageAction(formData);
+
+      if (result.error) {
+        console.error('Upload error:', result.error);
+        setPreview(null);
+        return;
+      }
+
+      setPreview(result.url!);
+      onChange(result.url!);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setPreview(null);
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handleRemove() {
@@ -61,15 +80,22 @@ export function ImageUploader({
         <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-          <Button
-            type="button"
-            variant="destructive"
-            size="icon"
-            className="absolute top-2 right-2 h-7 w-7"
-            onClick={handleRemove}
-          >
-            <X className="h-4 w-4" />
-          </Button>
+          {uploading && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <Loader2 className="h-8 w-8 text-white animate-spin" />
+            </div>
+          )}
+          {!uploading && (
+            <Button
+              type="button"
+              variant="destructive"
+              size="icon"
+              className="absolute top-2 right-2 h-7 w-7"
+              onClick={handleRemove}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
       ) : (
         <button
