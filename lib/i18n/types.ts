@@ -320,6 +320,12 @@ export interface Translations {
     verifyCode: string;
     codeSent: string;
     invalidCode: string;
+    password: string;
+    passwordPlaceholder: string;
+    passwordHint: string;
+    passwordTooShort: string;
+    wrongPassword: string;
+    phoneAlreadyRegistered: string;
     registrationSuccess: string;
     personalInfo: string;
     fillInfo: string;

@@ -6,7 +6,7 @@ import { TourCardHorizontal } from '@/components/shared/tour-card-horizontal';
 import { AgencyCard } from '@/components/shared/agency-card';
 import { HeroBanner } from '@/components/shared/hero-banner';
 import { PopularDestinations } from '@/components/shared/popular-destinations';
-import { TourListSkeleton } from '@/components/shared/loading-skeleton';
+import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from '@/lib/i18n';
 import { HomeFilterChipsClient } from '../home-filter-chips';
 import type { Tour, Agency } from '@/types';
@@ -40,7 +40,7 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
       {/* Hero Banner */}
       {heroTour && <HeroBanner tour={heroTour} />}
 
-      {/* Popular Destinations */}
+      {/* Popular Destinations — will show when destinations data is available */}
       <PopularDestinations />
 
       {/* Verified Agencies */}
@@ -70,7 +70,10 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
             ))}
           </div>
         ) : (
-          <TourListSkeleton count={3} />
+          <EmptyState
+            title={t.tours.noToursFound}
+            description={t.tours.noToursHint}
+          />
         )}
       </section>
     </div>

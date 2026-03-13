@@ -145,11 +145,12 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                     <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />
                   )}
                 </div>
-                <div className="flex items-center gap-1">
-                  <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
-                  <span className="text-sm font-medium">4.8</span>
-                  <span className="text-slate-500 text-xs">(124 {t.agencyProfile.reviews.toLowerCase()})</span>
-                </div>
+                {agency.rating && (
+                  <div className="flex items-center gap-1">
+                    <Star className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                    <span className="text-sm font-medium">{agency.rating}</span>
+                  </div>
+                )}
               </div>
             </div>
             <Link
