@@ -1,7 +1,7 @@
 import { AppHeader } from '@/components/shared/app-header';
 import { BottomNav } from '@/components/shared/bottom-nav';
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 60;
 
 export default function PublicLayout({
   children,

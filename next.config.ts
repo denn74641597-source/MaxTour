@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZGZld215aGd6cGJ4ZXN4ZmRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODkwOTQsImV4cCI6MjA4ODg2NTA5NH0.VnVf5TqU-klQOIoVSBXtVBoDWwgXwLCAD56iW2u7l6Y",
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
+    deviceSizes: [640, 750, 828, 1080],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256],
     remotePatterns: [
       {
         protocol: 'https',

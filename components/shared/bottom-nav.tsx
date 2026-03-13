@@ -3,19 +3,20 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Compass, Ticket, Heart, User } from 'lucide-react';
+import { memo, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 
-export function BottomNav() {
+export const BottomNav = memo(function BottomNav() {
   const pathname = usePathname();
   const { t } = useTranslation();
 
-  const NAV_ITEMS = [
+  const NAV_ITEMS = useMemo(() => [
     { href: '/', label: t.nav.explore, icon: Compass },
     { href: '/tours', label: t.nav.bookings, icon: Ticket },
     { href: '/favorites', label: t.nav.wishlist, icon: Heart },
     { href: '/profile', label: t.nav.profile, icon: User },
-  ];
+  ], [t.nav]);
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 safe-area-pb">
@@ -41,4 +42,4 @@ export function BottomNav() {
       </div>
     </nav>
   );
-}
+});

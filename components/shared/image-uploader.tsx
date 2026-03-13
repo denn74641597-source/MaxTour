@@ -1,11 +1,13 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { uploadImageAction } from '@/features/upload/actions';
+import { compressImage, validateImageFile } from '@/lib/image-utils';
+import { toast } from 'sonner';
 
 interface ImageUploaderProps {
   value?: string;
@@ -26,35 +28,62 @@ export function ImageUploader({
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
   const [uploading, setUploading] = useState(false);
+  const objectUrlRef = useRef<string | null>(null);
 
   const displayLabel = label ?? t.imageUploader.uploadImage;
+
+  // Cleanup object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
+    };
+  }, []);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate
+    const error = validateImageFile(file);
+    if (error) {
+      toast.error(error);
+      if (inputRef.current) inputRef.current.value = '';
+      return;
+    }
+
     // Show local preview immediately
+    if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     const localUrl = URL.createObjectURL(file);
+    objectUrlRef.current = localUrl;
     setPreview(localUrl);
     setUploading(true);
 
     try {
+      // Compress before upload
+      const compressed = await compressImage(file);
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressed);
       formData.append('folder', folder);
 
       const result = await uploadImageAction(formData);
 
       if (result.error) {
-        console.error('Upload error:', result.error);
+        toast.error(result.error);
         setPreview(null);
         return;
       }
 
+      // Revoke object URL and set server URL
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
       setPreview(result.url!);
       onChange(result.url!);
     } catch (err) {
       console.error('Upload failed:', err);
+      toast.error('Rasm yuklanmadi');
       setPreview(null);
     } finally {
       setUploading(false);

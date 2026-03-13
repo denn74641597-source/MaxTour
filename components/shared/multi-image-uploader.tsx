@@ -5,6 +5,8 @@ import { ImageIcon, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { uploadImageAction } from '@/features/upload/actions';
+import { compressImage, validateImageFile } from '@/lib/image-utils';
+import { toast } from 'sonner';
 
 interface MultiImageUploaderProps {
   values: string[];
@@ -37,19 +39,41 @@ export function MultiImageUploader({
     const filesToUpload = Array.from(files).slice(0, remaining);
     if (filesToUpload.length === 0) return;
 
+    // Validate all files first
+    for (const file of filesToUpload) {
+      const error = validateImageFile(file);
+      if (error) {
+        toast.error(error);
+        if (inputRef.current) inputRef.current.value = '';
+        return;
+      }
+    }
+
     setUploading(true);
-    const newUrls: string[] = [];
 
     try {
-      for (const file of filesToUpload) {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('folder', folder);
+      // Compress all files in parallel
+      const compressed = await Promise.all(
+        filesToUpload.map((file) => compressImage(file))
+      );
 
-        const result = await uploadImageAction(formData);
-        if (result.url) {
-          newUrls.push(result.url);
-        }
+      // Upload all files in parallel
+      const results = await Promise.all(
+        compressed.map((file) => {
+          const formData = new FormData();
+          formData.append('file', file);
+          formData.append('folder', folder);
+          return uploadImageAction(formData);
+        })
+      );
+
+      const newUrls = results
+        .filter((r) => r.url && !r.error)
+        .map((r) => r.url!);
+
+      const errors = results.filter((r) => r.error);
+      if (errors.length > 0) {
+        toast.error(`${errors.length} ta rasm yuklanmadi`);
       }
 
       if (newUrls.length > 0) {
@@ -57,6 +81,7 @@ export function MultiImageUploader({
       }
     } catch (err) {
       console.error('Upload failed:', err);
+      toast.error('Rasmlar yuklanmadi');
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';
