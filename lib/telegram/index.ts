@@ -93,10 +93,28 @@ export function initTelegramApp() {
 
 /** Trigger haptic impact feedback (vibration) */
 export function hapticFeedback(style: 'light' | 'medium' | 'heavy' = 'light') {
-  getTelegramWebApp()?.HapticFeedback.impactOccurred(style);
+  const webapp = getTelegramWebApp();
+  if (webapp?.HapticFeedback) {
+    webapp.HapticFeedback.impactOccurred(style);
+    return;
+  }
+  // Fallback: Web Vibration API (Android browsers, etc.)
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    const duration = style === 'light' ? 10 : style === 'medium' ? 25 : 50;
+    navigator.vibrate(duration);
+  }
 }
 
 /** Trigger haptic notification feedback */
 export function hapticNotification(type: 'error' | 'success' | 'warning') {
-  getTelegramWebApp()?.HapticFeedback.notificationOccurred(type);
+  const webapp = getTelegramWebApp();
+  if (webapp?.HapticFeedback) {
+    webapp.HapticFeedback.notificationOccurred(type);
+    return;
+  }
+  // Fallback: Web Vibration API
+  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+    const pattern = type === 'success' ? [10, 30, 10] : type === 'warning' ? [20, 20, 20] : [50, 30, 50];
+    navigator.vibrate(pattern);
+  }
 }

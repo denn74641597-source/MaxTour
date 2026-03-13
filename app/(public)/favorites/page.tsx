@@ -23,7 +23,7 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="px-4 py-4 space-y-5">
       <h1 className="text-lg font-bold">{t.favorites.title}</h1>
 
       {favorites.length > 0 ? (

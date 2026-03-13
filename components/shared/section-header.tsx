@@ -6,7 +6,7 @@ interface SectionHeaderProps {
 
 export function SectionHeader({ title, subtitle, action }: SectionHeaderProps) {
   return (
-    <div className="flex items-end justify-between mb-3">
+    <div className="flex items-end justify-between mb-4">
       <div>
         <h2 className="text-lg font-semibold">{title}</h2>
         {subtitle && (

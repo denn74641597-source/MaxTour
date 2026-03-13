@@ -36,24 +36,24 @@ export function useFavorites() {
     } = await supabase.auth.getUser();
     if (!user) return;
 
-    setFavorites((prev) => {
-      const existing = prev.find((f) => f.tour_id === tourId);
-      if (existing) {
-        supabase.from('favorites').delete().eq('id', existing.id);
-        return prev.filter((f) => f.id !== existing.id);
+    const existing = favorites.find((f) => f.tour_id === tourId);
+    if (existing) {
+      setFavorites((prev) => prev.filter((f) => f.id !== existing.id));
+      await supabase.from('favorites').delete().eq('id', existing.id);
+    } else {
+      setFavorites((prev) => [...prev, { id: `temp-${tourId}`, user_id: user.id, tour_id: tourId, created_at: new Date().toISOString() } as Favorite]);
+      const { data } = await supabase
+        .from('favorites')
+        .insert({ user_id: user.id, tour_id: tourId })
+        .select()
+        .single();
+      if (data) {
+        setFavorites((prev) => prev.map((f) => f.id === `temp-${tourId}` ? data : f));
       } else {
-        supabase
-          .from('favorites')
-          .insert({ user_id: user.id, tour_id: tourId })
-          .select()
-          .single()
-          .then(({ data }) => {
-            if (data) setFavorites((p) => [data, ...p]);
-          });
-        return prev;
+        setFavorites((prev) => prev.filter((f) => f.id !== `temp-${tourId}`));
       }
-    });
-  }, []);
+    }
+  }, [favorites]);
 
   const favoriteIds = useMemo(() => new Set(favorites.map((f) => f.tour_id)), [favorites]);
 

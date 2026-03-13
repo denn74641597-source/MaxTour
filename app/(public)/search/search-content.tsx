@@ -17,7 +17,7 @@ export function SearchContent({ tours, query }: SearchContentProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="px-4 py-4 space-y-5">
       <h1 className="text-lg font-bold">{t.search.title}</h1>
       <Suspense>
         <SearchBar />

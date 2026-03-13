@@ -24,28 +24,30 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
   const hotDeals = recentTours.slice(0, 6);
 
   return (
-    <div className="px-4 space-y-8 pb-6">
+    <div className="px-4 pb-6">
       {/* Search Bar */}
-      <div className="mt-2">
+      <div className="mt-2 mb-5">
         <Suspense>
           <SearchBar />
         </Suspense>
       </div>
 
       {/* Quick Filter Chips */}
-      <Suspense>
-        <HomeFilterChipsClient />
-      </Suspense>
+      <div className="mb-8">
+        <Suspense>
+          <HomeFilterChipsClient />
+        </Suspense>
+      </div>
 
       {/* Hero Banner */}
-      {heroTour && <HeroBanner tour={heroTour} />}
+      {heroTour && <div className="mb-10"><HeroBanner tour={heroTour} /></div>}
 
       {/* Popular Destinations — will show when destinations data is available */}
-      <PopularDestinations />
+      <div className="mb-10"><PopularDestinations /></div>
 
       {/* Verified Agencies */}
       {agencies.length > 0 && (
-        <section>
+        <section className="mb-10">
           <h3 className="text-lg font-bold text-slate-900 mb-4">{t.home.verifiedAgencies}</h3>
           <div className="flex gap-6 overflow-x-auto no-scrollbar items-center py-2 -mx-4 px-4">
             {agencies.map((agency) => (
@@ -56,7 +58,7 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
       )}
 
       {/* Hot Deals */}
-      <section>
+      <section className="mt-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-900">{t.home.hotDeals}</h3>
           <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold uppercase animate-pulse">
