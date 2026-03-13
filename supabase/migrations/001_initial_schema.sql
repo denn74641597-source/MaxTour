@@ -242,15 +242,25 @@ CREATE POLICY "Agency owners can update" ON agencies FOR UPDATE USING (owner_id 
 DROP POLICY IF EXISTS "Authenticated users can create agencies" ON agencies;
 CREATE POLICY "Authenticated users can create agencies" ON agencies FOR INSERT WITH CHECK (auth.uid() = owner_id);
 
--- Tours: public can read published, agency owners can manage own
+-- Tours: public can read published, agency owners can manage own, admin can see all
 DROP POLICY IF EXISTS "Published tours are viewable" ON tours;
-CREATE POLICY "Published tours are viewable" ON tours FOR SELECT USING (status = 'published' OR agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
+CREATE POLICY "Published tours are viewable" ON tours FOR SELECT USING (
+  status = 'published'
+  OR agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
 DROP POLICY IF EXISTS "Agency owners can insert tours" ON tours;
 CREATE POLICY "Agency owners can insert tours" ON tours FOR INSERT WITH CHECK (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
 DROP POLICY IF EXISTS "Agency owners can update tours" ON tours;
-CREATE POLICY "Agency owners can update tours" ON tours FOR UPDATE USING (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
+CREATE POLICY "Agency owners can update tours" ON tours FOR UPDATE USING (
+  agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
 DROP POLICY IF EXISTS "Agency owners can delete tours" ON tours;
-CREATE POLICY "Agency owners can delete tours" ON tours FOR DELETE USING (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
+CREATE POLICY "Agency owners can delete tours" ON tours FOR DELETE USING (
+  agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid())
+  OR EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin')
+);
 
 -- Tour images: same as tours
 DROP POLICY IF EXISTS "Tour images are viewable" ON tour_images;

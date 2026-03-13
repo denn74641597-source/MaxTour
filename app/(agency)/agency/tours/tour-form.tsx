@@ -22,6 +22,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
+import { createClient } from '@/lib/supabase/client';
 
 interface TourFormProps {
   initialData?: Partial<TourFormData>;
@@ -91,15 +92,75 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   }
 
   async function onSubmit(data: TourFormData) {
+    const supabase = createClient();
+
+    // Get current user's agency
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error('Not authenticated');
+      return;
+    }
+
+    const { data: agency } = await supabase
+      .from('agencies')
+      .select('id')
+      .eq('owner_id', user.id)
+      .single();
+
+    if (!agency) {
+      toast.error('Agency not found');
+      return;
+    }
+
     const payload = {
-      ...data,
+      title: data.title,
+      slug: data.slug,
+      short_description: data.short_description || null,
+      full_description: data.full_description || null,
+      country: data.country,
+      city: data.city || null,
+      departure_date: data.departure_date || null,
+      return_date: data.return_date || null,
+      duration_days: data.duration_days ? Number(data.duration_days) : null,
+      price: Number(data.price),
+      currency: data.currency || 'USD',
+      seats_total: data.seats_total ? Number(data.seats_total) : null,
+      seats_left: data.seats_left ? Number(data.seats_left) : null,
+      hotel_name: data.hotel_name || null,
+      hotel_stars: data.hotel_stars ? Number(data.hotel_stars) : null,
+      meal_type: data.meal_type || 'none',
+      transport_type: data.transport_type || 'flight',
+      visa_required: data.visa_required || false,
       included_services: includedServices,
       excluded_services: excludedServices,
+      status: data.status || 'draft',
+      agency_id: agency.id,
+      updated_at: new Date().toISOString(),
     };
 
-    // In production, call a server action to create/update the tour
-    console.log(isEditing ? 'Update tour:' : 'Create tour:', payload);
-    toast.success(isEditing ? t.agencyTours.tourUpdated : t.agencyTours.tourCreated);
+    if (isEditing && tourId) {
+      const { error } = await supabase
+        .from('tours')
+        .update(payload)
+        .eq('id', tourId);
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success(t.agencyTours.tourUpdated);
+    } else {
+      const { error } = await supabase
+        .from('tours')
+        .insert(payload);
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+      toast.success(t.agencyTours.tourCreated);
+    }
+
     router.push('/agency/tours');
   }
 

@@ -1,8 +1,8 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 
 /** Admin: get all agencies with approval status */
 export async function getAllAgencies() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { data } = await supabase
     .from('agencies')
     .select('*, owner:profiles(full_name, telegram_username)')
@@ -13,7 +13,7 @@ export async function getAllAgencies() {
 
 /** Admin: get all tours for moderation */
 export async function getAllTours() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { data } = await supabase
     .from('tours')
     .select('*, agency:agencies(id, name, slug)')
@@ -24,7 +24,7 @@ export async function getAllTours() {
 
 /** Admin: approve or reject an agency */
 export async function setAgencyApproval(agencyId: string, approved: boolean) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase
     .from('agencies')
     .update({ is_approved: approved, updated_at: new Date().toISOString() })
@@ -35,7 +35,7 @@ export async function setAgencyApproval(agencyId: string, approved: boolean) {
 
 /** Admin: update tour status (publish/reject) */
 export async function setTourStatus(tourId: string, status: string) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { error } = await supabase
     .from('tours')
     .update({ status, updated_at: new Date().toISOString() })
@@ -46,7 +46,7 @@ export async function setTourStatus(tourId: string, status: string) {
 
 /** Admin: get subscription overview */
 export async function getSubscriptionOverview() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { data: plans } = await supabase
     .from('subscription_plans')
     .select('*')
@@ -62,7 +62,7 @@ export async function getSubscriptionOverview() {
 
 /** Admin: get featured items */
 export async function getFeaturedItems() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { data } = await supabase
     .from('featured_items')
     .select('*, tour:tours(id, title, slug), agency:agencies(id, name, slug)')
@@ -73,7 +73,7 @@ export async function getFeaturedItems() {
 
 /** Admin: dashboard stats */
 export async function getAdminStats() {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
 
   const [agencies, tours, leads, subscriptions] = await Promise.all([
     supabase.from('agencies').select('id', { count: 'exact', head: true }),

@@ -1,6 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -8,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { createClient } from '@/lib/supabase/client';
+import { updateTourStatusAction } from '@/features/admin/actions';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
@@ -19,17 +18,13 @@ interface Props {
 
 export function AdminTourActions({ tourId, currentStatus }: Props) {
   const router = useRouter();
-  const supabase = createClient();
 
   async function handleStatusChange(newStatus: string | null) {
     if (!newStatus) return;
-    const { error } = await supabase
-      .from('tours')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
-      .eq('id', tourId);
+    const result = await updateTourStatusAction(tourId, newStatus);
 
-    if (error) {
-      toast.error('Failed to update status');
+    if (result.error) {
+      toast.error(result.error);
       return;
     }
 
