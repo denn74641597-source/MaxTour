@@ -47,6 +47,10 @@ export const tourSchema = z.object({
   hotel_name: z.string().optional(),
   hotel_stars: z.coerce.number().int().min(1).max(5).optional(),
   hotel_booking_url: z.string().url().optional().or(z.literal('')),
+  hotel_images: z.array(z.string()).default([]),
+  destinations: z.array(z.string()).default([]),
+  airline: z.string().optional().or(z.literal('')),
+  extra_charges: z.array(z.object({ name: z.string(), amount: z.coerce.number() })).default([]),
   meal_type: z
     .enum(['none', 'breakfast', 'half_board', 'full_board', 'all_inclusive'])
     .default('none'),

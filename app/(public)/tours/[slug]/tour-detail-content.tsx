@@ -5,9 +5,11 @@ import Link from 'next/link';
 import {
   MapPin, CalendarDays, Clock, Users,
   ArrowLeft, Share2, Send, Star, BadgeCheck, Check, X, ExternalLink,
+  Plane, DollarSign, Navigation,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
+import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 
 interface TourDetailContentProps {
   tour: any;
@@ -24,6 +26,9 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
   ];
   const includedServices = (tour.included_services as string[]) ?? [];
   const excludedServices = (tour.excluded_services as string[]) ?? [];
+  const hotelImages = (tour.hotel_images as string[]) ?? [];
+  const destinations = (tour.destinations as string[]) ?? [];
+  const extraCharges = (tour.extra_charges as { name: string; amount: number }[]) ?? [];
 
   const telegramLink = agency?.telegram_username
     ? `https://t.me/${agency.telegram_username.replace('@', '')}`
@@ -81,6 +86,20 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                 {tour.country}
               </p>
             </div>
+            {/* Multi-city route */}
+            {destinations.length > 0 && (
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                <Navigation className="h-3.5 w-3.5 text-primary shrink-0" />
+                <div className="flex items-center gap-1 flex-wrap">
+                  {destinations.map((dest: string, i: number) => (
+                    <span key={i} className="text-xs font-medium">
+                      <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{dest}</span>
+                      {i < destinations.length - 1 && <span className="text-slate-400 mx-0.5">→</span>}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="text-right shrink-0">
             <p className="text-primary text-2xl font-bold">${tour.price.toLocaleString()}</p>
@@ -115,6 +134,19 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
           </div>
         )}
       </div>
+
+      {/* Airline */}
+      {tour.airline && (
+        <div className="px-4 mt-4">
+          <div className="bg-blue-50 rounded-xl px-4 py-3 flex items-center gap-3 border border-blue-100">
+            <Plane className="h-5 w-5 text-blue-500" />
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-blue-400">{t.tours.airline}</span>
+              <p className="text-sm font-bold text-slate-900">{tour.airline}</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Agency Profile Card */}
       {agency && (
@@ -201,20 +233,45 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
           </section>
         )}
 
+        {/* Extra Charges */}
+        {extraCharges.length > 0 && (
+          <section>
+            <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.extraCharges}</h3>
+            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+              {extraCharges.map((charge: { name: string; amount: number }, i: number) => (
+                <div key={i} className="flex items-center justify-between px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                      <DollarSign className="h-3.5 w-3.5 text-amber-500" />
+                    </div>
+                    <span className="text-sm text-slate-700">{charge.name}</span>
+                  </div>
+                  <span className="text-sm font-bold text-amber-600">${charge.amount}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Hotel Info */}
         {tour.hotel_name && (
           <section>
             <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.hotelInfo}</h3>
             <div className="rounded-xl overflow-hidden border border-slate-200 bg-white">
-              <div className="h-48 w-full bg-slate-200 relative">
-                <Image
-                  src={allImages[1] || placeholderImage(800, 400, tour.hotel_name)}
-                  alt={tour.hotel_name}
-                  fill
-                  className="object-cover"
-                  sizes="100vw"
-                />
-              </div>
+              {/* Hotel Image Carousel */}
+              {hotelImages.length > 0 ? (
+                <HotelImageCarousel images={hotelImages} hotelName={tour.hotel_name} />
+              ) : (
+                <div className="h-48 w-full bg-slate-200 relative">
+                  <Image
+                    src={allImages[1] || placeholderImage(800, 400, tour.hotel_name)}
+                    alt={tour.hotel_name}
+                    fill
+                    className="object-cover"
+                    sizes="100vw"
+                  />
+                </div>
+              )}
               <div className="p-4">
                 <h4 className="font-bold text-lg text-slate-900">{tour.hotel_name}</h4>
                 {tour.hotel_stars && (

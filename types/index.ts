@@ -82,6 +82,10 @@ export interface Tour {
   hotel_name: string | null;
   hotel_stars: number | null;
   hotel_booking_url: string | null;
+  hotel_images: string[];
+  destinations: string[];
+  airline: string | null;
+  extra_charges: { name: string; amount: number }[];
   meal_type: MealType;
   transport_type: TransportType;
   visa_required: boolean;

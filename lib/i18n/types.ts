@@ -89,6 +89,9 @@ export interface Translations {
     priceRange: string;
     filterDuration: string;
     filterVerified: string;
+    route: string;
+    airline: string;
+    extraCharges: string;
   };
   favorites: {
     title: string;
@@ -220,10 +223,24 @@ export interface Translations {
     hotelNamePlaceholder: string;
     hotelBookingUrl: string;
     hotelBookingUrlPlaceholder: string;
+    hotelImages: string;
+    uploadHotelImage: string;
+    hotelImagesHint: string;
     stars: string;
     mealType: string;
     transport: string;
     visaRequired: string;
+    destinations: string;
+    addDestination: string;
+    destinationPlaceholder: string;
+    destinationsHint: string;
+    airline: string;
+    airlinePlaceholder: string;
+    extraCharges: string;
+    addExtraCharge: string;
+    extraChargeName: string;
+    extraChargeAmount: string;
+    extraChargesHint: string;
     includedServices: string;
     addIncludedService: string;
     excludedServices: string;
