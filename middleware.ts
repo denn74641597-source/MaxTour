@@ -2,19 +2,44 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request);
+  const { supabaseResponse, user, supabase } = await updateSession(request);
   const pathname = request.nextUrl.pathname;
 
-  // Protected routes — redirect to home if not authenticated
-  // In a full implementation, also check roles from the profile
+  // Protected routes — redirect to profile/login if not authenticated
   const protectedPaths = ['/agency', '/admin'];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
   if (isProtected && !user) {
-    // For MVP, allow access without auth so the demo is functional.
-    // In production, uncomment the redirect below:
-    // const loginUrl = new URL('/', request.nextUrl);
-    // return NextResponse.redirect(loginUrl);
+    const loginUrl = new URL('/profile', request.nextUrl);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Admin routes — check role
+  if (pathname.startsWith('/admin') && user && supabase) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role !== 'admin') {
+      const homeUrl = new URL('/', request.nextUrl);
+      return NextResponse.redirect(homeUrl);
+    }
+  }
+
+  // Agency routes — check role
+  if (pathname.startsWith('/agency') && user && supabase) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    if (profile?.role !== 'agency_manager' && profile?.role !== 'admin') {
+      const homeUrl = new URL('/', request.nextUrl);
+      return NextResponse.redirect(homeUrl);
+    }
   }
 
   return supabaseResponse;

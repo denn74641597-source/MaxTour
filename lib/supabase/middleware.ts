@@ -14,7 +14,7 @@ export async function updateSession(request: NextRequest) {
   // If env vars are not available, skip auth and pass through
   if (!url || !key) {
     console.warn('Supabase env vars missing in middleware — skipping auth');
-    return { supabaseResponse, user: null };
+    return { supabaseResponse, user: null, supabase: null };
   }
 
   try {
@@ -40,9 +40,9 @@ export async function updateSession(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
 
-    return { supabaseResponse, user };
+    return { supabaseResponse, user, supabase };
   } catch (error) {
     console.error('Middleware auth error:', error);
-    return { supabaseResponse, user: null };
+    return { supabaseResponse, user: null, supabase: null };
   }
 }
