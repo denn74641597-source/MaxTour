@@ -257,6 +257,8 @@ export const uz: Translations = {
     accommodationTransport: 'Turar joy va transport',
     hotelName: 'Mehmonxona nomi',
     hotelNamePlaceholder: 'Grand Star Hotel',
+    hotelBookingUrl: 'Booking.com havolasi',
+    hotelBookingUrlPlaceholder: 'https://www.booking.com/hotel/...',
     stars: 'Yulduzlar',
     mealType: 'Ovqat turi',
     transport: 'Transport',

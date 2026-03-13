@@ -46,6 +46,7 @@ export const tourSchema = z.object({
   seats_left: z.coerce.number().int().min(0).optional(),
   hotel_name: z.string().optional(),
   hotel_stars: z.coerce.number().int().min(1).max(5).optional(),
+  hotel_booking_url: z.string().url().optional().or(z.literal('')),
   meal_type: z
     .enum(['none', 'breakfast', 'half_board', 'full_board', 'all_inclusive'])
     .default('none'),

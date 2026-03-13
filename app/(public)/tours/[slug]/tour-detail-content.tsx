@@ -3,22 +3,14 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import {
-  MapPin, CalendarDays, Clock, Users, Plane, Car, Hotel,
-  ArrowLeft, Share2, Send, Star, BadgeCheck, X,
+  MapPin, CalendarDays, Clock, Users,
+  ArrowLeft, Share2, Send, Star, BadgeCheck, Check, X, ExternalLink,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
 
 interface TourDetailContentProps {
   tour: any;
-}
-
-function serviceIcon(service: string) {
-  const s = service.toLowerCase();
-  if (s.includes('flight') || s.includes('avia')) return Plane;
-  if (s.includes('hotel') || s.includes('accommodation')) return Hotel;
-  if (s.includes('transfer') || s.includes('transport')) return Car;
-  return Plane;
 }
 
 export function TourDetailContent({ tour }: TourDetailContentProps) {
@@ -178,22 +170,16 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         {/* What's Included */}
         {includedServices.length > 0 && (
           <section>
-            <h3 className="text-lg font-bold mb-4 text-slate-900">{t.tours.whatsIncluded}</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {includedServices.map((service, i) => {
-                const Icon = serviceIcon(service);
-                return (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 bg-white p-3 rounded-lg border border-slate-100"
-                  >
-                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                    <span className="font-medium text-slate-900">{service}</span>
+            <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.whatsIncluded}</h3>
+            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+              {includedServices.map((service, i) => (
+                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                  <div className="size-6 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
                   </div>
-                );
-              })}
+                  <span className="text-sm text-slate-700">{service}</span>
+                </div>
+              ))}
             </div>
           </section>
         )}
@@ -202,14 +188,16 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         {excludedServices.length > 0 && (
           <section>
             <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.whatsExcluded}</h3>
-            <ul className="space-y-2">
+            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
               {excludedServices.map((service, i) => (
-                <li key={i} className="flex items-start gap-2 text-slate-600">
-                  <X className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
-                  <span>{service}</span>
-                </li>
+                <div key={i} className="flex items-center gap-3 px-4 py-3">
+                  <div className="size-6 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                    <X className="h-3.5 w-3.5 text-red-400" />
+                  </div>
+                  <span className="text-sm text-slate-500">{service}</span>
+                </div>
               ))}
-            </ul>
+            </div>
           </section>
         )}
 
@@ -240,6 +228,17 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                   <p className="text-sm text-slate-600 leading-relaxed">
                     {tour.short_description}
                   </p>
+                )}
+                {tour.hotel_booking_url && (
+                  <a
+                    href={tour.hotel_booking_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 mt-3 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Booking.com
+                  </a>
                 )}
               </div>
             </div>

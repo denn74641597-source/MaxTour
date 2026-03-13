@@ -129,6 +129,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       seats_left: data.seats_left ? Number(data.seats_left) : null,
       hotel_name: data.hotel_name || null,
       hotel_stars: data.hotel_stars ? Number(data.hotel_stars) : null,
+      hotel_booking_url: data.hotel_booking_url || null,
       meal_type: data.meal_type || 'none',
       transport_type: data.transport_type || 'flight',
       visa_required: data.visa_required || false,
@@ -294,6 +295,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               <Label htmlFor="hotel_stars">{t.agencyTours.stars}</Label>
               <Input id="hotel_stars" type="number" min={1} max={5} {...register('hotel_stars')} />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="hotel_booking_url">{t.agencyTours.hotelBookingUrl}</Label>
+            <Input id="hotel_booking_url" placeholder={t.agencyTours.hotelBookingUrlPlaceholder} {...register('hotel_booking_url')} />
           </div>
 
           <div className="grid grid-cols-2 gap-3">

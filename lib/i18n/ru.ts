@@ -257,6 +257,8 @@ export const ru: Translations = {
     accommodationTransport: 'Проживание и транспорт',
     hotelName: 'Название отеля',
     hotelNamePlaceholder: 'Grand Star Hotel',
+    hotelBookingUrl: 'Ссылка на Booking.com',
+    hotelBookingUrlPlaceholder: 'https://www.booking.com/hotel/...',
     stars: 'Звёзды',
     mealType: 'Тип питания',
     transport: 'Транспорт',

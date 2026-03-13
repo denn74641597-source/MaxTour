@@ -95,6 +95,7 @@ CREATE TABLE IF NOT EXISTS tours (
   seats_left integer,
   hotel_name text,
   hotel_stars integer CHECK (hotel_stars IS NULL OR (hotel_stars >= 1 AND hotel_stars <= 5)),
+  hotel_booking_url text,
   meal_type text NOT NULL DEFAULT 'none' CHECK (meal_type IN ('none', 'breakfast', 'half_board', 'full_board', 'all_inclusive')),
   transport_type text NOT NULL DEFAULT 'flight' CHECK (transport_type IN ('flight', 'bus', 'train', 'self', 'mixed')),
   visa_required boolean NOT NULL DEFAULT false,

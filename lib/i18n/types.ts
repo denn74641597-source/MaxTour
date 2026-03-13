@@ -218,6 +218,8 @@ export interface Translations {
     accommodationTransport: string;
     hotelName: string;
     hotelNamePlaceholder: string;
+    hotelBookingUrl: string;
+    hotelBookingUrlPlaceholder: string;
     stars: string;
     mealType: string;
     transport: string;
