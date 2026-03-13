@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ImageUploader } from '@/components/shared/image-uploader';
+import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
 import { Loader2, MapPin, Plus, X } from 'lucide-react';
@@ -435,31 +436,13 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
           <div className="space-y-2">
             <Label>{t.agencyTours.hotelImages}</Label>
             <p className="text-xs text-muted-foreground">{t.agencyTours.hotelImagesHint}</p>
-            <div className="grid grid-cols-2 gap-3">
-              {hotelImages.map((url, i) => (
-                <div key={i} className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={url} alt={`Hotel ${i + 1}`} className="w-full h-full object-cover" />
-                  <button
-                    type="button"
-                    onClick={() => setHotelImages((prev) => prev.filter((_, idx) => idx !== i))}
-                    className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              ))}
-              {hotelImages.length < 4 && (
-                <ImageUploader
-                  value=""
-                  onChange={(url) => {
-                    if (url) setHotelImages((prev) => [...prev, url]);
-                  }}
-                  label={t.agencyTours.uploadHotelImage}
-                  folder="hotels"
-                />
-              )}
-            </div>
+            <MultiImageUploader
+              values={hotelImages}
+              onChange={setHotelImages}
+              maxImages={4}
+              label={t.agencyTours.uploadHotelImage}
+              folder="hotels"
+            />
           </div>
 
           {/* Airline (optional) */}
