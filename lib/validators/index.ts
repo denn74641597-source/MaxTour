@@ -23,6 +23,7 @@ export const agencyProfileSchema = z.object({
   address: z.string().optional(),
   city: z.string().optional(),
   country: z.string().optional(),
+  google_maps_url: z.string().url('Enter a valid URL').optional().or(z.literal('')),
 });
 
 export type AgencyProfileData = z.infer<typeof agencyProfileSchema>;
@@ -52,6 +53,7 @@ export const tourSchema = z.object({
   return_date: z.string().optional(),
   duration_days: z.coerce.number().int().positive().optional(),
   price: z.coerce.number().positive('Price must be greater than 0'),
+  old_price: z.coerce.number().positive().optional(),
   currency: z.enum(['USD', 'UZS', 'EUR']).default('USD'),
   seats_total: z.coerce.number().int().positive().optional(),
   seats_left: z.coerce.number().int().min(0).optional(),

@@ -17,11 +17,11 @@ import {
   MessageCircle,
   Globe,
   Instagram,
-  BadgeCheck,
   Building2,
   Clock,
   ShieldCheck,
   X,
+  ExternalLink,
 } from 'lucide-react';
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
@@ -29,6 +29,7 @@ import { useTranslation } from '@/lib/i18n';
 import { upsertAgencyProfileAction, getMyAgencyAction } from '@/features/agencies/actions';
 import Image from 'next/image';
 import { placeholderImage } from '@/lib/utils';
+import { VerifiedBadge } from '@/components/shared/verified-badge';
 import type { Agency } from '@/types';
 
 type PageMode = 'loading' | 'form' | 'view';
@@ -68,6 +69,7 @@ export default function AgencyProfilePage() {
         address: data.address ?? '',
         city: data.city ?? '',
         country: data.country ?? 'Uzbekistan',
+        google_maps_url: data.google_maps_url ?? '',
       });
       setMode('view');
     } else {
@@ -92,6 +94,7 @@ export default function AgencyProfilePage() {
         address: agency.address ?? '',
         city: agency.city ?? '',
         country: agency.country ?? 'Uzbekistan',
+        google_maps_url: agency.google_maps_url ?? '',
       });
       setLogoUrl(agency.logo_url ?? '');
     }
@@ -111,6 +114,7 @@ export default function AgencyProfilePage() {
       address: data.address || null,
       city: data.city || null,
       country: data.country || 'Uzbekistan',
+      google_maps_url: data.google_maps_url || null,
     });
     if (result.error) {
       toast.error(result.error);
@@ -171,7 +175,7 @@ export default function AgencyProfilePage() {
             <div className="flex items-center gap-1.5 mb-1">
               <h1 className="text-xl font-bold">{agency.name}</h1>
               {agency.is_verified && (
-                <BadgeCheck className="h-5 w-5 text-blue-500 fill-blue-500" />
+                <VerifiedBadge className="h-5 w-5" />
               )}
             </div>
 
@@ -198,7 +202,7 @@ export default function AgencyProfilePage() {
               )}
               {agency.is_verified && (
                 <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                  <BadgeCheck className="h-3.5 w-3.5" />
+                  <VerifiedBadge size="sm" className="text-blue-700 h-3.5 w-3.5" />
                   {t.agencyView.verified}
                 </span>
               )}
@@ -228,18 +232,18 @@ export default function AgencyProfilePage() {
               <Phone className="h-4 w-4 text-primary" />
               {t.agencyProfileForm.contactInfo}
             </h3>
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-2.5">
               {agency.phone && (
                 <a
                   href={`tel:${agency.phone}`}
-                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center shrink-0">
-                    <Phone className="h-4 w-4 text-green-600" />
+                  <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <Phone className="h-3.5 w-3.5 text-green-600" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t.agencyProfileForm.phone}</p>
-                    <p className="text-sm font-medium">{agency.phone}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfileForm.phone}</p>
+                    <p className="text-xs font-medium truncate">{agency.phone}</p>
                   </div>
                 </a>
               )}
@@ -248,14 +252,14 @@ export default function AgencyProfilePage() {
                   href={telegramLink!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                    <MessageCircle className="h-4 w-4 text-blue-600" />
+                  <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <MessageCircle className="h-3.5 w-3.5 text-blue-600" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t.agencyProfileForm.telegram}</p>
-                    <p className="text-sm font-medium">{agency.telegram_username}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfileForm.telegram}</p>
+                    <p className="text-xs font-medium truncate">{agency.telegram_username}</p>
                   </div>
                 </a>
               )}
@@ -264,14 +268,14 @@ export default function AgencyProfilePage() {
                   href={agency.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
-                    <Instagram className="h-4 w-4 text-pink-600" />
+                  <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
+                    <Instagram className="h-3.5 w-3.5 text-pink-600" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Instagram</p>
-                    <p className="text-sm font-medium truncate">{agency.instagram_url.replace('https://instagram.com/', '@')}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">Instagram</p>
+                    <p className="text-xs font-medium truncate">{agency.instagram_url.replace('https://instagram.com/', '@')}</p>
                   </div>
                 </a>
               )}
@@ -280,19 +284,19 @@ export default function AgencyProfilePage() {
                   href={agency.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
-                  <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
-                    <Globe className="h-4 w-4 text-purple-600" />
+                  <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                    <Globe className="h-3.5 w-3.5 text-purple-600" />
                   </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">{t.agencyProfileForm.website}</p>
-                    <p className="text-sm font-medium truncate">{agency.website_url.replace(/^https?:\/\//, '')}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfileForm.website}</p>
+                    <p className="text-xs font-medium truncate">{agency.website_url.replace(/^https?:\/\//, '')}</p>
                   </div>
                 </a>
               )}
               {!agency.phone && !agency.telegram_username && !agency.instagram_url && !agency.website_url && (
-                <p className="text-sm text-muted-foreground py-2">{t.agencyView.noContactInfo}</p>
+                <p className="text-sm text-muted-foreground py-2 col-span-2">{t.agencyView.noContactInfo}</p>
               )}
             </div>
           </CardContent>
@@ -310,12 +314,22 @@ export default function AgencyProfilePage() {
                 <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
                   <MapPin className="h-4 w-4 text-orange-600" />
                 </div>
-                <div>
+                <div className="flex-1">
                   {agency.address && <p className="text-sm font-medium">{agency.address}</p>}
                   <p className="text-sm text-muted-foreground">
                     {[agency.city, agency.country].filter(Boolean).join(', ')}
                   </p>
                 </div>
+                {agency.google_maps_url && (
+                  <a
+                    href={agency.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="shrink-0 w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center hover:bg-blue-200 transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4 text-blue-600" />
+                  </a>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -327,10 +341,6 @@ export default function AgencyProfilePage() {
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <Clock className="h-3.5 w-3.5" />
               <span>{t.agencyView.memberSince}: {createdDate}</span>
-            </div>
-            <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
-              <Globe className="h-3.5 w-3.5" />
-              <span>maxtour.uz/agencies/{agency.slug}</span>
             </div>
           </CardContent>
         </Card>
@@ -447,6 +457,10 @@ export default function AgencyProfilePage() {
                 <Label htmlFor="country">{t.agencyProfileForm.country}</Label>
                 <Input id="country" {...register('country')} />
               </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="google_maps_url">{t.agencyProfileForm.googleMapsUrl}</Label>
+              <Input id="google_maps_url" placeholder={t.agencyProfileForm.googleMapsUrlPlaceholder} {...register('google_maps_url')} />
             </div>
           </CardContent>
         </Card>

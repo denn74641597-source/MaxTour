@@ -8,7 +8,7 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
 
   let query = supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified)')
+    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
     .eq('status', 'published');
 
   if (filters?.search) {
@@ -56,7 +56,7 @@ export const getTourBySlug = cache(async (slug: string): Promise<Tour | null> =>
   const { data, error } = await supabase
     .from('tours')
     .select(
-      '*, agency:agencies(id, name, slug, logo_url, is_verified, phone, telegram_username), images:tour_images(id, image_url, sort_order)'
+      '*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved, phone, telegram_username), images:tour_images(id, image_url, sort_order)'
     )
     .eq('slug', slug)
     .eq('status', 'published')
@@ -74,7 +74,7 @@ export async function getFeaturedTours(): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified)')
+    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
     .eq('status', 'published')
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
@@ -109,7 +109,7 @@ export async function getSimilarTours(tour: Tour, limit = 4): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified)')
+    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
     .eq('status', 'published')
     .eq('country', tour.country)
     .neq('id', tour.id)

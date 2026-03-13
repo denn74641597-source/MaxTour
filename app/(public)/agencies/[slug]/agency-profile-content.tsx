@@ -2,8 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, BadgeCheck, ChevronRight } from 'lucide-react';
+import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
+import { hapticFeedback } from '@/lib/telegram';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
@@ -43,12 +44,13 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
     <div className="bg-white min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
-        <button onClick={() => router.back()} className="p-1">
+        <button onClick={() => { hapticFeedback('light'); router.back(); }} className="p-1">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h2 className="font-semibold text-sm">{t.agencyProfile.title}</h2>
         <button
           onClick={() => {
+            hapticFeedback('light');
             if (navigator.share) {
               navigator.share({ title: agency.name, url: window.location.href });
             }
@@ -148,7 +150,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
+              onClick={() => { hapticFeedback('light'); setActiveTab(tab.key); }}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors relative ${
                 activeTab === tab.key
                   ? 'text-primary'
@@ -234,10 +236,20 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
                   <MapPin className="h-5 w-5 text-red-500" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-xs text-muted-foreground">{t.agencyProfile.location}</p>
                   <p className="text-sm font-medium">{agency.address}{agency.city ? `, ${agency.city}` : ''}, {agency.country}</p>
                 </div>
+                {agency.google_maps_url && (
+                  <a
+                    href={agency.google_maps_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm hover:bg-slate-100 transition-colors"
+                  >
+                    <ExternalLink className="h-4 w-4 text-primary" />
+                  </a>
+                )}
               </div>
             )}
 
@@ -315,7 +327,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
         <div className="px-4 pb-6">
           <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shrink-0 mt-0.5">
-              <BadgeCheck className="h-5 w-5 text-white" />
+              <VerifiedBadge className="text-white h-5 w-5" />
             </div>
             <div>
               <p className="font-semibold text-sm text-green-900">{t.agencyProfile.verifiedByMaxTour}</p>
@@ -348,7 +360,7 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
           />
           <button
             className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full"
-            onClick={(e) => e.preventDefault()}
+            onClick={(e) => { e.preventDefault(); hapticFeedback('light'); }}
           >
             <Heart className="h-4 w-4 text-slate-600" />
           </button>
@@ -384,6 +396,9 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
           </div>
           <div className="flex items-center justify-between">
             <div>
+              {tour.old_price && (
+                <span className="text-xs text-muted-foreground line-through mr-1">${tour.old_price.toLocaleString()}</span>
+              )}
               <span className="text-xs text-muted-foreground">{t.common.from} </span>
               <span className="text-lg font-bold text-primary">${tour.price.toLocaleString()}</span>
               <span className="text-xs text-muted-foreground"> / {t.common.perPerson}</span>

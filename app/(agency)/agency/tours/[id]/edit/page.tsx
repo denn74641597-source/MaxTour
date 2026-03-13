@@ -38,6 +38,7 @@ export default async function EditTourPage({ params }: Props) {
         seats_left: tour.seats_left ?? undefined,
         hotel_name: tour.hotel_name ?? undefined,
         hotel_stars: tour.hotel_stars ?? undefined,
+        old_price: tour.old_price ?? undefined,
         hotel_booking_url: tour.hotel_booking_url ?? undefined,
         hotel_images: tour.hotel_images ?? [],
         hotels: tour.hotels ?? [],

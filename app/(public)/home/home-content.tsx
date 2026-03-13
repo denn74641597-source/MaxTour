@@ -24,7 +24,7 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
   const hotDeals = recentTours.slice(0, 6);
 
   return (
-    <div className="px-4 space-y-6">
+    <div className="px-4 space-y-8 pb-6">
       {/* Search Bar */}
       <div className="mt-2">
         <Suspense>

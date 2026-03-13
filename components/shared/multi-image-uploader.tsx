@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import { ImageIcon, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { hapticFeedback } from '@/lib/telegram';
 import { useTranslation } from '@/lib/i18n';
 import { uploadImageAction } from '@/features/upload/actions';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
@@ -109,7 +110,7 @@ export function MultiImageUploader({
             <img src={url} alt={`Image ${i + 1}`} className="w-full h-full object-cover" />
             <button
               type="button"
-              onClick={() => handleRemove(i)}
+              onClick={() => { hapticFeedback('light'); handleRemove(i); }}
               className="absolute top-1.5 right-1.5 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
             >
               <X className="h-3 w-3" />
@@ -119,7 +120,7 @@ export function MultiImageUploader({
         {remaining > 0 && (
           <button
             type="button"
-            onClick={() => inputRef.current?.click()}
+            onClick={() => { hapticFeedback('light'); inputRef.current?.click(); }}
             disabled={uploading}
             className="aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 flex flex-col items-center justify-center gap-2 hover:border-muted-foreground/50 transition-colors disabled:opacity-50"
           >

@@ -2,9 +2,12 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Star, BadgeCheck } from 'lucide-react';
+import { Heart, Star, ShieldAlert } from 'lucide-react';
+import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { placeholderImage } from '@/lib/utils';
+import { hapticFeedback } from '@/lib/telegram';
 import { useTranslation } from '@/lib/i18n';
+import { useFavorites } from '@/hooks/use-favorites';
 import type { Tour, TourHotel } from '@/types';
 
 interface TourCardCatalogProps {
@@ -22,13 +25,16 @@ function getMaxHotelStars(tour: Tour): number | null {
 
 export function TourCardCatalog({ tour }: TourCardCatalogProps) {
   const { t } = useTranslation();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
+  const isApproved = tour.agency?.is_approved ?? false;
   const nightsText = tour.duration_days
     ? `${tour.duration_days} ${tour.duration_days > 1 ? t.common.nights : t.common.night}`
     : null;
   const location = [tour.city, tour.country].filter(Boolean).join(', ');
   const maxStars = getMaxHotelStars(tour);
+  const liked = isFavorite(tour.id);
 
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
@@ -44,10 +50,30 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
 
         {/* Favorite button */}
         <div className="absolute top-3 right-3">
-          <button className="p-2 bg-white/90 backdrop-blur rounded-full text-slate-900 shadow-lg hover:bg-white transition-colors">
-            <Heart className="h-5 w-5" />
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); hapticFeedback('light'); toggleFavorite(tour.id); }}
+            className="p-2 bg-white/90 backdrop-blur rounded-full text-slate-900 shadow-lg hover:bg-white transition-colors"
+          >
+            <Heart className={`h-5 w-5 ${liked ? 'text-red-500 fill-red-500' : ''}`} />
           </button>
         </div>
+
+        {/* Verified / Unverified badge */}
+        {isVerified && (
+          <div className="absolute top-3 left-3">
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
+              <VerifiedBadge size="sm" className="text-white h-3 w-3" />
+              {t.common.verified}
+            </span>
+          </div>
+        )}
+        {!isVerified && isApproved && (
+          <div className="absolute top-3 left-3">
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
+              <ShieldAlert className="h-3 w-3" />
+            </span>
+          </div>
+        )}
 
         {/* Featured badge */}
         {tour.is_featured && (
@@ -84,13 +110,18 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         <div className="flex items-center gap-2 mb-4">
           <span className="text-xs text-slate-400">{t.common.by}</span>
           <span className="text-xs font-semibold text-slate-700">{agencyName}</span>
-          {isVerified && <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />}
+          {isVerified && <VerifiedBadge size="sm" />}
         </div>
 
         {/* Price + CTA */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
           <div>
             <span className="text-xs text-slate-400 block">{t.common.from}</span>
+            {tour.old_price && tour.old_price > tour.price && (
+              <span className="text-xs text-slate-400 line-through mr-1">
+                ${tour.old_price.toLocaleString()}
+              </span>
+            )}
             <span className="text-xl font-bold text-primary">
               ${tour.price.toLocaleString()}
             </span>

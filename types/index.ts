@@ -34,6 +34,7 @@ export interface Agency {
   address: string | null;
   city: string | null;
   country: string;
+  google_maps_url: string | null;
   is_verified: boolean;
   is_approved: boolean;
   created_at: string;
@@ -85,6 +86,7 @@ export interface Tour {
   return_date: string | null;
   duration_days: number | null;
   price: number;
+  old_price: number | null;
   currency: Currency;
   seats_total: number | null;
   seats_left: number | null;

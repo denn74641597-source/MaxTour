@@ -86,7 +86,7 @@ export function TourCard({ tour, compact }: TourCardProps) {
           </div>
 
           <div className="flex items-center justify-between pt-1">
-            <PriceBlock price={tour.price} currency={tour.currency} />
+            <PriceBlock price={tour.price} currency={tour.currency} originalPrice={tour.old_price ?? undefined} />
             <div className="flex items-center gap-1 text-xs text-muted-foreground">
               <span className="truncate max-w-[80px]">{agencyName}</span>
               {isVerified && <VerifiedBadge size="sm" />}

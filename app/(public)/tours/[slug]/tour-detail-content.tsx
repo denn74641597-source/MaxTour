@@ -4,12 +4,14 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   MapPin, CalendarDays, Clock, Users,
-  ArrowLeft, Share2, Send, Star, BadgeCheck, Check, X,
+  ArrowLeft, Share2, Send, Star, Check, X,
   Plane, DollarSign, Navigation, Hotel,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
+import { VerifiedBadge } from '@/components/shared/verified-badge';
+import { hapticFeedback } from '@/lib/telegram';
 import type { TourHotel } from '@/types';
 
 interface TourDetailContentProps {
@@ -104,6 +106,9 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
             )}
           </div>
           <div className="text-right shrink-0">
+            {tour.old_price && (
+              <p className="text-slate-400 text-xs line-through">${tour.old_price.toLocaleString()}</p>
+            )}
             <p className="text-primary text-xl font-bold">${tour.price.toLocaleString()}</p>
             <p className="text-slate-500 text-xs">{t.common.perPerson}</p>
           </div>
@@ -168,7 +173,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                 <div className="flex items-center gap-1">
                   <h4 className="font-bold text-slate-900">{agency.name}</h4>
                   {agency.is_verified && (
-                    <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />
+                    <VerifiedBadge />
                   )}
                 </div>
                 {agency.rating && (

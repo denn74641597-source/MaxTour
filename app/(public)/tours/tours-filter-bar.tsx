@@ -1,8 +1,10 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { ChevronDown, BadgeCheck } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
+import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { cn } from '@/lib/utils';
+import { hapticFeedback } from '@/lib/telegram';
 import { useTranslation } from '@/lib/i18n';
 
 export function ToursFilterBar() {
@@ -15,7 +17,7 @@ export function ToursFilterBar() {
     { key: 'all', label: t.tours.allDestinations },
     { key: 'price', label: t.tours.priceRange, hasDropdown: true },
     { key: 'duration', label: t.tours.filterDuration, hasDropdown: true },
-    { key: 'verified', label: t.tours.filterVerified, icon: BadgeCheck },
+    { key: 'verified', label: t.tours.filterVerified, icon: VerifiedBadge },
   ] as const;
 
   function handleFilter(key: string) {
@@ -51,7 +53,7 @@ export function ToursFilterBar() {
         return (
           <button
             key={chip.key}
-            onClick={() => handleFilter(chip.key)}
+            onClick={() => { hapticFeedback('light'); handleFilter(chip.key); }}
             className={cn(
               'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0',
               isActive

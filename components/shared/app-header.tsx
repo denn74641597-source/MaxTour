@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Compass, CircleUserRound } from 'lucide-react';
+import { Compass } from 'lucide-react';
 import { LanguageSwitcher } from './language-switcher';
 
 export function AppHeader() {
@@ -14,9 +14,6 @@ export function AppHeader() {
         </Link>
         <div className="flex items-center gap-2">
           <LanguageSwitcher variant="dropdown" />
-          <button className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
-            <CircleUserRound className="h-6 w-6 text-slate-600" />
-          </button>
         </div>
       </div>
     </header>

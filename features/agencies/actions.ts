@@ -14,6 +14,7 @@ export async function upsertAgencyProfileAction(payload: {
   address: string | null;
   city: string | null;
   country: string;
+  google_maps_url: string | null;
 }) {
   const supabase = await createServerSupabaseClient();
 

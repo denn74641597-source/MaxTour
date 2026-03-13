@@ -90,3 +90,13 @@ export function initTelegramApp() {
     webapp.expand();
   }
 }
+
+/** Trigger haptic impact feedback (vibration) */
+export function hapticFeedback(style: 'light' | 'medium' | 'heavy' = 'light') {
+  getTelegramWebApp()?.HapticFeedback.impactOccurred(style);
+}
+
+/** Trigger haptic notification feedback */
+export function hapticNotification(type: 'error' | 'success' | 'warning') {
+  getTelegramWebApp()?.HapticFeedback.notificationOccurred(type);
+}

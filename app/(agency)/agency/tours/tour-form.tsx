@@ -23,6 +23,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
+import { hapticFeedback } from '@/lib/telegram';
 import { createClient } from '@/lib/supabase/client';
 import type { TourHotel } from '@/types';
 
@@ -170,6 +171,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       return_date: data.return_date || null,
       duration_days: data.duration_days ? Number(data.duration_days) : null,
       price: hotels.length > 0 ? hotels[0].price : Number(data.price),
+      old_price: data.old_price ? Number(data.old_price) : null,
       currency: data.currency || 'USD',
       seats_total: data.seats_total ? Number(data.seats_total) : null,
       seats_left: data.seats_left ? Number(data.seats_left) : null,
@@ -292,7 +294,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                     <span>{dest}</span>
                     <button
                       type="button"
-                      onClick={() => removeDestination(i)}
+                      onClick={() => { hapticFeedback('light'); removeDestination(i); }}
                       className="ml-0.5 hover:bg-primary/20 rounded-full p-0.5"
                     >
                       <X className="h-3 w-3" />
@@ -346,6 +348,13 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
             </div>
             <div className="space-y-1.5">
+              <Label htmlFor="old_price">{t.agencyTours.oldPrice}</Label>
+              <Input id="old_price" type="number" min={0} step="0.01" placeholder="1200" {...register('old_price')} />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
               <Label>{t.agencyTours.currency}</Label>
               <Select defaultValue={initialData?.currency || 'USD'} onValueChange={(v) => setValue('currency', v as 'USD' | 'UZS' | 'EUR')}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
@@ -383,7 +392,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 <div key={i} className="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2 text-sm">
                   <span className="flex-1 font-medium text-slate-700">{charge.name}</span>
                   <span className="text-amber-700 font-bold">${charge.amount}</span>
-                  <button type="button" onClick={() => removeExtraCharge(i)} className="text-red-400 hover:text-red-500">
+                  <button type="button" onClick={() => { hapticFeedback('light'); removeExtraCharge(i); }} className="text-red-400 hover:text-red-500">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -443,7 +452,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 </div>
                 <button
                   type="button"
-                  onClick={() => setHotels((prev) => prev.filter((_, i) => i !== hotelIndex))}
+                  onClick={() => { hapticFeedback('light'); setHotels((prev) => prev.filter((_, i) => i !== hotelIndex)); }}
                   className="text-red-400 hover:text-red-500 text-xs"
                 >
                   {t.tours.removeHotel}
@@ -471,6 +480,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                         key={star}
                         type="button"
                         onClick={() => {
+                          hapticFeedback('light');
                           const updated = [...hotels];
                           updated[hotelIndex] = { ...hotel, stars: star };
                           setHotels(updated);
@@ -603,7 +613,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               <div key={i} className="flex items-center gap-2 text-sm">
                 <span className="text-emerald-500">✓</span>
                 <span className="flex-1">{s}</span>
-                <button type="button" onClick={() => removeService('included', i)} className="text-red-400 text-xs">{t.common.remove}</button>
+                <button type="button" onClick={() => { hapticFeedback('light'); removeService('included', i); }} className="text-red-400 text-xs">{t.common.remove}</button>
               </div>
             ))}
             <div className="flex gap-2">
@@ -623,7 +633,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               <div key={i} className="flex items-center gap-2 text-sm">
                 <span className="text-red-400">✕</span>
                 <span className="flex-1">{s}</span>
-                <button type="button" onClick={() => removeService('excluded', i)} className="text-red-400 text-xs">{t.common.remove}</button>
+                <button type="button" onClick={() => { hapticFeedback('light'); removeService('excluded', i); }} className="text-red-400 text-xs">{t.common.remove}</button>
               </div>
             ))}
             <div className="flex gap-2">

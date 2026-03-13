@@ -121,6 +121,7 @@ export interface Translations {
     about: string;
     aboutAgency: string;
     location: string;
+    viewOnMap: string;
     verifiedByMaxTour: string;
     verifiedDescription: string;
   };
@@ -222,6 +223,7 @@ export interface Translations {
     durationDays: string;
     pricingAvailability: string;
     price: string;
+    oldPrice: string;
     currency: string;
     totalSeats: string;
     seatsLeft: string;
@@ -310,6 +312,8 @@ export interface Translations {
     city: string;
     cityPlaceholder: string;
     country: string;
+    googleMapsUrl: string;
+    googleMapsUrlPlaceholder: string;
     saveProfile: string;
     profileSaved: string;
   };

@@ -1,6 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
+import { hapticFeedback } from '@/lib/telegram';
 import { TOUR_CATEGORIES } from '@/types';
 import { useTranslation } from '@/lib/i18n';
 import {
@@ -37,7 +38,7 @@ export function FilterChips({ selected, onSelect }: FilterChipsProps) {
         return (
           <button
             key={cat}
-            onClick={() => onSelect(isActive ? undefined : cat)}
+            onClick={() => { hapticFeedback('light'); onSelect(isActive ? undefined : cat); }}
             className={cn(
               'flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-sm font-medium transition-colors',
               isActive

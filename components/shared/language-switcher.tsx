@@ -3,6 +3,7 @@
 import { useTranslation } from '@/lib/i18n';
 import { LANGUAGES, LANGUAGE_LABELS, LANGUAGE_FLAGS } from '@/lib/i18n';
 import { cn } from '@/lib/utils';
+import { hapticFeedback } from '@/lib/telegram';
 import type { Language } from '@/lib/i18n';
 
 interface LanguageSwitcherProps {
@@ -19,7 +20,7 @@ export function LanguageSwitcher({ className, variant = 'toggle' }: LanguageSwit
         {LANGUAGES.map((lang) => (
           <button
             key={lang}
-            onClick={() => setLanguage(lang as Language)}
+            onClick={() => { hapticFeedback('light'); setLanguage(lang as Language); }}
             className={cn(
               'flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all',
               language === lang
@@ -39,7 +40,7 @@ export function LanguageSwitcher({ className, variant = 'toggle' }: LanguageSwit
   const nextLang = language === 'uz' ? 'ru' : 'uz';
   return (
     <button
-      onClick={() => setLanguage(nextLang)}
+      onClick={() => { hapticFeedback('light'); setLanguage(nextLang); }}
       className={cn(
         'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 transition-colors',
         className
