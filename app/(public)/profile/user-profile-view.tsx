@@ -273,7 +273,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
       {/* Logout Button */}
       <Button
         variant="outline"
-        className="w-full text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
+        className="w-full mt-4 text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
         onClick={handleLogout}
         disabled={loggingOut}
       >

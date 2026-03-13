@@ -26,28 +26,28 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
   return (
     <div className="px-4 pb-6">
       {/* Search Bar */}
-      <div className="mt-2 mb-5">
+      <div className="mt-2 mb-4">
         <Suspense>
           <SearchBar />
         </Suspense>
       </div>
 
       {/* Quick Filter Chips */}
-      <div className="mb-8">
+      <div className="mb-6">
         <Suspense>
           <HomeFilterChipsClient />
         </Suspense>
       </div>
 
       {/* Hero Banner */}
-      {heroTour && <div className="mb-10"><HeroBanner tour={heroTour} /></div>}
+      {heroTour && <div className="mb-6"><HeroBanner tour={heroTour} /></div>}
 
       {/* Popular Destinations — will show when destinations data is available */}
-      <div className="mb-10"><PopularDestinations /></div>
+      <div className="mb-6"><PopularDestinations /></div>
 
       {/* Verified Agencies */}
       {agencies.length > 0 && (
-        <section className="mb-10">
+        <section className="mb-6">
           <h3 className="text-lg font-bold text-slate-900 mb-4">{t.home.verifiedAgencies}</h3>
           <div className="flex gap-6 overflow-x-auto no-scrollbar items-center py-2 -mx-4 px-4">
             {agencies.map((agency) => (
@@ -58,7 +58,7 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
       )}
 
       {/* Hot Deals */}
-      <section className="mt-10">
+      <section>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-slate-900">{t.home.hotDeals}</h3>
           <span className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded font-bold uppercase animate-pulse">
