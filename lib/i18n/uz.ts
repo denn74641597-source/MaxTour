@@ -112,6 +112,7 @@ export const uz: Translations = {
 
   // ─── Agency Public Profile ───
   agencyProfile: {
+    title: 'Agentlik profili',
     telegram: 'Telegram',
     call: 'Qo\'ng\'iroq',
     instagram: 'Instagram',
@@ -122,6 +123,11 @@ export const uz: Translations = {
     noActiveToursHint: 'Ushbu agentlikda hozirda e\'lon qilingan turlar mavjud emas.',
     reviews: 'Sharhlar',
     noReviews: 'Hali sharhlar yo\'q.',
+    rating: 'Reyting',
+    about: 'Haqida',
+    aboutAgency: 'Agentlik haqida',
+    verifiedByMaxTour: 'MaxTour tomonidan tasdiqlangan',
+    verifiedDescription: 'Ushbu agentlik MaxTour tomonidan tekshirilgan va tasdiqlangan. Sizning to\'lovlaringiz himoyalangan.',
   },
 
   // ─── Lead Form ───

@@ -97,6 +97,7 @@ export interface Translations {
     browseTours: string;
   };
   agencyProfile: {
+    title: string;
     telegram: string;
     call: string;
     instagram: string;
@@ -107,6 +108,11 @@ export interface Translations {
     noActiveToursHint: string;
     reviews: string;
     noReviews: string;
+    rating: string;
+    about: string;
+    aboutAgency: string;
+    verifiedByMaxTour: string;
+    verifiedDescription: string;
   };
   leadForm: {
     fullName: string;

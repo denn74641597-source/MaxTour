@@ -2,151 +2,356 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { MapPin, Phone, MessageCircle, Globe, Instagram, Star } from 'lucide-react';
-import { buttonVariants } from '@/components/ui/button';
+import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, BadgeCheck, ChevronRight } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { SectionHeader } from '@/components/shared/section-header';
-import { TourCard } from '@/components/shared/tour-card';
-import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { useState } from 'react';
+import type { Agency, Tour, Review } from '@/types';
 
 interface AgencyProfileContentProps {
-  agency: any;
-  tours: any[];
-  reviews: any[];
+  agency: Agency;
+  tours: Tour[];
+  reviews: Review[];
 }
+
+type TabKey = 'tours' | 'reviews' | 'about';
 
 export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileContentProps) {
   const { t } = useTranslation();
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabKey>('tours');
 
   const telegramLink = agency.telegram_username
     ? `https://t.me/${agency.telegram_username.replace('@', '')}`
     : null;
 
+  // Calculate average rating from reviews
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+    : null;
+
+  const tabs: { key: TabKey; label: string }[] = [
+    { key: 'tours', label: t.agencyProfile.activeTours },
+    { key: 'reviews', label: t.agencyProfile.reviews },
+    { key: 'about', label: t.agencyProfile.about },
+  ];
+
   return (
-    <div className="px-4 py-6 space-y-6">
-      {/* Agency Header */}
-      <div className="flex items-center gap-4">
-        <div className="relative h-16 w-16 rounded-full overflow-hidden bg-muted">
+    <div className="bg-white min-h-screen">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
+        <button onClick={() => router.back()} className="p-1">
+          <ArrowLeft className="h-5 w-5" />
+        </button>
+        <h2 className="font-semibold text-sm">{t.agencyProfile.title}</h2>
+        <button
+          onClick={() => {
+            if (navigator.share) {
+              navigator.share({ title: agency.name, url: window.location.href });
+            }
+          }}
+          className="p-1"
+        >
+          <Share2 className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Logo + Name + Description */}
+      <div className="flex flex-col items-center px-4 pt-2 pb-4">
+        <div className="relative h-24 w-24 rounded-full overflow-hidden ring-4 ring-primary/20 bg-muted mb-3">
           <Image
-            src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
+            src={agency.logo_url || placeholderImage(200, 200, agency.name[0])}
             alt={agency.name}
             fill
             className="object-cover"
-            sizes="64px"
+            sizes="96px"
           />
         </div>
-        <div>
-          <div className="flex items-center gap-1.5">
-            <h1 className="text-lg font-bold">{agency.name}</h1>
-            {agency.is_verified && <VerifiedBadge />}
+        <div className="flex items-center gap-1.5 mb-1">
+          <h1 className="text-xl font-bold">{agency.name}</h1>
+          {agency.is_verified && <BadgeCheck className="h-5 w-5 text-blue-500 fill-blue-500" />}
+        </div>
+        {agency.city && (
+          <p className="text-sm text-muted-foreground mb-2">
+            {agency.city}, {agency.country}
+          </p>
+        )}
+        {agency.description && (
+          <p className="text-sm text-muted-foreground text-center leading-relaxed max-w-sm">
+            {agency.description}
+          </p>
+        )}
+      </div>
+
+      {/* Stats Row */}
+      <div className="flex justify-center gap-4 px-4 pb-4">
+        {avgRating && (
+          <div className="flex flex-col items-center bg-slate-50 rounded-2xl px-5 py-3 min-w-[90px]">
+            <span className="text-lg font-bold flex items-center gap-1">
+              {avgRating} <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
+            </span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.rating}</span>
           </div>
-          {agency.city && (
-            <p className="text-sm text-muted-foreground flex items-center gap-1">
-              <MapPin className="h-3 w-3" />
-              {agency.city}, {agency.country}
-            </p>
-          )}
+        )}
+        <div className="flex flex-col items-center bg-slate-50 rounded-2xl px-5 py-3 min-w-[90px]">
+          <span className="text-lg font-bold">{reviews.length}</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.reviews}</span>
+        </div>
+        <div className="flex flex-col items-center bg-slate-50 rounded-2xl px-5 py-3 min-w-[90px]">
+          <span className="text-lg font-bold">{tours.length}</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.activeTours}</span>
         </div>
       </div>
 
-      {/* Description */}
-      {agency.description && (
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          {agency.description}
-        </p>
-      )}
-
-      {/* Contact Buttons */}
-      <div className="flex gap-2 flex-wrap">
-        {telegramLink && (
-          <a href={telegramLink} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: 'sm' })}>
-            <MessageCircle className="h-4 w-4 mr-1.5" />
-            {t.agencyProfile.telegram}
-          </a>
-        )}
-        {agency.phone && (
-          <a href={`tel:${agency.phone}`} className={buttonVariants({ size: 'sm', variant: 'outline' })}>
-            <Phone className="h-4 w-4 mr-1.5" />
-            {t.agencyProfile.call}
+      {/* Social Links Row */}
+      <div className="flex justify-center gap-6 px-4 pb-4">
+        {agency.website_url && (
+          <a href={agency.website_url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1">
+            <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
+              <Globe className="h-5 w-5 text-slate-600" />
+            </div>
+            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.website}</span>
           </a>
         )}
         {agency.instagram_url && (
-          <a href={agency.instagram_url} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
-            <Instagram className="h-4 w-4 mr-1.5" />
-            {t.agencyProfile.instagram}
+          <a href={agency.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1">
+            <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
+              <Instagram className="h-5 w-5 text-slate-600" />
+            </div>
+            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.instagram}</span>
           </a>
         )}
-        {agency.website_url && (
-          <a href={agency.website_url} target="_blank" rel="noopener noreferrer" className={buttonVariants({ size: 'sm', variant: 'outline' })}>
-            <Globe className="h-4 w-4 mr-1.5" />
-            {t.agencyProfile.website}
+        {telegramLink && (
+          <a href={telegramLink} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1">
+            <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
+              <MessageCircle className="h-5 w-5 text-slate-600" />
+            </div>
+            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.telegram}</span>
+          </a>
+        )}
+        {agency.phone && (
+          <a href={`tel:${agency.phone}`} className="flex flex-col items-center gap-1">
+            <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
+              <Phone className="h-5 w-5 text-slate-600" />
+            </div>
+            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.call}</span>
           </a>
         )}
       </div>
 
-      <Separator />
+      {/* Tabs */}
+      <div className="border-b border-slate-200">
+        <div className="flex px-4">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex-1 py-3 text-sm font-medium text-center transition-colors relative ${
+                activeTab === tab.key
+                  ? 'text-primary'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {tab.label}
+              {activeTab === tab.key && (
+                <div className="absolute bottom-0 left-1/4 right-1/4 h-0.5 bg-primary rounded-full" />
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      {/* Active Tours */}
-      <section>
-        <SectionHeader
-          title={t.agencyProfile.activeTours}
-          subtitle={`${tours.length} ${t.agencyProfile.toursAvailable}`}
-        />
-        {tours.length > 0 ? (
-          <div className="grid grid-cols-2 gap-3">
-            {tours.map((tour) => (
-              <TourCard key={tour.id} tour={tour} />
-            ))}
+      {/* Tab Content */}
+      <div className="px-4 py-4">
+        {/* Active Tours Tab */}
+        {activeTab === 'tours' && (
+          <div className="space-y-4">
+            {tours.length > 0 ? (
+              tours.map((tour) => (
+                <AgencyTourCard key={tour.id} tour={tour} />
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-muted-foreground text-sm">{t.agencyProfile.noActiveTours}</p>
+                <p className="text-muted-foreground text-xs mt-1">{t.agencyProfile.noActiveToursHint}</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <EmptyState
-            title={t.agencyProfile.noActiveTours}
-            description={t.agencyProfile.noActiveToursHint}
-          />
         )}
-      </section>
 
-      <Separator />
-
-      {/* Reviews */}
-      <section>
-        <SectionHeader
-          title={t.agencyProfile.reviews}
-          subtitle={reviews.length > 0 ? `${reviews.length} ${t.agencyProfile.reviews.toLowerCase()}` : undefined}
-        />
-        {reviews.length > 0 ? (
+        {/* Reviews Tab */}
+        {activeTab === 'reviews' && (
           <div className="space-y-3">
-            {reviews.map((review) => (
-              <Card key={review.id}>
-                <CardContent className="p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="font-medium text-sm">
-                      {(review as any).profile?.full_name ?? 'User'}
-                    </span>
-                    <div className="flex items-center gap-0.5">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`h-3 w-3 ${i < review.rating ? 'text-amber-400 fill-amber-400' : 'text-muted-foreground/30'}`}
-                        />
-                      ))}
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <Card key={review.id} className="overflow-hidden">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="font-medium text-sm">
+                        {review.profile?.full_name ?? 'User'}
+                      </span>
+                      <div className="flex items-center gap-0.5">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`h-3.5 w-3.5 ${
+                              i < review.rating
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-muted-foreground/30'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  {review.comment && (
-                    <p className="text-sm text-muted-foreground">{review.comment}</p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+                    {review.comment && (
+                      <p className="text-sm text-muted-foreground">{review.comment}</p>
+                    )}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-8">{t.agencyProfile.noReviews}</p>
+            )}
           </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">{t.agencyProfile.noReviews}</p>
         )}
-      </section>
+
+        {/* About Tab */}
+        {activeTab === 'about' && (
+          <div className="space-y-4">
+            {agency.description && (
+              <div>
+                <h3 className="font-semibold text-sm mb-2">{t.agencyProfile.aboutAgency}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed">{agency.description}</p>
+              </div>
+            )}
+            <div className="space-y-3">
+              {agency.address && (
+                <div className="flex items-center gap-3 text-sm">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span>{agency.address}{agency.city ? `, ${agency.city}` : ''}, {agency.country}</span>
+                </div>
+              )}
+              {agency.phone && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <a href={`tel:${agency.phone}`} className="text-primary">{agency.phone}</a>
+                </div>
+              )}
+              {agency.telegram_username && (
+                <div className="flex items-center gap-3 text-sm">
+                  <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <a href={telegramLink!} target="_blank" rel="noopener noreferrer" className="text-primary">
+                    {agency.telegram_username}
+                  </a>
+                </div>
+              )}
+              {agency.instagram_url && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Instagram className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <a href={agency.instagram_url} target="_blank" rel="noopener noreferrer" className="text-primary truncate">
+                    {agency.instagram_url}
+                  </a>
+                </div>
+              )}
+              {agency.website_url && (
+                <div className="flex items-center gap-3 text-sm">
+                  <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <a href={agency.website_url} target="_blank" rel="noopener noreferrer" className="text-primary truncate">
+                    {agency.website_url}
+                  </a>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Verified Badge Card */}
+      {agency.is_verified && (
+        <div className="px-4 pb-6">
+          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shrink-0 mt-0.5">
+              <BadgeCheck className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <p className="font-semibold text-sm text-green-900">{t.agencyProfile.verifiedByMaxTour}</p>
+              <p className="text-xs text-green-700 mt-0.5 leading-relaxed">
+                {t.agencyProfile.verifiedDescription}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+/* ─── Tour Card for Agency Profile ─── */
+function AgencyTourCard({ tour }: { tour: Tour }) {
+  const { t } = useTranslation();
+  const location = [tour.city, tour.country].filter(Boolean).join(', ');
+
+  return (
+    <Link href={`/tours/${tour.slug}`}>
+      <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
+        <div className="relative aspect-[16/10] w-full overflow-hidden">
+          <Image
+            src={tour.cover_image_url || placeholderImage(600, 375, tour.title)}
+            alt={tour.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 100vw, 480px"
+          />
+          <button
+            className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full"
+            onClick={(e) => e.preventDefault()}
+          >
+            <Heart className="h-4 w-4 text-slate-600" />
+          </button>
+          {tour.is_featured && (
+            <div className="absolute bottom-3 left-3">
+              <span className="px-2.5 py-1 bg-emerald-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
+                {t.common.featured}
+              </span>
+            </div>
+          )}
+          {tour.hotel_stars && (
+            <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur rounded-lg">
+              <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
+              <span className="text-xs font-bold">{tour.hotel_stars.toFixed(1)}</span>
+            </div>
+          )}
+        </div>
+        <div className="p-3.5">
+          <h3 className="font-bold text-base mb-1 line-clamp-1">{tour.title}</h3>
+          <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
+            {tour.duration_days && (
+              <span className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {tour.duration_days} {t.common.days}
+              </span>
+            )}
+            {location && (
+              <span className="flex items-center gap-1">
+                <MapPin className="h-3 w-3" />
+                {location}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-xs text-muted-foreground">{t.common.from} </span>
+              <span className="text-lg font-bold text-primary">${tour.price.toLocaleString()}</span>
+              <span className="text-xs text-muted-foreground"> / {t.common.perPerson}</span>
+            </div>
+            <span className="bg-primary text-white px-4 py-1.5 rounded-full text-xs font-semibold">
+              {t.common.book}
+            </span>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 }

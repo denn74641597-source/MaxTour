@@ -112,6 +112,7 @@ export const ru: Translations = {
 
   // ─── Agency Public Profile ───
   agencyProfile: {
+    title: 'Профиль агентства',
     telegram: 'Telegram',
     call: 'Позвонить',
     instagram: 'Instagram',
@@ -122,6 +123,11 @@ export const ru: Translations = {
     noActiveToursHint: 'У этого агентства пока нет опубликованных туров.',
     reviews: 'Отзывы',
     noReviews: 'Пока нет отзывов.',
+    rating: 'Рейтинг',
+    about: 'О нас',
+    aboutAgency: 'Об агентстве',
+    verifiedByMaxTour: 'Проверено MaxTour',
+    verifiedDescription: 'Это агентство проверено и одобрено MaxTour. Ваши платежи защищены.',
   },
 
   // ─── Lead Form ───
