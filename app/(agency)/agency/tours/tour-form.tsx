@@ -18,17 +18,19 @@ import { ImageUploader } from '@/components/shared/image-uploader';
 import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
-import { Loader2, MapPin, Plus, X } from 'lucide-react';
+import { Loader2, MapPin, Plus, X, Hotel, Star } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
+import type { TourHotel } from '@/types';
 
 interface TourFormProps {
   initialData?: Partial<TourFormData> & {
     cover_image_url?: string | null;
     hotel_images?: string[];
+    hotels?: TourHotel[];
     destinations?: string[];
     airline?: string | null;
     extra_charges?: { name: string; amount: number }[];
@@ -54,8 +56,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     initialData?.destinations ?? []
   );
   const [newDestination, setNewDestination] = useState('');
-  const [hotelImages, setHotelImages] = useState<string[]>(
-    initialData?.hotel_images ?? []
+  const [hotels, setHotels] = useState<TourHotel[]>(
+    initialData?.hotels ?? []
   );
   const [extraCharges, setExtraCharges] = useState<{ name: string; amount: number }[]>(
     initialData?.extra_charges ?? []
@@ -167,14 +169,15 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       departure_date: data.departure_date || null,
       return_date: data.return_date || null,
       duration_days: data.duration_days ? Number(data.duration_days) : null,
-      price: Number(data.price),
+      price: hotels.length > 0 ? hotels[0].price : Number(data.price),
       currency: data.currency || 'USD',
       seats_total: data.seats_total ? Number(data.seats_total) : null,
       seats_left: data.seats_left ? Number(data.seats_left) : null,
-      hotel_name: data.hotel_name || null,
-      hotel_stars: data.hotel_stars ? Number(data.hotel_stars) : null,
-      hotel_booking_url: data.hotel_booking_url || null,
-      hotel_images: hotelImages,
+      hotel_name: hotels.length > 0 ? hotels[0].name : (data.hotel_name || null),
+      hotel_stars: hotels.length > 0 ? hotels[0].stars : (data.hotel_stars ? Number(data.hotel_stars) : null),
+      hotel_booking_url: hotels.length > 0 ? hotels[0].booking_url : (data.hotel_booking_url || null),
+      hotel_images: hotels.length > 0 ? hotels[0].images : [],
+      hotels: hotels,
       destinations: destinations,
       airline: data.airline || null,
       extra_charges: extraCharges,
@@ -414,36 +417,140 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       {/* Accommodation, Transport & Airline */}
       <Card>
         <CardContent className="p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-sm">{t.tours.hotels}</h2>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setHotels((prev) => [...prev, { name: '', stars: null, price: 0, description: null, booking_url: null, images: [] }])}
+            >
+              <Plus className="h-4 w-4 mr-1" /> {t.tours.addHotel}
+            </Button>
+          </div>
+
+          {hotels.length === 0 && (
+            <p className="text-xs text-muted-foreground text-center py-4">{t.tours.addHotel}</p>
+          )}
+
+          {hotels.map((hotel, hotelIndex) => (
+            <div key={hotelIndex} className="border border-slate-200 rounded-xl p-3 space-y-3 relative">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Hotel className="h-4 w-4 text-primary" />
+                  <span className="text-sm font-semibold">#{hotelIndex + 1}</span>
+                  {hotelIndex === 0 && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Asosiy</span>}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setHotels((prev) => prev.filter((_, i) => i !== hotelIndex))}
+                  className="text-red-400 hover:text-red-500 text-xs"
+                >
+                  {t.tours.removeHotel}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>{t.agencyTours.hotelName} *</Label>
+                  <Input
+                    placeholder={t.agencyTours.hotelNamePlaceholder}
+                    value={hotel.name}
+                    onChange={(e) => {
+                      const updated = [...hotels];
+                      updated[hotelIndex] = { ...hotel, name: e.target.value };
+                      setHotels(updated);
+                    }}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>{t.agencyTours.stars}</Label>
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => {
+                          const updated = [...hotels];
+                          updated[hotelIndex] = { ...hotel, stars: star };
+                          setHotels(updated);
+                        }}
+                        className="p-0.5"
+                      >
+                        <Star className={`h-5 w-5 ${hotel.stars && star <= hotel.stars ? 'text-yellow-500 fill-yellow-500' : 'text-slate-300'}`} />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.tours.hotelPrice} *</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  placeholder="850"
+                  value={hotel.price || ''}
+                  onChange={(e) => {
+                    const updated = [...hotels];
+                    updated[hotelIndex] = { ...hotel, price: Number(e.target.value) };
+                    setHotels(updated);
+                    if (hotelIndex === 0) setValue('price', Number(e.target.value));
+                  }}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.tours.hotelDescription}</Label>
+                <Textarea
+                  placeholder={t.tours.hotelDescriptionPlaceholder}
+                  rows={2}
+                  value={hotel.description || ''}
+                  onChange={(e) => {
+                    const updated = [...hotels];
+                    updated[hotelIndex] = { ...hotel, description: e.target.value || null };
+                    setHotels(updated);
+                  }}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>{t.agencyTours.hotelBookingUrl}</Label>
+                <Input
+                  placeholder={t.agencyTours.hotelBookingUrlPlaceholder}
+                  value={hotel.booking_url || ''}
+                  onChange={(e) => {
+                    const updated = [...hotels];
+                    updated[hotelIndex] = { ...hotel, booking_url: e.target.value || null };
+                    setHotels(updated);
+                  }}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>{t.agencyTours.hotelImages}</Label>
+                <MultiImageUploader
+                  values={hotel.images}
+                  onChange={(imgs) => {
+                    const updated = [...hotels];
+                    updated[hotelIndex] = { ...hotel, images: imgs };
+                    setHotels(updated);
+                  }}
+                  maxImages={4}
+                  label={t.agencyTours.uploadHotelImage}
+                  folder="hotels"
+                />
+              </div>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      {/* Transport & Airline */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
           <h2 className="font-semibold text-sm">{t.agencyTours.accommodationTransport}</h2>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="hotel_name">{t.agencyTours.hotelName}</Label>
-              <Input id="hotel_name" placeholder={t.agencyTours.hotelNamePlaceholder} {...register('hotel_name')} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="hotel_stars">{t.agencyTours.stars}</Label>
-              <Input id="hotel_stars" type="number" min={1} max={5} {...register('hotel_stars')} />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="hotel_booking_url">{t.agencyTours.hotelBookingUrl}</Label>
-            <Input id="hotel_booking_url" placeholder={t.agencyTours.hotelBookingUrlPlaceholder} {...register('hotel_booking_url')} />
-          </div>
-
-          {/* Hotel Images */}
-          <div className="space-y-2">
-            <Label>{t.agencyTours.hotelImages}</Label>
-            <p className="text-xs text-muted-foreground">{t.agencyTours.hotelImagesHint}</p>
-            <MultiImageUploader
-              values={hotelImages}
-              onChange={setHotelImages}
-              maxImages={4}
-              label={t.agencyTours.uploadHotelImage}
-              folder="hotels"
-            />
-          </div>
 
           {/* Airline (optional) */}
           <div className="space-y-1.5">

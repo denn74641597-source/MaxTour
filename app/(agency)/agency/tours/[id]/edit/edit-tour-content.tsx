@@ -3,6 +3,7 @@
 import { TourForm } from '../../tour-form';
 import { useTranslation } from '@/lib/i18n';
 import type { TourFormData } from '@/lib/validators';
+import type { TourHotel } from '@/types';
 
 interface EditTourContentProps {
   tourId: string;
@@ -10,6 +11,7 @@ interface EditTourContentProps {
   initialData: Partial<TourFormData> & {
     cover_image_url?: string | null;
     hotel_images?: string[];
+    hotels?: TourHotel[];
     destinations?: string[];
     airline?: string | null;
     extra_charges?: { name: string; amount: number }[];

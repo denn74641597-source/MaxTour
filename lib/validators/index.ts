@@ -27,6 +27,17 @@ export const agencyProfileSchema = z.object({
 
 export type AgencyProfileData = z.infer<typeof agencyProfileSchema>;
 
+export const tourHotelSchema = z.object({
+  name: z.string().min(1, 'Hotel name is required'),
+  stars: z.coerce.number().int().min(1).max(5).nullable().default(null),
+  price: z.coerce.number().positive('Price must be greater than 0'),
+  description: z.string().max(1000).nullable().default(null),
+  booking_url: z.string().url().optional().or(z.literal('')).transform(v => v || null),
+  images: z.array(z.string()).default([]),
+});
+
+export type TourHotelFormData = z.infer<typeof tourHotelSchema>;
+
 export const tourSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters'),
   slug: z
@@ -48,6 +59,7 @@ export const tourSchema = z.object({
   hotel_stars: z.coerce.number().int().min(1).max(5).optional(),
   hotel_booking_url: z.string().url().optional().or(z.literal('')),
   hotel_images: z.array(z.string()).default([]),
+  hotels: z.array(tourHotelSchema).default([]),
   destinations: z.array(z.string()).default([]),
   airline: z.string().optional().or(z.literal('')),
   extra_charges: z.array(z.object({ name: z.string(), amount: z.coerce.number() })).default([]),

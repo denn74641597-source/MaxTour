@@ -63,6 +63,15 @@ export interface AgencySubscription {
   plan?: SubscriptionPlan;
 }
 
+export interface TourHotel {
+  name: string;
+  stars: number | null;
+  price: number;
+  description: string | null;
+  booking_url: string | null;
+  images: string[];
+}
+
 export interface Tour {
   id: string;
   agency_id: string;
@@ -83,6 +92,7 @@ export interface Tour {
   hotel_stars: number | null;
   hotel_booking_url: string | null;
   hotel_images: string[];
+  hotels: TourHotel[];
   destinations: string[];
   airline: string | null;
   extra_charges: { name: string; amount: number }[];

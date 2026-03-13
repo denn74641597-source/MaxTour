@@ -79,6 +79,12 @@ export interface Translations {
     whatsIncluded: string;
     whatsExcluded: string;
     hotelInfo: string;
+    hotels: string;
+    addHotel: string;
+    hotelDescription: string;
+    hotelDescriptionPlaceholder: string;
+    hotelPrice: string;
+    removeHotel: string;
     duration: string;
     departure: string;
     leaveRequest: string;

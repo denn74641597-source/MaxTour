@@ -5,10 +5,19 @@ import Image from 'next/image';
 import { Heart, Star, BadgeCheck } from 'lucide-react';
 import { placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
-import type { Tour } from '@/types';
+import type { Tour, TourHotel } from '@/types';
 
 interface TourCardCatalogProps {
   tour: Tour;
+}
+
+function getMaxHotelStars(tour: Tour): number | null {
+  const hotels = (tour.hotels as TourHotel[]) ?? [];
+  if (hotels.length > 0) {
+    const maxStars = Math.max(...hotels.filter(h => h.stars).map(h => h.stars!));
+    return maxStars > 0 ? maxStars : null;
+  }
+  return tour.hotel_stars ?? null;
 }
 
 export function TourCardCatalog({ tour }: TourCardCatalogProps) {
@@ -19,6 +28,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
     ? `${tour.duration_days} ${tour.duration_days > 1 ? t.common.nights : t.common.night}`
     : null;
   const location = [tour.city, tour.country].filter(Boolean).join(', ');
+  const maxStars = getMaxHotelStars(tour);
 
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
@@ -56,10 +66,10 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
           <h3 className="text-lg font-bold text-slate-900 leading-tight line-clamp-2 flex-1 mr-2">
             {tour.title}
           </h3>
-          {tour.hotel_stars && (
+          {maxStars && (
             <div className="flex items-center gap-1 px-1.5 py-0.5 bg-yellow-400/10 text-yellow-700 rounded text-xs font-bold shrink-0">
               <Star className="h-3 w-3 fill-current" />
-              {tour.hotel_stars.toFixed(1)}
+              {maxStars.toFixed(1)}
             </div>
           )}
         </div>

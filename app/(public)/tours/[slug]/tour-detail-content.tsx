@@ -5,11 +5,12 @@ import Link from 'next/link';
 import {
   MapPin, CalendarDays, Clock, Users,
   ArrowLeft, Share2, Send, Star, BadgeCheck, Check, X, ExternalLink,
-  Plane, DollarSign, Navigation,
+  Plane, DollarSign, Navigation, Hotel,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
+import type { TourHotel } from '@/types';
 
 interface TourDetailContentProps {
   tour: any;
@@ -29,6 +30,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
   const hotelImages = (tour.hotel_images as string[]) ?? [];
   const destinations = (tour.destinations as string[]) ?? [];
   const extraCharges = (tour.extra_charges as { name: string; amount: number }[]) ?? [];
+  const hotels = (tour.hotels as TourHotel[]) ?? [];
 
   const telegramLink = agency?.telegram_username
     ? `https://t.me/${agency.telegram_username.replace('@', '')}`
@@ -253,23 +255,67 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
           </section>
         )}
 
-        {/* Hotel Info */}
-        {tour.hotel_name && (
+        {/* Hotels */}
+        {hotels.length > 0 ? (
+          <section>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.hotels}</h3>
+            <div className="space-y-3">
+              {hotels.map((hotel: TourHotel, hotelIdx: number) => (
+                <div key={hotelIdx} className="rounded-xl overflow-hidden border border-slate-200 bg-white">
+                  {hotel.images.length > 0 ? (
+                    <HotelImageCarousel images={hotel.images} hotelName={hotel.name} />
+                  ) : (
+                    <div className="h-40 w-full bg-slate-200 relative flex items-center justify-center">
+                      <Hotel className="h-10 w-10 text-slate-400" />
+                    </div>
+                  )}
+                  <div className="p-3">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h4 className="font-bold text-base text-slate-900">{hotel.name}</h4>
+                        {hotel.stars && (
+                          <div className="flex items-center gap-0.5 mt-0.5">
+                            {Array.from({ length: hotel.stars }).map((_: unknown, i: number) => (
+                              <Star key={i} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="text-right shrink-0">
+                        <p className="text-primary text-lg font-bold">${hotel.price.toLocaleString()}</p>
+                        <p className="text-slate-500 text-[10px]">{t.common.perPerson}</p>
+                      </div>
+                    </div>
+                    {hotel.description && (
+                      <p className="text-sm text-slate-600 leading-snug mt-2">
+                        {hotel.description}
+                      </p>
+                    )}
+                    {hotel.booking_url && (
+                      <a
+                        href={hotel.booking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                      >
+                        <ExternalLink className="h-4 w-4" />
+                        Booking.com
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : tour.hotel_name ? (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.hotelInfo}</h3>
             <div className="rounded-xl overflow-hidden border border-slate-200 bg-white">
-              {/* Hotel Image Carousel */}
               {hotelImages.length > 0 ? (
                 <HotelImageCarousel images={hotelImages} hotelName={tour.hotel_name} />
               ) : (
-                <div className="h-48 w-full bg-slate-200 relative">
-                  <Image
-                    src={allImages[1] || placeholderImage(800, 400, tour.hotel_name)}
-                    alt={tour.hotel_name}
-                    fill
-                    className="object-cover"
-                    sizes="100vw"
-                  />
+                <div className="h-40 w-full bg-slate-200 relative flex items-center justify-center">
+                  <Hotel className="h-10 w-10 text-slate-400" />
                 </div>
               )}
               <div className="p-3">
@@ -280,11 +326,6 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                       <Star key={i} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                     ))}
                   </div>
-                )}
-                {tour.short_description && (
-                  <p className="text-sm text-slate-600 leading-snug">
-                    {tour.short_description}
-                  </p>
                 )}
                 {tour.hotel_booking_url && (
                   <a
@@ -300,7 +341,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
               </div>
             </div>
           </section>
-        )}
+        ) : null}
       </div>
 
       {/* Fixed Bottom Bar */}

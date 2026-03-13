@@ -40,6 +40,7 @@ export default async function EditTourPage({ params }: Props) {
         hotel_stars: tour.hotel_stars ?? undefined,
         hotel_booking_url: tour.hotel_booking_url ?? undefined,
         hotel_images: tour.hotel_images ?? [],
+        hotels: tour.hotels ?? [],
         destinations: tour.destinations ?? [],
         airline: tour.airline ?? undefined,
         extra_charges: tour.extra_charges ?? [],
