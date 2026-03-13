@@ -9,17 +9,26 @@ async function getSubscriptionData() {
     .select('*')
     .order('price_monthly', { ascending: true });
 
-  const { data: agency } = await supabase.from('agencies').select('id').limit(1).single();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   let currentSub = null;
-  if (agency) {
-    const { data } = await supabase
-      .from('agency_subscriptions')
-      .select('*, plan:subscription_plans(*)')
-      .eq('agency_id', agency.id)
-      .eq('status', 'active')
-      .limit(1)
+  if (user) {
+    const { data: agency } = await supabase
+      .from('agencies')
+      .select('id')
+      .eq('owner_id', user.id)
       .single();
-    currentSub = data;
+    if (agency) {
+      const { data } = await supabase
+        .from('agency_subscriptions')
+        .select('*, plan:subscription_plans(*)')
+        .eq('agency_id', agency.id)
+        .eq('status', 'active')
+        .limit(1)
+        .single();
+      currentSub = data;
+    }
   }
 
   return { plans: plans ?? [], currentSub };
