@@ -21,6 +21,7 @@ import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/lib/i18n';
 
 interface TourFormProps {
   initialData?: Partial<TourFormData>;
@@ -29,6 +30,7 @@ interface TourFormProps {
 
 export function TourForm({ initialData, tourId }: TourFormProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const [coverUrl, setCoverUrl] = useState(initialData?.slug ?? '');
   const [includedServices, setIncludedServices] = useState<string[]>(
     initialData?.included_services ?? []
@@ -97,7 +99,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
     // In production, call a server action to create/update the tour
     console.log(isEditing ? 'Update tour:' : 'Create tour:', payload);
-    toast.success(isEditing ? 'Tour updated' : 'Tour created');
+    toast.success(isEditing ? t.agencyTours.tourUpdated : t.agencyTours.tourCreated);
     router.push('/agency/tours');
   }
 
@@ -106,11 +108,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       {/* Cover Image */}
       <Card>
         <CardContent className="p-4">
-          <Label className="mb-2 block">Cover Image</Label>
+          <Label className="mb-2 block">{t.agencyTours.coverImage}</Label>
           <ImageUploader
             value={coverUrl}
             onChange={setCoverUrl}
-            label="Upload cover image"
+            label={t.agencyTours.uploadCoverImage}
           />
         </CardContent>
       </Card>
@@ -118,28 +120,28 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       {/* Basic Info */}
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h2 className="font-semibold text-sm">Basic Information</h2>
+          <h2 className="font-semibold text-sm">{t.agencyTours.basicInfo}</h2>
 
           <div className="space-y-2">
-            <Label htmlFor="title">Title *</Label>
-            <Input id="title" placeholder="Istanbul Cultural Discovery" {...register('title')} onBlur={autoSlug} />
+            <Label htmlFor="title">{t.agencyTours.titleLabel} *</Label>
+            <Input id="title" placeholder={t.agencyTours.titlePlaceholder} {...register('title')} onBlur={autoSlug} />
             {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="slug">URL Slug *</Label>
-            <Input id="slug" placeholder="istanbul-cultural-discovery" {...register('slug')} />
+            <Label htmlFor="slug">{t.agencyTours.urlSlug} *</Label>
+            <Input id="slug" placeholder={t.agencyTours.urlSlugPlaceholder} {...register('slug')} />
             {errors.slug && <p className="text-xs text-destructive">{errors.slug.message}</p>}
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="short_description">Short Description</Label>
-            <Textarea id="short_description" placeholder="Brief summary..." rows={2} {...register('short_description')} />
+            <Label htmlFor="short_description">{t.agencyTours.shortDescription}</Label>
+            <Textarea id="short_description" placeholder={t.agencyTours.shortDescriptionPlaceholder} rows={2} {...register('short_description')} />
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="full_description">Full Description</Label>
-            <Textarea id="full_description" placeholder="Detailed tour description..." rows={5} {...register('full_description')} />
+            <Label htmlFor="full_description">{t.agencyTours.fullDescription}</Label>
+            <Textarea id="full_description" placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={5} {...register('full_description')} />
           </div>
         </CardContent>
       </Card>
@@ -147,33 +149,33 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       {/* Destination */}
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h2 className="font-semibold text-sm">Destination & Dates</h2>
+          <h2 className="font-semibold text-sm">{t.agencyTours.destinationDates}</h2>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="country">Country *</Label>
-              <Input id="country" placeholder="Turkey" {...register('country')} />
+              <Label htmlFor="country">{t.agencyTours.country} *</Label>
+              <Input id="country" placeholder={t.agencyTours.countryPlaceholder} {...register('country')} />
               {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label htmlFor="city">City</Label>
-              <Input id="city" placeholder="Istanbul" {...register('city')} />
+              <Label htmlFor="city">{t.agencyTours.city}</Label>
+              <Input id="city" placeholder={t.agencyTours.cityPlaceholder} {...register('city')} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="departure_date">Departure Date</Label>
+              <Label htmlFor="departure_date">{t.agencyTours.departureDate}</Label>
               <Input id="departure_date" type="date" {...register('departure_date')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="return_date">Return Date</Label>
+              <Label htmlFor="return_date">{t.agencyTours.returnDate}</Label>
               <Input id="return_date" type="date" {...register('return_date')} />
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="duration_days">Duration (days)</Label>
+            <Label htmlFor="duration_days">{t.agencyTours.durationDays}</Label>
             <Input id="duration_days" type="number" min={1} {...register('duration_days')} />
           </div>
         </CardContent>
@@ -182,16 +184,16 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       {/* Pricing & Seats */}
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h2 className="font-semibold text-sm">Pricing & Availability</h2>
+          <h2 className="font-semibold text-sm">{t.agencyTours.pricingAvailability}</h2>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="price">Price *</Label>
+              <Label htmlFor="price">{t.agencyTours.price} *</Label>
               <Input id="price" type="number" min={0} step="0.01" placeholder="850" {...register('price')} />
               {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
             </div>
             <div className="space-y-2">
-              <Label>Currency</Label>
+              <Label>{t.agencyTours.currency}</Label>
               <Select defaultValue="USD" onValueChange={(v) => setValue('currency', v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -205,11 +207,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="seats_total">Total Seats</Label>
+              <Label htmlFor="seats_total">{t.agencyTours.totalSeats}</Label>
               <Input id="seats_total" type="number" min={1} {...register('seats_total')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="seats_left">Seats Left</Label>
+              <Label htmlFor="seats_left">{t.agencyTours.seatsLeft}</Label>
               <Input id="seats_left" type="number" min={0} {...register('seats_left')} />
             </div>
           </div>
@@ -219,43 +221,43 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       {/* Accommodation & Transport */}
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h2 className="font-semibold text-sm">Accommodation & Transport</h2>
+          <h2 className="font-semibold text-sm">{t.agencyTours.accommodationTransport}</h2>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="hotel_name">Hotel Name</Label>
-              <Input id="hotel_name" placeholder="Grand Star Hotel" {...register('hotel_name')} />
+              <Label htmlFor="hotel_name">{t.agencyTours.hotelName}</Label>
+              <Input id="hotel_name" placeholder={t.agencyTours.hotelNamePlaceholder} {...register('hotel_name')} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="hotel_stars">Stars</Label>
+              <Label htmlFor="hotel_stars">{t.agencyTours.stars}</Label>
               <Input id="hotel_stars" type="number" min={1} max={5} {...register('hotel_stars')} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Meal Type</Label>
+              <Label>{t.agencyTours.mealType}</Label>
               <Select defaultValue="none" onValueChange={(v) => setValue('meal_type', v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="breakfast">Breakfast</SelectItem>
-                  <SelectItem value="half_board">Half Board</SelectItem>
-                  <SelectItem value="full_board">Full Board</SelectItem>
-                  <SelectItem value="all_inclusive">All Inclusive</SelectItem>
+                  <SelectItem value="none">{t.mealTypes.none}</SelectItem>
+                  <SelectItem value="breakfast">{t.mealTypes.breakfast}</SelectItem>
+                  <SelectItem value="half_board">{t.mealTypes.half_board}</SelectItem>
+                  <SelectItem value="full_board">{t.mealTypes.full_board}</SelectItem>
+                  <SelectItem value="all_inclusive">{t.mealTypes.all_inclusive}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Transport</Label>
+              <Label>{t.agencyTours.transport}</Label>
               <Select defaultValue="flight" onValueChange={(v) => setValue('transport_type', v as any)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="flight">Flight</SelectItem>
-                  <SelectItem value="bus">Bus</SelectItem>
-                  <SelectItem value="train">Train</SelectItem>
-                  <SelectItem value="self">Self</SelectItem>
-                  <SelectItem value="mixed">Mixed</SelectItem>
+                  <SelectItem value="flight">{t.transportTypes.flight}</SelectItem>
+                  <SelectItem value="bus">{t.transportTypes.bus}</SelectItem>
+                  <SelectItem value="train">{t.transportTypes.train}</SelectItem>
+                  <SelectItem value="self">{t.transportTypes.self}</SelectItem>
+                  <SelectItem value="mixed">{t.transportTypes.mixed}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -263,7 +265,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
           <div className="flex items-center gap-2">
             <input type="checkbox" id="visa_required" {...register('visa_required')} className="h-4 w-4 rounded border" />
-            <Label htmlFor="visa_required">Visa Required</Label>
+            <Label htmlFor="visa_required">{t.agencyTours.visaRequired}</Label>
           </div>
         </CardContent>
       </Card>
@@ -271,43 +273,43 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       {/* Services */}
       <Card>
         <CardContent className="p-4 space-y-4">
-          <h2 className="font-semibold text-sm">Included Services</h2>
+          <h2 className="font-semibold text-sm">{t.agencyTours.includedServices}</h2>
           <div className="space-y-2">
             {includedServices.map((s, i) => (
               <div key={i} className="flex items-center gap-2 text-sm">
                 <span className="text-emerald-500">✓</span>
                 <span className="flex-1">{s}</span>
-                <button type="button" onClick={() => removeService('included', i)} className="text-red-400 text-xs">Remove</button>
+                <button type="button" onClick={() => removeService('included', i)} className="text-red-400 text-xs">{t.common.remove}</button>
               </div>
             ))}
             <div className="flex gap-2">
               <Input
-                placeholder="Add included service..."
+                placeholder={t.agencyTours.addIncludedService}
                 value={newIncluded}
                 onChange={(e) => setNewIncluded(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService('included'); } }}
               />
-              <Button type="button" variant="outline" size="sm" onClick={() => addService('included')}>Add</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => addService('included')}>{t.common.add}</Button>
             </div>
           </div>
 
-          <h2 className="font-semibold text-sm pt-2">Excluded Services</h2>
+          <h2 className="font-semibold text-sm pt-2">{t.agencyTours.excludedServices}</h2>
           <div className="space-y-2">
             {excludedServices.map((s, i) => (
               <div key={i} className="flex items-center gap-2 text-sm">
                 <span className="text-red-400">✕</span>
                 <span className="flex-1">{s}</span>
-                <button type="button" onClick={() => removeService('excluded', i)} className="text-red-400 text-xs">Remove</button>
+                <button type="button" onClick={() => removeService('excluded', i)} className="text-red-400 text-xs">{t.common.remove}</button>
               </div>
             ))}
             <div className="flex gap-2">
               <Input
-                placeholder="Add excluded service..."
+                placeholder={t.agencyTours.addExcludedService}
                 value={newExcluded}
                 onChange={(e) => setNewExcluded(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService('excluded'); } }}
               />
-              <Button type="button" variant="outline" size="sm" onClick={() => addService('excluded')}>Add</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => addService('excluded')}>{t.common.add}</Button>
             </div>
           </div>
         </CardContent>
@@ -317,7 +319,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       <div className="flex gap-3">
         <Button type="submit" className="flex-1" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          {isEditing ? 'Update Tour' : 'Save as Draft'}
+          {isEditing ? t.agencyTours.updateTour : t.agencyTours.saveAsDraft}
         </Button>
         <Button
           type="button"
@@ -329,7 +331,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             handleSubmit(onSubmit)();
           }}
         >
-          Submit for Review
+          {t.agencyTours.submitForReview}
         </Button>
       </div>
     </form>

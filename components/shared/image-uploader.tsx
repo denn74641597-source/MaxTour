@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { Upload, X, ImageIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface ImageUploaderProps {
   value?: string;
@@ -21,10 +22,13 @@ export function ImageUploader({
   value,
   onChange,
   className,
-  label = 'Upload image',
+  label,
 }: ImageUploaderProps) {
+  const { t } = useTranslation();
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(value ?? null);
+
+  const displayLabel = label ?? t.imageUploader.uploadImage;
 
   function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -74,7 +78,7 @@ export function ImageUploader({
           className="w-full aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 flex flex-col items-center justify-center gap-2 hover:border-muted-foreground/50 transition-colors"
         >
           <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
-          <span className="text-sm text-muted-foreground">{label}</span>
+          <span className="text-sm text-muted-foreground">{displayLabel}</span>
         </button>
       )}
     </div>

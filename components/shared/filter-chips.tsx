@@ -2,6 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import { TOUR_CATEGORIES } from '@/types';
+import { useTranslation } from '@/lib/i18n';
 import {
   Umbrella, HeartHandshake, Users, Heart, Wallet,
   Crown, ShieldCheck, Mountain, Landmark,
@@ -25,11 +26,14 @@ interface FilterChipsProps {
 }
 
 export function FilterChips({ selected, onSelect }: FilterChipsProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex gap-3 overflow-x-auto no-scrollbar py-1">
       {TOUR_CATEGORIES.map((cat) => {
         const Icon = CATEGORY_ICONS[cat] ?? HeartHandshake;
         const isActive = selected === cat;
+        const label = t.categories[cat] ?? cat;
         return (
           <button
             key={cat}
@@ -42,7 +46,7 @@ export function FilterChips({ selected, onSelect }: FilterChipsProps) {
             )}
           >
             <Icon className="h-4 w-4" />
-            {cat}
+            {label}
           </button>
         );
       })}

@@ -1,20 +1,21 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
+import { LanguageProvider } from '@/lib/i18n';
 import './globals.css';
 
 const inter = Inter({
   variable: '--font-sans',
-  subsets: ['latin'],
+  subsets: ['latin', 'cyrillic'],
 });
 
 export const metadata: Metadata = {
   title: {
-    default: 'MaxTour — Travel Marketplace for Uzbekistan',
+    default: "MaxTour — O'zbekiston sayohat bozori",
     template: '%s | MaxTour',
   },
   description:
-    'Browse and book the best tour packages from verified travel agencies in Uzbekistan.',
+    "O'zbekistondagi tasdiqlangan sayohat agentliklaridan eng yaxshi tur paketlarini toping va band qiling.",
 };
 
 export const viewport: Viewport = {
@@ -30,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="uz">
       <head>
         {/* Telegram Mini App SDK */}
         <script src="https://telegram.org/js/telegram-web-app.js" defer />
@@ -38,7 +39,9 @@ export default function RootLayout({
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
-        {children}
+        <LanguageProvider>
+          {children}
+        </LanguageProvider>
         <Toaster position="top-center" />
       </body>
     </html>

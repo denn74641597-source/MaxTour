@@ -1,3 +1,5 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { CalendarDays, MapPin, Clock, Users } from 'lucide-react';
@@ -6,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { VerifiedBadge } from './verified-badge';
 import { PriceBlock } from './price-block';
 import { formatDate, placeholderImage } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
 
 interface TourCardProps {
@@ -15,6 +18,7 @@ interface TourCardProps {
 }
 
 export function TourCard({ tour, compact }: TourCardProps) {
+  const { t } = useTranslation();
   const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
 
@@ -37,12 +41,12 @@ export function TourCard({ tour, compact }: TourCardProps) {
           />
           {tour.is_featured && (
             <Badge className="absolute top-2 left-2 bg-amber-500 text-white text-[10px]">
-              Featured
+              {t.common.featured}
             </Badge>
           )}
           {tour.seats_left !== null && tour.seats_left <= 5 && tour.seats_left > 0 && (
             <Badge variant="destructive" className="absolute top-2 right-2 text-[10px]">
-              {tour.seats_left} seats left
+              {tour.seats_left} {t.common.seatsLeft}
             </Badge>
           )}
         </div>
@@ -64,7 +68,7 @@ export function TourCard({ tour, compact }: TourCardProps) {
             {tour.duration_days && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {tour.duration_days}d
+                {tour.duration_days} {t.common.days}
               </span>
             )}
             {tour.departure_date && (
@@ -76,7 +80,7 @@ export function TourCard({ tour, compact }: TourCardProps) {
             {tour.seats_left !== null && (
               <span className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
-                {tour.seats_left} left
+                {tour.seats_left} {t.common.left}
               </span>
             )}
           </div>

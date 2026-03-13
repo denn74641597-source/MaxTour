@@ -15,11 +15,13 @@ import {
 import { createClient } from '@/lib/supabase/client';
 import { formatDate } from '@/lib/utils';
 import { Phone, MessageCircle, Users } from 'lucide-react';
+import { useTranslation } from '@/lib/i18n';
 import type { Lead } from '@/types';
 
 export default function AgencyLeadsPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
 
   const supabase = createClient();
 
@@ -66,8 +68,8 @@ export default function AgencyLeadsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <h1 className="text-xl font-bold">Leads</h1>
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <h1 className="text-xl font-bold">{t.leadsPage.title}</h1>
+        <p className="text-sm text-muted-foreground">{t.common.loading}</p>
       </div>
     );
   }
@@ -75,8 +77,8 @@ export default function AgencyLeadsPage() {
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-xl font-bold">Leads</h1>
-        <p className="text-sm text-muted-foreground">{leads.length} total requests</p>
+        <h1 className="text-xl font-bold">{t.leadsPage.title}</h1>
+        <p className="text-sm text-muted-foreground">{leads.length} {t.leadsPage.totalRequests}</p>
       </div>
 
       {leads.length > 0 ? (
@@ -121,7 +123,7 @@ export default function AgencyLeadsPage() {
 
                 {/* Status Update */}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">Status:</span>
+                  <span className="text-xs text-muted-foreground">{t.common.status}:</span>
                   <Select
                     value={lead.status}
                     onValueChange={(val) => updateStatus(lead.id, val)}
@@ -130,11 +132,11 @@ export default function AgencyLeadsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="new">New</SelectItem>
-                      <SelectItem value="contacted">Contacted</SelectItem>
-                      <SelectItem value="closed">Closed</SelectItem>
-                      <SelectItem value="won">Won</SelectItem>
-                      <SelectItem value="lost">Lost</SelectItem>
+                      <SelectItem value="new">{t.leadsPage.statusNew}</SelectItem>
+                      <SelectItem value="contacted">{t.leadsPage.statusContacted}</SelectItem>
+                      <SelectItem value="closed">{t.leadsPage.statusClosed}</SelectItem>
+                      <SelectItem value="won">{t.leadsPage.statusWon}</SelectItem>
+                      <SelectItem value="lost">{t.leadsPage.statusLost}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -145,8 +147,8 @@ export default function AgencyLeadsPage() {
       ) : (
         <EmptyState
           icon={<Users className="h-12 w-12 text-muted-foreground/50 mb-4" />}
-          title="No leads yet"
-          description="Leads will appear here when users submit requests for your tours."
+          title={t.leadsPage.noLeads}
+          description={t.leadsPage.noLeadsHint}
         />
       )}
     </div>

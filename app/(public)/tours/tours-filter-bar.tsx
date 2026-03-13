@@ -3,18 +3,20 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronDown, BadgeCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const FILTER_CHIPS = [
-  { key: 'all', label: 'All Destinations' },
-  { key: 'price', label: 'Price Range', hasDropdown: true },
-  { key: 'duration', label: 'Duration', hasDropdown: true },
-  { key: 'verified', label: 'Verified', icon: BadgeCheck },
-] as const;
+import { useTranslation } from '@/lib/i18n';
 
 export function ToursFilterBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeFilter = searchParams.get('filter') ?? 'all';
+  const { t } = useTranslation();
+
+  const FILTER_CHIPS = [
+    { key: 'all', label: t.tours.allDestinations },
+    { key: 'price', label: t.tours.priceRange, hasDropdown: true },
+    { key: 'duration', label: t.tours.filterDuration, hasDropdown: true },
+    { key: 'verified', label: t.tours.filterVerified, icon: BadgeCheck },
+  ] as const;
 
   function handleFilter(key: string) {
     const params = new URLSearchParams(searchParams.toString());

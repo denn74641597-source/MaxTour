@@ -4,6 +4,7 @@ import { Search } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 interface SearchBarProps {
   placeholder?: string;
@@ -13,13 +14,16 @@ interface SearchBarProps {
 }
 
 export function SearchBar({
-  placeholder = 'Where to?',
+  placeholder,
   className,
   variant = 'hero',
 }: SearchBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [value, setValue] = useState(searchParams.get('q') ?? '');
+  const { t } = useTranslation();
+
+  const displayPlaceholder = placeholder ?? t.home.searchPlaceholder;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -43,7 +47,7 @@ export function SearchBar({
         <input
           value={value}
           onChange={(e) => setValue(e.target.value)}
-          placeholder={placeholder}
+          placeholder={displayPlaceholder}
           className={cn(
             'w-full border-none rounded-xl focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 text-slate-900 transition-all outline-none',
             variant === 'hero'

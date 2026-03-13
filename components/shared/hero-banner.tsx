@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import { formatPrice, placeholderImage } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
 
 interface HeroBannerProps {
@@ -9,6 +12,8 @@ interface HeroBannerProps {
 }
 
 export function HeroBanner({ tour }: HeroBannerProps) {
+  const { t } = useTranslation();
+
   return (
     <Link href={`/tours/${tour.slug}`}>
       <div className="relative overflow-hidden rounded-2xl bg-slate-900 group">
@@ -28,13 +33,13 @@ export function HeroBanner({ tour }: HeroBannerProps) {
         {/* Content */}
         <div className="absolute bottom-0 left-0 p-6">
           <span className="inline-block bg-primary px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-widest mb-2">
-            Featured
+            {t.common.featured}
           </span>
           <h2 className="text-2xl font-bold text-white leading-tight">
             {tour.title}
           </h2>
           <p className="text-slate-300 text-sm mt-1">
-            Starting from {formatPrice(tour.price, tour.currency)} per person
+            {formatPrice(tour.price, tour.currency)} {t.common.perPerson}
           </p>
         </div>
 

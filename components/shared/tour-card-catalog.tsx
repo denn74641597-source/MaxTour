@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Star, BadgeCheck } from 'lucide-react';
 import { placeholderImage } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
 
 interface TourCardCatalogProps {
@@ -11,10 +12,11 @@ interface TourCardCatalogProps {
 }
 
 export function TourCardCatalog({ tour }: TourCardCatalogProps) {
+  const { t } = useTranslation();
   const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
   const nightsText = tour.duration_days
-    ? `${tour.duration_days} night${tour.duration_days > 1 ? 's' : ''}`
+    ? `${tour.duration_days} ${tour.duration_days > 1 ? t.common.nights : t.common.night}`
     : null;
   const location = [tour.city, tour.country].filter(Boolean).join(', ');
 
@@ -41,7 +43,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         {tour.is_featured && (
           <div className="absolute bottom-3 left-3">
             <span className="px-2.5 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
-              Premium Selection
+              {t.common.premiumSelection}
             </span>
           </div>
         )}
@@ -70,7 +72,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
 
         {/* Agency */}
         <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-slate-400">by</span>
+          <span className="text-xs text-slate-400">{t.common.by}</span>
           <span className="text-xs font-semibold text-slate-700">{agencyName}</span>
           {isVerified && <BadgeCheck className="h-4 w-4 text-blue-500 fill-blue-500" />}
         </div>
@@ -78,13 +80,13 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         {/* Price + CTA */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
           <div>
-            <span className="text-xs text-slate-400 block">From</span>
+            <span className="text-xs text-slate-400 block">{t.common.from}</span>
             <span className="text-xl font-bold text-primary">
               ${tour.price.toLocaleString()}
             </span>
           </div>
           <span className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
-            View Details
+            {t.common.viewDetails}
           </span>
         </div>
       </Link>

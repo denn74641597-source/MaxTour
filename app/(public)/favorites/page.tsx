@@ -7,14 +7,16 @@ import { TourListSkeleton } from '@/components/shared/loading-skeleton';
 import { Button } from '@/components/ui/button';
 import { Heart } from 'lucide-react';
 import Link from 'next/link';
+import { useTranslation } from '@/lib/i18n';
 
 export default function FavoritesPage() {
   const { favorites, loading } = useFavorites();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
       <div className="px-4 py-4">
-        <h1 className="text-lg font-bold mb-4">Saved Tours</h1>
+        <h1 className="text-lg font-bold mb-4">{t.favorites.title}</h1>
         <TourListSkeleton count={4} />
       </div>
     );
@@ -22,7 +24,7 @@ export default function FavoritesPage() {
 
   return (
     <div className="px-4 py-4 space-y-4">
-      <h1 className="text-lg font-bold">Saved Tours</h1>
+      <h1 className="text-lg font-bold">{t.favorites.title}</h1>
 
       {favorites.length > 0 ? (
         <div className="grid grid-cols-2 gap-3">
@@ -33,11 +35,11 @@ export default function FavoritesPage() {
       ) : (
         <EmptyState
           icon={<Heart className="h-12 w-12 text-muted-foreground/50 mb-4" />}
-          title="No saved tours yet"
-          description="Browse tours and tap the heart icon to save them here."
+          title={t.favorites.empty}
+          description={t.favorites.emptyHint}
           action={
             <Link href="/tours">
-              <Button size="sm">Browse Tours</Button>
+              <Button size="sm">{t.favorites.browseTours}</Button>
             </Link>
           }
         />

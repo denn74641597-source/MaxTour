@@ -6,27 +6,30 @@ import {
   LayoutDashboard, Building2, MapPin, Users, CreditCard, ChevronLeft
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-
-const AGENCY_NAV = [
-  { href: '/agency', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/agency/profile', label: 'Profile', icon: Building2 },
-  { href: '/agency/tours', label: 'Tours', icon: MapPin },
-  { href: '/agency/leads', label: 'Leads', icon: Users },
-  { href: '/agency/subscription', label: 'Subscription', icon: CreditCard },
-];
+import { useTranslation } from '@/lib/i18n';
+import { LanguageSwitcher } from './language-switcher';
 
 export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' }) {
   const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const agencyNav = [
+    { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
+    { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
+    { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
+    { href: '/agency/leads', label: t.nav.leads, icon: Users },
+    { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
+  ];
 
   const items = type === 'admin'
     ? [
-        { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-        { href: '/admin/agencies', label: 'Agencies', icon: Building2 },
-        { href: '/admin/tours', label: 'Tours', icon: MapPin },
-        { href: '/admin/featured', label: 'Featured', icon: CreditCard },
-        { href: '/admin/subscriptions', label: 'Subscriptions', icon: Users },
+        { href: '/admin', label: t.nav.overview, icon: LayoutDashboard },
+        { href: '/admin/agencies', label: t.nav.agencies, icon: Building2 },
+        { href: '/admin/tours', label: t.nav.tours, icon: MapPin },
+        { href: '/admin/featured', label: t.nav.featured, icon: CreditCard },
+        { href: '/admin/subscriptions', label: t.nav.subscriptions, icon: Users },
       ]
-    : AGENCY_NAV;
+    : agencyNav;
 
   return (
     <aside className="w-full border-b md:border-b-0 md:border-r md:w-56 md:min-h-screen bg-muted/30">
@@ -34,9 +37,10 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
         <Link href="/" className="text-muted-foreground hover:text-foreground">
           <ChevronLeft className="h-4 w-4" />
         </Link>
-        <h2 className="font-semibold text-sm">
-          {type === 'admin' ? 'Admin Panel' : 'Agency Panel'}
+        <h2 className="font-semibold text-sm flex-1">
+          {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
         </h2>
+        <LanguageSwitcher variant="dropdown" />
       </div>
       <nav className="flex md:flex-col overflow-x-auto md:overflow-x-visible gap-1 px-2 pb-2 md:pb-4">
         {items.map(({ href, label, icon: Icon }) => {

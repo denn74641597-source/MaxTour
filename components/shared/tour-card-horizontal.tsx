@@ -1,7 +1,10 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Heart, BadgeCheck } from 'lucide-react';
 import { formatPrice, placeholderImage } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
 
 interface TourCardHorizontalProps {
@@ -9,6 +12,7 @@ interface TourCardHorizontalProps {
 }
 
 export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
+  const { t } = useTranslation();
   const isVerified = tour.agency?.is_verified ?? false;
 
   return (
@@ -26,7 +30,7 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
           {isVerified && (
             <div className="absolute top-2 left-2 bg-green-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
               <BadgeCheck className="h-2.5 w-2.5" />
-              VERIFIED
+              {t.common.verified}
             </div>
           )}
         </div>
@@ -52,7 +56,7 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
               </p>
             </div>
             <span className="bg-primary/10 text-primary px-3 py-1.5 rounded-lg text-xs font-bold">
-              Book
+              {t.common.book}
             </span>
           </div>
         </div>
