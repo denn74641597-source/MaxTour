@@ -59,13 +59,17 @@ export function AuthScreen() {
         await supabase.auth.signUp({
           email,
           password: autoPassword,
+          options: { data: { phone: trimmedPhone, full_name: trimmedName } },
         });
 
       let userId: string | undefined;
 
       if (signUpError) {
         // If user already exists, try sign in
-        if (signUpError.message?.toLowerCase().includes('already')) {
+        if (
+          signUpError.message?.toLowerCase().includes('already') ||
+          signUpError.message?.toLowerCase().includes('registered')
+        ) {
           const { data: signInData, error: signInError } =
             await supabase.auth.signInWithPassword({ email, password: autoPassword });
           if (signInError) {
@@ -78,7 +82,18 @@ export function AuthScreen() {
           return;
         }
       } else {
+        // If email confirmation is enabled, user might be returned but not confirmed
         userId = signUpData.user?.id;
+        if (!userId) {
+          // Sign up returned no user — try sign in (user may already exist)
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({ email, password: autoPassword });
+          if (signInError) {
+            setError(t.auth.phoneAlreadyRegistered);
+            return;
+          }
+          userId = signInData.user?.id;
+        }
       }
 
       if (!userId) {
@@ -129,12 +144,16 @@ export function AuthScreen() {
         await supabase.auth.signUp({
           email,
           password: trimmedPassword,
+          options: { data: { phone: trimmedPhone } },
         });
 
       let userId: string | undefined;
 
       if (signUpError) {
-        if (signUpError.message?.toLowerCase().includes('already')) {
+        if (
+          signUpError.message?.toLowerCase().includes('already') ||
+          signUpError.message?.toLowerCase().includes('registered')
+        ) {
           // Try logging in with the password
           const { data: signInData, error: signInError } =
             await supabase.auth.signInWithPassword({
@@ -152,6 +171,18 @@ export function AuthScreen() {
         }
       } else {
         userId = signUpData.user?.id;
+        if (!userId) {
+          const { data: signInData, error: signInError } =
+            await supabase.auth.signInWithPassword({
+              email,
+              password: trimmedPassword,
+            });
+          if (signInError) {
+            setError(t.auth.wrongPassword);
+            return;
+          }
+          userId = signInData.user?.id;
+        }
       }
 
       if (!userId) {

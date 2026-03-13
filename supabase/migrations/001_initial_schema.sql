@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS profiles (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_profiles_role ON profiles(role);
+CREATE INDEX IF NOT EXISTS idx_profiles_role ON profiles(role);
 
 -- ============================================================
 -- 2. AGENCIES
@@ -40,9 +40,9 @@ CREATE TABLE IF NOT EXISTS agencies (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_agencies_slug ON agencies(slug);
-CREATE INDEX idx_agencies_owner ON agencies(owner_id);
-CREATE INDEX idx_agencies_approved ON agencies(is_approved);
+CREATE INDEX IF NOT EXISTS idx_agencies_slug ON agencies(slug);
+CREATE INDEX IF NOT EXISTS idx_agencies_owner ON agencies(owner_id);
+CREATE INDEX IF NOT EXISTS idx_agencies_approved ON agencies(is_approved);
 
 -- ============================================================
 -- 3. SUBSCRIPTION PLANS
@@ -71,8 +71,8 @@ CREATE TABLE IF NOT EXISTS agency_subscriptions (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_agency_subscriptions_agency ON agency_subscriptions(agency_id);
-CREATE INDEX idx_agency_subscriptions_status ON agency_subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_agency_subscriptions_agency ON agency_subscriptions(agency_id);
+CREATE INDEX IF NOT EXISTS idx_agency_subscriptions_status ON agency_subscriptions(status);
 
 -- ============================================================
 -- 5. TOURS
@@ -107,13 +107,13 @@ CREATE TABLE IF NOT EXISTS tours (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_tours_slug ON tours(slug);
-CREATE INDEX idx_tours_agency ON tours(agency_id);
-CREATE INDEX idx_tours_status ON tours(status);
-CREATE INDEX idx_tours_country ON tours(country);
-CREATE INDEX idx_tours_featured ON tours(is_featured) WHERE is_featured = true;
-CREATE INDEX idx_tours_departure ON tours(departure_date);
-CREATE INDEX idx_tours_price ON tours(price);
+CREATE INDEX IF NOT EXISTS idx_tours_slug ON tours(slug);
+CREATE INDEX IF NOT EXISTS idx_tours_agency ON tours(agency_id);
+CREATE INDEX IF NOT EXISTS idx_tours_status ON tours(status);
+CREATE INDEX IF NOT EXISTS idx_tours_country ON tours(country);
+CREATE INDEX IF NOT EXISTS idx_tours_featured ON tours(is_featured) WHERE is_featured = true;
+CREATE INDEX IF NOT EXISTS idx_tours_departure ON tours(departure_date);
+CREATE INDEX IF NOT EXISTS idx_tours_price ON tours(price);
 
 -- ============================================================
 -- 6. TOUR IMAGES
@@ -126,7 +126,7 @@ CREATE TABLE IF NOT EXISTS tour_images (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_tour_images_tour ON tour_images(tour_id);
+CREATE INDEX IF NOT EXISTS idx_tour_images_tour ON tour_images(tour_id);
 
 -- ============================================================
 -- 7. LEADS
@@ -145,9 +145,9 @@ CREATE TABLE IF NOT EXISTS leads (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_leads_agency ON leads(agency_id);
-CREATE INDEX idx_leads_tour ON leads(tour_id);
-CREATE INDEX idx_leads_status ON leads(status);
+CREATE INDEX IF NOT EXISTS idx_leads_agency ON leads(agency_id);
+CREATE INDEX IF NOT EXISTS idx_leads_tour ON leads(tour_id);
+CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
 
 -- ============================================================
 -- 8. REVIEWS
@@ -161,7 +161,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_reviews_agency ON reviews(agency_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_agency ON reviews(agency_id);
 
 -- ============================================================
 -- 9. FEATURED ITEMS
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS favorites (
   UNIQUE(user_id, tour_id)
 );
 
-CREATE INDEX idx_favorites_user ON favorites(user_id);
+CREATE INDEX IF NOT EXISTS idx_favorites_user ON favorites(user_id);
 
 -- ============================================================
 -- UPDATED_AT TRIGGER
@@ -200,9 +200,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_profiles_updated_at ON profiles;
 CREATE TRIGGER trg_profiles_updated_at BEFORE UPDATE ON profiles FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS trg_agencies_updated_at ON agencies;
 CREATE TRIGGER trg_agencies_updated_at BEFORE UPDATE ON agencies FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS trg_tours_updated_at ON tours;
 CREATE TRIGGER trg_tours_updated_at BEFORE UPDATE ON tours FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+DROP TRIGGER IF EXISTS trg_leads_updated_at ON leads;
 CREATE TRIGGER trg_leads_updated_at BEFORE UPDATE ON leads FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 -- ============================================================
@@ -220,46 +227,69 @@ ALTER TABLE subscription_plans ENABLE ROW LEVEL SECURITY;
 ALTER TABLE agency_subscriptions ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: users can read all, update own
+DROP POLICY IF EXISTS "Profiles are viewable by everyone" ON profiles;
 CREATE POLICY "Profiles are viewable by everyone" ON profiles FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 CREATE POLICY "Users can update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 CREATE POLICY "Users can insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- Agencies: public can read approved, owners can update own
+DROP POLICY IF EXISTS "Approved agencies are viewable" ON agencies;
 CREATE POLICY "Approved agencies are viewable" ON agencies FOR SELECT USING (is_approved = true OR owner_id = auth.uid());
+DROP POLICY IF EXISTS "Agency owners can update" ON agencies;
 CREATE POLICY "Agency owners can update" ON agencies FOR UPDATE USING (owner_id = auth.uid());
+DROP POLICY IF EXISTS "Authenticated users can create agencies" ON agencies;
 CREATE POLICY "Authenticated users can create agencies" ON agencies FOR INSERT WITH CHECK (auth.uid() = owner_id);
 
 -- Tours: public can read published, agency owners can manage own
+DROP POLICY IF EXISTS "Published tours are viewable" ON tours;
 CREATE POLICY "Published tours are viewable" ON tours FOR SELECT USING (status = 'published' OR agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
+DROP POLICY IF EXISTS "Agency owners can insert tours" ON tours;
 CREATE POLICY "Agency owners can insert tours" ON tours FOR INSERT WITH CHECK (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
+DROP POLICY IF EXISTS "Agency owners can update tours" ON tours;
 CREATE POLICY "Agency owners can update tours" ON tours FOR UPDATE USING (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
+DROP POLICY IF EXISTS "Agency owners can delete tours" ON tours;
 CREATE POLICY "Agency owners can delete tours" ON tours FOR DELETE USING (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
 
 -- Tour images: same as tours
+DROP POLICY IF EXISTS "Tour images are viewable" ON tour_images;
 CREATE POLICY "Tour images are viewable" ON tour_images FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Agency owners can manage tour images" ON tour_images;
 CREATE POLICY "Agency owners can manage tour images" ON tour_images FOR ALL USING (tour_id IN (SELECT id FROM tours WHERE agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid())));
 
 -- Leads: agency owners see their leads, users can insert
+DROP POLICY IF EXISTS "Anyone can submit leads" ON leads;
 CREATE POLICY "Anyone can submit leads" ON leads FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Agency owners can view leads" ON leads;
 CREATE POLICY "Agency owners can view leads" ON leads FOR SELECT USING (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
+DROP POLICY IF EXISTS "Agency owners can update leads" ON leads;
 CREATE POLICY "Agency owners can update leads" ON leads FOR UPDATE USING (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
 
 -- Reviews: public read, authenticated write
+DROP POLICY IF EXISTS "Reviews are viewable" ON reviews;
 CREATE POLICY "Reviews are viewable" ON reviews FOR SELECT USING (true);
+DROP POLICY IF EXISTS "Authenticated users can add reviews" ON reviews;
 CREATE POLICY "Authenticated users can add reviews" ON reviews FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Favorites: users manage own
+DROP POLICY IF EXISTS "Users can view own favorites" ON favorites;
 CREATE POLICY "Users can view own favorites" ON favorites FOR SELECT USING (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can add favorites" ON favorites;
 CREATE POLICY "Users can add favorites" ON favorites FOR INSERT WITH CHECK (auth.uid() = user_id);
+DROP POLICY IF EXISTS "Users can remove favorites" ON favorites;
 CREATE POLICY "Users can remove favorites" ON favorites FOR DELETE USING (auth.uid() = user_id);
 
 -- Subscription plans: public read
+DROP POLICY IF EXISTS "Subscription plans are viewable" ON subscription_plans;
 CREATE POLICY "Subscription plans are viewable" ON subscription_plans FOR SELECT USING (true);
 
 -- Agency subscriptions: agency owners can view own
+DROP POLICY IF EXISTS "Agency owners can view subscriptions" ON agency_subscriptions;
 CREATE POLICY "Agency owners can view subscriptions" ON agency_subscriptions FOR SELECT USING (agency_id IN (SELECT id FROM agencies WHERE owner_id = auth.uid()));
 
 -- Featured items: public read
+DROP POLICY IF EXISTS "Featured items are viewable" ON featured_items;
 CREATE POLICY "Featured items are viewable" ON featured_items FOR SELECT USING (true);
 
 -- ============================================================
