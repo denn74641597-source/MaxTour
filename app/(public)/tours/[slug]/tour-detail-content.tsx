@@ -35,9 +35,9 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
     : null;
 
   return (
-    <div className="pb-24 bg-[#f6f6f8]">
+    <div className="pb-20 bg-[#f6f6f8]">
       {/* Top App Bar */}
-      <div className="sticky top-0 z-50 flex items-center bg-white/80 backdrop-blur-md p-4 justify-between border-b border-slate-200">
+      <div className="sticky top-0 z-50 flex items-center bg-white/80 backdrop-blur-md px-3 py-2.5 justify-between border-b border-slate-200">
         <Link
           href="/tours"
           className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
@@ -51,7 +51,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
       </div>
 
       {/* Hero Image */}
-      <div className="relative min-h-[400px] w-full overflow-hidden bg-slate-200">
+      <div className="relative min-h-[260px] w-full overflow-hidden bg-slate-200">
         <Image
           src={allImages[0]}
           alt={tour.title}
@@ -73,10 +73,10 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
       </div>
 
       {/* Header Info: Title + Price */}
-      <div className="px-4 pt-6 bg-white">
+      <div className="px-3 pt-3 pb-1 bg-white">
         <div className="flex justify-between items-start">
-          <div className="flex-1 mr-4">
-            <h1 className="text-3xl font-bold leading-tight tracking-tight text-slate-900">
+          <div className="flex-1 mr-3">
+            <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900">
               {tour.title}
             </h1>
             <div className="flex items-center gap-1 mt-1">
@@ -102,33 +102,33 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
             )}
           </div>
           <div className="text-right shrink-0">
-            <p className="text-primary text-2xl font-bold">${tour.price.toLocaleString()}</p>
+            <p className="text-primary text-xl font-bold">${tour.price.toLocaleString()}</p>
             <p className="text-slate-500 text-xs">{t.common.perPerson}</p>
           </div>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-3 px-4 mt-6">
+      <div className="grid grid-cols-3 gap-2 px-3 mt-3">
         {tour.duration_days && (
-          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col items-center">
-            <Clock className="h-5 w-5 text-primary mb-1" />
+          <div className="bg-white p-2 rounded-xl border border-slate-100 flex flex-col items-center">
+            <Clock className="h-4 w-4 text-primary mb-0.5" />
             <span className="text-[10px] uppercase tracking-wider text-slate-500">{t.tours.duration}</span>
-            <span className="text-sm font-bold text-slate-900">{tour.duration_days} {t.common.days}</span>
+            <span className="text-xs font-bold text-slate-900">{tour.duration_days} {t.common.days}</span>
           </div>
         )}
         {tour.departure_date && (
-          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col items-center">
-            <CalendarDays className="h-5 w-5 text-primary mb-1" />
+          <div className="bg-white p-2 rounded-xl border border-slate-100 flex flex-col items-center">
+            <CalendarDays className="h-4 w-4 text-primary mb-0.5" />
             <span className="text-[10px] uppercase tracking-wider text-slate-500">{t.tours.departure}</span>
-            <span className="text-sm font-bold text-slate-900">{formatDate(tour.departure_date)}</span>
+            <span className="text-xs font-bold text-slate-900">{formatDate(tour.departure_date)}</span>
           </div>
         )}
         {tour.seats_left !== null && (
-          <div className="bg-white p-3 rounded-xl border border-slate-100 flex flex-col items-center">
-            <Users className="h-5 w-5 text-primary mb-1" />
+          <div className="bg-white p-2 rounded-xl border border-slate-100 flex flex-col items-center">
+            <Users className="h-4 w-4 text-primary mb-0.5" />
             <span className="text-[10px] uppercase tracking-wider text-slate-500">{t.common.seatsLeft}</span>
-            <span className={`text-sm font-bold ${tour.seats_left <= 5 ? 'text-red-500' : 'text-slate-900'}`}>
+            <span className={`text-xs font-bold ${tour.seats_left <= 5 ? 'text-red-500' : 'text-slate-900'}`}>
               {tour.seats_left} {t.common.left}
             </span>
           </div>
@@ -137,8 +137,8 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
 
       {/* Airline */}
       {tour.airline && (
-        <div className="px-4 mt-4">
-          <div className="bg-blue-50 rounded-xl px-4 py-3 flex items-center gap-3 border border-blue-100">
+        <div className="px-3 mt-3">
+          <div className="bg-blue-50 rounded-xl px-3 py-2.5 flex items-center gap-2.5 border border-blue-100">
             <Plane className="h-5 w-5 text-blue-500" />
             <div>
               <span className="text-[10px] uppercase tracking-wider text-blue-400">{t.tours.airline}</span>
@@ -150,10 +150,10 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
 
       {/* Agency Profile Card */}
       {agency && (
-        <div className="px-4 mt-8">
-          <div className="bg-primary/5 rounded-xl p-4 flex items-center justify-between border border-primary/10">
-            <div className="flex items-center gap-3">
-              <div className="size-12 rounded-full bg-slate-200 overflow-hidden relative shrink-0">
+        <div className="px-3 mt-4">
+          <div className="bg-primary/5 rounded-xl p-3 flex items-center justify-between border border-primary/10">
+            <div className="flex items-center gap-2.5">
+              <div className="size-10 rounded-full bg-slate-200 overflow-hidden relative shrink-0">
                 <Image
                   src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
                   alt={agency.name}
@@ -188,12 +188,12 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
       )}
 
       {/* Content Sections */}
-      <div className="px-4 mt-8 space-y-8">
+      <div className="px-3 mt-4 space-y-4">
         {/* About */}
         {tour.full_description && (
           <section>
-            <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.aboutTour}</h3>
-            <p className="text-sm text-slate-600 leading-relaxed whitespace-pre-line">
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.aboutTour}</h3>
+            <p className="text-sm text-slate-600 leading-snug whitespace-pre-line">
               {tour.full_description}
             </p>
           </section>
@@ -202,11 +202,11 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         {/* What's Included */}
         {includedServices.length > 0 && (
           <section>
-            <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.whatsIncluded}</h3>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.whatsIncluded}</h3>
             <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
               {includedServices.map((service, i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3">
-                  <div className="size-6 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
                     <Check className="h-3.5 w-3.5 text-emerald-500" />
                   </div>
                   <span className="text-sm text-slate-700">{service}</span>
@@ -219,11 +219,11 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         {/* What's Excluded */}
         {excludedServices.length > 0 && (
           <section>
-            <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.whatsExcluded}</h3>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.whatsExcluded}</h3>
             <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
               {excludedServices.map((service, i) => (
-                <div key={i} className="flex items-center gap-3 px-4 py-3">
-                  <div className="size-6 rounded-full bg-red-50 flex items-center justify-center shrink-0">
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="size-5 rounded-full bg-red-50 flex items-center justify-center shrink-0">
                     <X className="h-3.5 w-3.5 text-red-400" />
                   </div>
                   <span className="text-sm text-slate-500">{service}</span>
@@ -236,12 +236,12 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         {/* Extra Charges */}
         {extraCharges.length > 0 && (
           <section>
-            <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.extraCharges}</h3>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.extraCharges}</h3>
             <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
               {extraCharges.map((charge: { name: string; amount: number }, i: number) => (
-                <div key={i} className="flex items-center justify-between px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <div className="size-6 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                <div key={i} className="flex items-center justify-between px-3 py-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="size-5 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
                       <DollarSign className="h-3.5 w-3.5 text-amber-500" />
                     </div>
                     <span className="text-sm text-slate-700">{charge.name}</span>
@@ -256,7 +256,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         {/* Hotel Info */}
         {tour.hotel_name && (
           <section>
-            <h3 className="text-lg font-bold mb-3 text-slate-900">{t.tours.hotelInfo}</h3>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.hotelInfo}</h3>
             <div className="rounded-xl overflow-hidden border border-slate-200 bg-white">
               {/* Hotel Image Carousel */}
               {hotelImages.length > 0 ? (
@@ -272,17 +272,17 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                   />
                 </div>
               )}
-              <div className="p-4">
-                <h4 className="font-bold text-lg text-slate-900">{tour.hotel_name}</h4>
+              <div className="p-3">
+                <h4 className="font-bold text-base text-slate-900">{tour.hotel_name}</h4>
                 {tour.hotel_stars && (
-                  <div className="flex items-center gap-0.5 mb-2">
+                  <div className="flex items-center gap-0.5 mb-1">
                     {Array.from({ length: tour.hotel_stars }).map((_: any, i: number) => (
                       <Star key={i} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
                     ))}
                   </div>
                 )}
                 {tour.short_description && (
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-sm text-slate-600 leading-snug">
                     {tour.short_description}
                   </p>
                 )}
@@ -291,7 +291,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                     href={tour.hotel_booking_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 mt-3 px-4 py-2.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
+                    className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
                   >
                     <ExternalLink className="h-4 w-4" />
                     Booking.com
@@ -304,11 +304,11 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
       </div>
 
       {/* Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-4 z-50">
-        <div className="max-w-2xl mx-auto flex gap-3">
+      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 z-50">
+        <div className="max-w-2xl mx-auto flex gap-2">
           <Link
             href={`/tours/${tour.slug}#request`}
-            className="flex-1 bg-slate-100 text-slate-900 font-bold py-4 rounded-xl text-center hover:bg-slate-200 transition-colors text-sm"
+            className="flex-1 bg-slate-100 text-slate-900 font-bold py-3 rounded-xl text-center hover:bg-slate-200 transition-colors text-sm"
           >
             {t.tours.leaveRequest}
           </Link>
@@ -317,13 +317,13 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
               href={telegramLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-[1.5] bg-primary text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm"
+              className="flex-[1.5] bg-primary text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm"
             >
               <Send className="h-4 w-4" />
               {t.tours.contactTelegram}
             </a>
           ) : (
-            <button className="flex-[1.5] bg-primary text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm">
+            <button className="flex-[1.5] bg-primary text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm">
               <Send className="h-4 w-4" />
               {t.tours.contactTelegram}
             </button>
