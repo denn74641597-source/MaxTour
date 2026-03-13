@@ -361,7 +361,7 @@ export const uz: Translations = {
   },
 
   agencyView: {
-    approved: 'Tasdiqlangan',
+    approved: 'Tekshirilgan',
     pendingApproval: 'Tekshirilmoqda',
     verified: 'Tasdiqlangan',
     aboutUs: 'Biz haqimizda',

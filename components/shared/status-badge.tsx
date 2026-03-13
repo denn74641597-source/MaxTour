@@ -32,14 +32,16 @@ const STATUS_MAP: Record<string, StatusVariant> = {
   // Approval
   approved: 'success',
   rejected: 'error',
+  verified: 'info',
 };
 
 interface StatusBadgeProps {
   status: string;
+  label?: string;
   className?: string;
 }
 
-export function StatusBadge({ status, className }: StatusBadgeProps) {
+export function StatusBadge({ status, label, className }: StatusBadgeProps) {
   const variant = STATUS_MAP[status.toLowerCase()] ?? 'default';
 
   return (
@@ -51,7 +53,7 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
         className
       )}
     >
-      {status}
+      {label ?? status}
     </Badge>
   );
 }

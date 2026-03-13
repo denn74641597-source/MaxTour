@@ -3,6 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, BadgeCheck, ChevronRight } from 'lucide-react';
+import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
@@ -71,7 +72,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
         </div>
         <div className="flex items-center gap-1.5 mb-1">
           <h1 className="text-xl font-bold">{agency.name}</h1>
-          {agency.is_verified && <BadgeCheck className="h-5 w-5 text-blue-500 fill-blue-500" />}
+          {agency.is_verified && <VerifiedBadge size="md" className="h-5 w-5" />}
         </div>
         {agency.city && (
           <p className="text-sm text-muted-foreground mb-2">

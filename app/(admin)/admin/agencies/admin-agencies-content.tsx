@@ -38,8 +38,8 @@ export function AdminAgenciesContent({ agencies }: AdminAgenciesContentProps) {
                     {t.admin.created}: {formatDate(agency.created_at)}
                   </p>
                   <div className="flex gap-2 mt-2">
-                    <StatusBadge status={agency.is_approved ? 'approved' : 'pending'} />
-                    {agency.is_verified && <StatusBadge status="verified" />}
+                    <StatusBadge status={agency.is_approved ? 'approved' : 'pending'} label={agency.is_approved ? t.agencyView.approved : t.agencyView.pendingApproval} />
+                    {agency.is_verified && <StatusBadge status="verified" label={t.agencyView.verified} />}
                   </div>
                 </div>
                 <AdminAgencyActions agencyId={agency.id} isApproved={agency.is_approved} />

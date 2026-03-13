@@ -361,7 +361,7 @@ export const ru: Translations = {
   },
 
   agencyView: {
-    approved: 'Одобрено',
+    approved: 'Проверено',
     pendingApproval: 'На проверке',
     verified: 'Подтверждено',
     aboutUs: 'О нас',
