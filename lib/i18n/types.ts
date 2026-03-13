@@ -256,6 +256,10 @@ export interface Translations {
     submitForReview: string;
     tourUpdated: string;
     tourCreated: string;
+    deleteTour: string;
+    deleteTourConfirm: string;
+    tourDeleted: string;
+    deleting: string;
   };
   mealTypes: {
     none: string;

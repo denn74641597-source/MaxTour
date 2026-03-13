@@ -295,6 +295,10 @@ export const ru: Translations = {
     submitForReview: 'Отправить на проверку',
     tourUpdated: 'Тур обновлён',
     tourCreated: 'Тур создан',
+    deleteTour: 'Удалить тур',
+    deleteTourConfirm: 'Вы уверены, что хотите удалить этот тур? Это действие нельзя отменить.',
+    tourDeleted: 'Тур удалён',
+    deleting: 'Удаление...',
   },
 
   // ─── Meal Types ───

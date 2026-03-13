@@ -295,6 +295,10 @@ export const uz: Translations = {
     submitForReview: 'Tekshiruvga yuborish',
     tourUpdated: 'Tur yangilandi',
     tourCreated: 'Tur yaratildi',
+    deleteTour: 'Turni o\'chirish',
+    deleteTourConfirm: 'Haqiqatan ham bu turni o\'chirmoqchimisiz? Bu amalni qaytarib bo\'lmaydi.',
+    tourDeleted: 'Tur o\'chirildi',
+    deleting: 'O\'chirilmoqda...',
   },
 
   // ─── Meal Types ───
