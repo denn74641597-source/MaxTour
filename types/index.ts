@@ -182,6 +182,7 @@ export interface TourFilters {
   meal?: MealType;
   visaFree?: boolean;
   sortBy?: 'price_asc' | 'price_desc' | 'date_asc' | 'date_desc' | 'newest';
+  limit?: number;
 }
 
 // Tour category tags for filter chips

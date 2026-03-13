@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script';
 import { Toaster } from '@/components/ui/sonner';
 import { LanguageProvider } from '@/lib/i18n';
 import './globals.css';
@@ -32,10 +33,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="uz">
-      <head>
-        {/* Telegram Mini App SDK */}
-        <script src="https://telegram.org/js/telegram-web-app.js" defer />
-      </head>
       <body
         className={`${inter.variable} font-sans antialiased`}
       >
@@ -43,6 +40,11 @@ export default function RootLayout({
           {children}
         </LanguageProvider>
         <Toaster position="top-center" />
+        {/* Telegram Mini App SDK — loaded after page is interactive */}
+        <Script
+          src="https://telegram.org/js/telegram-web-app.js"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );

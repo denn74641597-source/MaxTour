@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { cache } from 'react';
 import type { Tour, TourFilters } from '@/types';
 
 /** Fetch published tours with optional filters */
@@ -41,7 +42,7 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
       query = query.order('created_at', { ascending: false });
   }
 
-  const { data, error } = await query.limit(50);
+  const { data, error } = await query.limit(filters?.limit ?? 50);
   if (error) {
     console.error('getTours error:', error);
     return [];
@@ -49,8 +50,8 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   return data ?? [];
 }
 
-/** Fetch a single tour by slug */
-export async function getTourBySlug(slug: string): Promise<Tour | null> {
+/** Fetch a single tour by slug (deduplicated per request) */
+export const getTourBySlug = cache(async (slug: string): Promise<Tour | null> => {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
@@ -66,7 +67,7 @@ export async function getTourBySlug(slug: string): Promise<Tour | null> {
     return null;
   }
   return data;
-}
+});
 
 /** Fetch featured tours */
 export async function getFeaturedTours(): Promise<Tour[]> {

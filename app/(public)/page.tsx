@@ -10,7 +10,7 @@ export default async function HomePage() {
   try {
     [featuredTours, recentTours, agencies] = await Promise.all([
       getFeaturedTours(),
-      getTours({ sortBy: 'newest' }),
+      getTours({ sortBy: 'newest', limit: 6 }),
       getVerifiedAgencies(6),
     ]);
   } catch (error) {
