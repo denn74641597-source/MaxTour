@@ -5,16 +5,23 @@ export async function middleware(request: NextRequest) {
   const { supabaseResponse, user, supabase } = await updateSession(request);
   const pathname = request.nextUrl.pathname;
 
-  // Protected routes — redirect to profile/login if not authenticated
-  const protectedPaths = ['/agency', '/admin'];
-  const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
+  // Admin login page — always accessible
+  if (pathname === '/admin/login') {
+    return supabaseResponse;
+  }
 
-  if (isProtected && !user) {
+  // Protected routes — redirect to appropriate login
+  if (pathname.startsWith('/admin') && !user) {
+    const loginUrl = new URL('/admin/login', request.nextUrl);
+    return NextResponse.redirect(loginUrl);
+  }
+
+  if (pathname.startsWith('/agency') && !user) {
     const loginUrl = new URL('/profile', request.nextUrl);
     return NextResponse.redirect(loginUrl);
   }
 
-  // Admin routes — check role
+  // Admin routes — only role=admin allowed
   if (pathname.startsWith('/admin') && user && supabase) {
     const { data: profile } = await supabase
       .from('profiles')
@@ -23,8 +30,8 @@ export async function middleware(request: NextRequest) {
       .single();
 
     if (profile?.role !== 'admin') {
-      const homeUrl = new URL('/', request.nextUrl);
-      return NextResponse.redirect(homeUrl);
+      const loginUrl = new URL('/admin/login', request.nextUrl);
+      return NextResponse.redirect(loginUrl);
     }
   }
 
