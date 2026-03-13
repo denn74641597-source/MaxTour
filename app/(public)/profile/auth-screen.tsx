@@ -116,8 +116,9 @@ export function AuthScreen() {
       }
 
       router.refresh();
-    } catch {
-      setError('Xatolik yuz berdi');
+    } catch (err) {
+      console.error('User register error:', err);
+      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
     } finally {
       setLoading(false);
     }
@@ -214,8 +215,9 @@ export function AuthScreen() {
       });
 
       router.push('/agency');
-    } catch {
-      setError('Xatolik yuz berdi');
+    } catch (err) {
+      console.error('Agency register error:', err);
+      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
     } finally {
       setLoading(false);
     }
