@@ -20,3 +20,17 @@ export async function updateTourStatusAction(tourId: string, status: string) {
 
   return { success: true };
 }
+
+export async function updateAgencyApprovalAction(agencyId: string, approved: boolean) {
+  const supabase = await createAdminClient();
+  const { error } = await supabase
+    .from('agencies')
+    .update({ is_approved: approved, updated_at: new Date().toISOString() })
+    .eq('id', agencyId);
+
+  if (error) {
+    return { error: error.message };
+  }
+
+  return { success: true };
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/client';
+import { updateAgencyApprovalAction } from '@/features/admin/actions';
 import { useRouter } from 'next/navigation';
 import { Check, X } from 'lucide-react';
 import { toast } from 'sonner';
@@ -13,16 +13,12 @@ interface Props {
 
 export function AdminAgencyActions({ agencyId, isApproved }: Props) {
   const router = useRouter();
-  const supabase = createClient();
 
   async function handleApproval(approved: boolean) {
-    const { error } = await supabase
-      .from('agencies')
-      .update({ is_approved: approved, updated_at: new Date().toISOString() })
-      .eq('id', agencyId);
+    const result = await updateAgencyApprovalAction(agencyId, approved);
 
-    if (error) {
-      toast.error('Failed to update');
+    if (result.error) {
+      toast.error(result.error);
       return;
     }
 
