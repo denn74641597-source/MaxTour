@@ -331,6 +331,18 @@ export const ru: Translations = {
     profileSaved: 'Профиль успешно сохранён',
   },
 
+  agencyView: {
+    approved: 'Одобрено',
+    pendingApproval: 'На проверке',
+    verified: 'Подтверждено',
+    aboutUs: 'О нас',
+    noContactInfo: 'Контактная информация не добавлена',
+    memberSince: 'Дата регистрации',
+    editProfile: 'Редактировать профиль',
+    editSubtitle: 'Обновите данные агентства',
+    fillFormHint: 'Заполните информацию о вашем агентстве. Это поможет клиентам найти вас.',
+  },
+
   // ─── Subscription Page ───
   subscriptionPage: {
     title: 'Подписка',

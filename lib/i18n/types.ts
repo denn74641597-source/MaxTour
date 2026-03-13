@@ -283,6 +283,17 @@ export interface Translations {
     saveProfile: string;
     profileSaved: string;
   };
+  agencyView: {
+    approved: string;
+    pendingApproval: string;
+    verified: string;
+    aboutUs: string;
+    noContactInfo: string;
+    memberSince: string;
+    editProfile: string;
+    editSubtitle: string;
+    fillFormHint: string;
+  };
   subscriptionPage: {
     title: string;
     subtitle: string;

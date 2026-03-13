@@ -331,6 +331,18 @@ export const uz: Translations = {
     profileSaved: 'Profil muvaffaqiyatli saqlandi',
   },
 
+  agencyView: {
+    approved: 'Tasdiqlangan',
+    pendingApproval: 'Tekshirilmoqda',
+    verified: 'Tasdiqlangan',
+    aboutUs: 'Biz haqimizda',
+    noContactInfo: 'Aloqa ma\'lumotlari qo\'shilmagan',
+    memberSince: 'A\'zo bo\'lgan sana',
+    editProfile: 'Profilni tahrirlash',
+    editSubtitle: 'Agentlik ma\'lumotlarini yangilang',
+    fillFormHint: 'Agentligingiz haqida ma\'lumot kiriting. Bu mijozlarga sizni topishga yordam beradi.',
+  },
+
   // ─── Subscription Page ───
   subscriptionPage: {
     title: 'Obuna',

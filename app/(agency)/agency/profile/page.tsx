@@ -9,15 +9,34 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ImageUploader } from '@/components/shared/image-uploader';
 import { agencyProfileSchema, type AgencyProfileData } from '@/lib/validators';
-import { Loader2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import {
+  Loader2,
+  Pencil,
+  MapPin,
+  Phone,
+  MessageCircle,
+  Globe,
+  Instagram,
+  BadgeCheck,
+  Building2,
+  Clock,
+  ShieldCheck,
+  X,
+} from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/lib/i18n';
 import { upsertAgencyProfileAction, getMyAgencyAction } from '@/features/agencies/actions';
+import Image from 'next/image';
+import { placeholderImage } from '@/lib/utils';
+import type { Agency } from '@/types';
+
+type PageMode = 'loading' | 'form' | 'view';
 
 export default function AgencyProfilePage() {
   const [logoUrl, setLogoUrl] = useState('');
-  const [loading, setLoading] = useState(true);
+  const [mode, setMode] = useState<PageMode>('loading');
+  const [agency, setAgency] = useState<Agency | null>(null);
   const { t } = useTranslation();
 
   const {
@@ -33,26 +52,51 @@ export default function AgencyProfilePage() {
     },
   });
 
-  useEffect(() => {
-    getMyAgencyAction().then((agency) => {
-      if (agency) {
-        reset({
-          name: agency.name,
-          slug: agency.slug,
-          description: agency.description ?? '',
-          phone: agency.phone ?? '',
-          telegram_username: agency.telegram_username ?? '',
-          instagram_url: agency.instagram_url ?? '',
-          website_url: agency.website_url ?? '',
-          address: agency.address ?? '',
-          city: agency.city ?? '',
-          country: agency.country ?? 'Uzbekistan',
-        });
-        setLogoUrl(agency.logo_url ?? '');
-      }
-      setLoading(false);
-    });
+  const loadAgency = useCallback(async () => {
+    const data = await getMyAgencyAction();
+    if (data) {
+      setAgency(data as Agency);
+      setLogoUrl(data.logo_url ?? '');
+      reset({
+        name: data.name,
+        slug: data.slug,
+        description: data.description ?? '',
+        phone: data.phone ?? '',
+        telegram_username: data.telegram_username ?? '',
+        instagram_url: data.instagram_url ?? '',
+        website_url: data.website_url ?? '',
+        address: data.address ?? '',
+        city: data.city ?? '',
+        country: data.country ?? 'Uzbekistan',
+      });
+      setMode('view');
+    } else {
+      setMode('form');
+    }
   }, [reset]);
+
+  useEffect(() => {
+    loadAgency();
+  }, [loadAgency]);
+
+  function handleEdit() {
+    if (agency) {
+      reset({
+        name: agency.name,
+        slug: agency.slug,
+        description: agency.description ?? '',
+        phone: agency.phone ?? '',
+        telegram_username: agency.telegram_username ?? '',
+        instagram_url: agency.instagram_url ?? '',
+        website_url: agency.website_url ?? '',
+        address: agency.address ?? '',
+        city: agency.city ?? '',
+        country: agency.country ?? 'Uzbekistan',
+      });
+      setLogoUrl(agency.logo_url ?? '');
+    }
+    setMode('form');
+  }
 
   async function onSubmit(data: AgencyProfileData) {
     const result = await upsertAgencyProfileAction({
@@ -72,22 +116,251 @@ export default function AgencyProfilePage() {
       toast.error(result.error);
     } else {
       toast.success(t.agencyProfileForm.profileSaved);
+      await loadAgency();
     }
   }
 
-  if (loading) {
+  if (mode === 'loading') {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-6 w-6 animate-spin" />
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }
 
+  /* ─── Profile View ─── */
+  if (mode === 'view' && agency) {
+    const telegramLink = agency.telegram_username
+      ? `https://t.me/${agency.telegram_username.replace('@', '')}`
+      : null;
+
+    const createdDate = new Date(agency.created_at).toLocaleDateString('uz-UZ', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    return (
+      <div className="space-y-5">
+        {/* Header Card */}
+        <div className="relative bg-gradient-to-br from-primary/10 via-primary/5 to-transparent rounded-2xl overflow-hidden">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-primary/5 to-transparent" />
+          <div className="relative p-6 flex flex-col items-center text-center">
+            {/* Edit Button */}
+            <Button
+              variant="outline"
+              size="icon"
+              className="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/80 backdrop-blur"
+              onClick={handleEdit}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+
+            {/* Logo */}
+            <div className="relative h-24 w-24 rounded-full overflow-hidden ring-4 ring-white shadow-lg bg-white mb-4">
+              <Image
+                src={agency.logo_url || placeholderImage(200, 200, agency.name[0])}
+                alt={agency.name}
+                fill
+                className="object-cover"
+                sizes="96px"
+              />
+            </div>
+
+            {/* Name + Verified */}
+            <div className="flex items-center gap-1.5 mb-1">
+              <h1 className="text-xl font-bold">{agency.name}</h1>
+              {agency.is_verified && (
+                <BadgeCheck className="h-5 w-5 text-blue-500 fill-blue-500" />
+              )}
+            </div>
+
+            {/* Location */}
+            {(agency.city || agency.address) && (
+              <p className="text-sm text-muted-foreground flex items-center gap-1">
+                <MapPin className="h-3.5 w-3.5" />
+                {[agency.address, agency.city, agency.country].filter(Boolean).join(', ')}
+              </p>
+            )}
+
+            {/* Status Badges */}
+            <div className="flex items-center gap-2 mt-3">
+              {agency.is_approved ? (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  {t.agencyView.approved}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
+                  <Clock className="h-3.5 w-3.5" />
+                  {t.agencyView.pendingApproval}
+                </span>
+              )}
+              {agency.is_verified && (
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+                  <BadgeCheck className="h-3.5 w-3.5" />
+                  {t.agencyView.verified}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Description */}
+        {agency.description && (
+          <Card className="overflow-hidden">
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
+                <Building2 className="h-4 w-4 text-primary" />
+                {t.agencyView.aboutUs}
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {agency.description}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Contact Info */}
+        <Card className="overflow-hidden">
+          <CardContent className="p-4">
+            <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+              <Phone className="h-4 w-4 text-primary" />
+              {t.agencyProfileForm.contactInfo}
+            </h3>
+            <div className="space-y-3">
+              {agency.phone && (
+                <a
+                  href={`tel:${agency.phone}`}
+                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                    <Phone className="h-4 w-4 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t.agencyProfileForm.phone}</p>
+                    <p className="text-sm font-medium">{agency.phone}</p>
+                  </div>
+                </a>
+              )}
+              {agency.telegram_username && (
+                <a
+                  href={telegramLink!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                    <MessageCircle className="h-4 w-4 text-blue-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t.agencyProfileForm.telegram}</p>
+                    <p className="text-sm font-medium">{agency.telegram_username}</p>
+                  </div>
+                </a>
+              )}
+              {agency.instagram_url && (
+                <a
+                  href={agency.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
+                    <Instagram className="h-4 w-4 text-pink-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">Instagram</p>
+                    <p className="text-sm font-medium truncate">{agency.instagram_url.replace('https://instagram.com/', '@')}</p>
+                  </div>
+                </a>
+              )}
+              {agency.website_url && (
+                <a
+                  href={agency.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 p-2.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
+                    <Globe className="h-4 w-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground">{t.agencyProfileForm.website}</p>
+                    <p className="text-sm font-medium truncate">{agency.website_url.replace(/^https?:\/\//, '')}</p>
+                  </div>
+                </a>
+              )}
+              {!agency.phone && !agency.telegram_username && !agency.instagram_url && !agency.website_url && (
+                <p className="text-sm text-muted-foreground py-2">{t.agencyView.noContactInfo}</p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Location */}
+        {(agency.address || agency.city) && (
+          <Card className="overflow-hidden">
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-primary" />
+                {t.agencyProfileForm.location}
+              </h3>
+              <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-50">
+                <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
+                  <MapPin className="h-4 w-4 text-orange-600" />
+                </div>
+                <div>
+                  {agency.address && <p className="text-sm font-medium">{agency.address}</p>}
+                  <p className="text-sm text-muted-foreground">
+                    {[agency.city, agency.country].filter(Boolean).join(', ')}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Meta Info */}
+        <Card className="overflow-hidden">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{t.agencyView.memberSince}: {createdDate}</span>
+            </div>
+            <div className="mt-2 flex items-center gap-3 text-xs text-muted-foreground">
+              <Globe className="h-3.5 w-3.5" />
+              <span>maxtour.uz/agencies/{agency.slug}</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Edit Button */}
+        <Button onClick={handleEdit} className="w-full" variant="outline">
+          <Pencil className="h-4 w-4 mr-2" />
+          {t.agencyView.editProfile}
+        </Button>
+      </div>
+    );
+  }
+
+  /* ─── Form Mode ─── */
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-xl font-bold">{t.agencyProfileForm.title}</h1>
-        <p className="text-sm text-muted-foreground">{t.agencyProfileForm.subtitle}</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-bold">
+            {agency ? t.agencyView.editProfile : t.agencyProfileForm.title}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {agency ? t.agencyView.editSubtitle : t.agencyView.fillFormHint}
+          </p>
+        </div>
+        {agency && (
+          <Button variant="ghost" size="icon" onClick={() => setMode('view')}>
+            <X className="h-5 w-5" />
+          </Button>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
