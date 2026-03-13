@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import {
   MapPin, CalendarDays, Clock, Users,
-  ArrowLeft, Share2, Send, Star, BadgeCheck, Check, X, ExternalLink,
+  ArrowLeft, Share2, Send, Star, BadgeCheck, Check, X,
   Plane, DollarSign, Navigation, Hotel,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
@@ -37,7 +37,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
     : null;
 
   return (
-    <div className="pb-20 bg-[#f6f6f8]">
+    <div className="pb-4 bg-[#f6f6f8]">
       {/* Top App Bar */}
       <div className="sticky top-0 z-50 flex items-center bg-white/80 backdrop-blur-md px-3 py-2.5 justify-between border-b border-slate-200">
         <Link
@@ -291,17 +291,6 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                         {hotel.description}
                       </p>
                     )}
-                    {hotel.booking_url && (
-                      <a
-                        href={hotel.booking_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
-                      >
-                        <ExternalLink className="h-4 w-4" />
-                        Booking.com
-                      </a>
-                    )}
                   </div>
                 </div>
               ))}
@@ -327,25 +316,14 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                     ))}
                   </div>
                 )}
-                {tour.hotel_booking_url && (
-                  <a
-                    href={tour.hotel_booking_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 mt-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4" />
-                    Booking.com
-                  </a>
-                )}
               </div>
             </div>
           </section>
         ) : null}
       </div>
 
-      {/* Fixed Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 z-50">
+      {/* CTA Bar — sits above BottomNav */}
+      <div className="sticky bottom-16 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 z-40 mt-4">
         <div className="max-w-2xl mx-auto flex gap-2">
           <Link
             href={`/tours/${tour.slug}#request`}
