@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { hapticFeedback } from '@/lib/telegram';
 
 interface HotelImageCarouselProps {
   images: string[];
@@ -63,14 +62,14 @@ export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProp
       {images.length > 1 && (
         <>
           <button
-            onClick={() => { hapticFeedback('light'); prev(); }}
+            onClick={prev}
             className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label="Previous image"
           >
             <ChevronLeft className="h-4 w-4 text-slate-700" />
           </button>
           <button
-            onClick={() => { hapticFeedback('light'); next(); }}
+            onClick={next}
             className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label="Next image"
           >
@@ -85,7 +84,7 @@ export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProp
           {images.map((_, i) => (
             <button
               key={i}
-              onClick={() => { hapticFeedback('light'); scrollTo(i); }}
+              onClick={() => scrollTo(i)}
               className={`rounded-full transition-all duration-300 ${
                 i === currentIndex
                   ? 'w-6 h-2 bg-white shadow-md'

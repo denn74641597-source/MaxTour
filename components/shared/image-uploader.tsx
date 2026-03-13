@@ -3,7 +3,6 @@
 import { useRef, useState, useEffect } from 'react';
 import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { hapticFeedback } from '@/lib/telegram';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { uploadImageAction } from '@/features/upload/actions';
@@ -130,7 +129,7 @@ export function ImageUploader({
       ) : (
         <button
           type="button"
-          onClick={() => { hapticFeedback('light'); inputRef.current?.click(); }}
+          onClick={() => inputRef.current?.click()}
           className="w-full aspect-video rounded-lg border-2 border-dashed border-muted-foreground/25 flex flex-col items-center justify-center gap-2 hover:border-muted-foreground/50 transition-colors"
         >
           <ImageIcon className="h-8 w-8 text-muted-foreground/50" />

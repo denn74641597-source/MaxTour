@@ -4,7 +4,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { hapticFeedback } from '@/lib/telegram';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
@@ -44,13 +43,12 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
     <div className="bg-white min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
-        <button onClick={() => { hapticFeedback('light'); router.back(); }} className="p-1">
+        <button onClick={() => router.back()} className="p-1">
           <ArrowLeft className="h-5 w-5" />
         </button>
         <h2 className="font-semibold text-sm">{t.agencyProfile.title}</h2>
         <button
           onClick={() => {
-            hapticFeedback('light');
             if (navigator.share) {
               navigator.share({ title: agency.name, url: window.location.href });
             }
@@ -150,7 +148,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
           {tabs.map((tab) => (
             <button
               key={tab.key}
-              onClick={() => { hapticFeedback('light'); setActiveTab(tab.key); }}
+              onClick={() => setActiveTab(tab.key)}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors relative ${
                 activeTab === tab.key
                   ? 'text-primary'
@@ -360,7 +358,7 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
           />
           <button
             className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full"
-            onClick={(e) => { e.preventDefault(); hapticFeedback('light'); }}
+            onClick={(e) => e.preventDefault()}
           >
             <Heart className="h-4 w-4 text-slate-600" />
           </button>

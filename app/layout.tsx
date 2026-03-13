@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import { Toaster } from '@/components/ui/sonner';
 import { LanguageProvider } from '@/lib/i18n';
+import { HapticProvider } from '@/components/shared/haptic-provider';
 import './globals.css';
 
 const inter = Inter({
@@ -39,6 +40,7 @@ export default function RootLayout({
         <LanguageProvider>
           {children}
         </LanguageProvider>
+        <HapticProvider />
         <Toaster position="top-center" />
         {/* Telegram Mini App SDK — loaded after page is interactive */}
         <Script

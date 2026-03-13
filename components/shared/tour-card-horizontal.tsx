@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { MapPin, Heart, ShieldAlert } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { formatPrice, placeholderImage } from '@/lib/utils';
-import { hapticFeedback } from '@/lib/telegram';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import type { Tour } from '@/types';
@@ -54,7 +53,7 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
                 {tour.title}
               </h4>
               <button
-                onClick={(e) => { e.preventDefault(); e.stopPropagation(); hapticFeedback('light'); toggleFavorite(tour.id); }}
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
                 className="shrink-0 mt-0.5"
               >
                 <Heart className={`h-4 w-4 ${liked ? 'text-red-500 fill-red-500' : 'text-slate-300'}`} />

@@ -11,7 +11,6 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { hapticFeedback } from '@/lib/telegram';
 import type { TourHotel } from '@/types';
 
 interface TourDetailContentProps {

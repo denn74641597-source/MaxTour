@@ -4,7 +4,6 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ChevronDown } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { cn } from '@/lib/utils';
-import { hapticFeedback } from '@/lib/telegram';
 import { useTranslation } from '@/lib/i18n';
 
 export function ToursFilterBar() {
@@ -53,7 +52,7 @@ export function ToursFilterBar() {
         return (
           <button
             key={chip.key}
-            onClick={() => { hapticFeedback('light'); handleFilter(chip.key); }}
+            onClick={() => handleFilter(chip.key)}
             className={cn(
               'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0',
               isActive

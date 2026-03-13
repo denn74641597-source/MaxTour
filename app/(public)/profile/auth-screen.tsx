@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { hapticFeedback } from '@/lib/telegram';
 import type { UserRole } from '@/types';
 
 type AuthStep = 'role-select' | 'register-form' | 'agency-login';
@@ -296,7 +295,7 @@ export function AuthScreen() {
           <div className="space-y-3">
             <Card
               className="cursor-pointer border-2 border-transparent hover:border-primary/30 transition-all"
-              onClick={() => { hapticFeedback('medium'); handleRoleSelect('user'); }}
+              onClick={() => handleRoleSelect('user')}
             >
               <CardContent className="flex items-center gap-4 p-5">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
@@ -316,7 +315,7 @@ export function AuthScreen() {
 
             <Card
               className="cursor-pointer border-2 border-transparent hover:border-primary/30 transition-all"
-              onClick={() => { hapticFeedback('medium'); handleRoleSelect('agency_manager'); }}
+              onClick={() => handleRoleSelect('agency_manager')}
             >
               <CardContent className="flex items-center gap-4 p-5">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100">
@@ -345,7 +344,7 @@ export function AuthScreen() {
 
             <Card
               className="cursor-pointer border-2 border-transparent hover:border-emerald-300 transition-all"
-              onClick={() => { hapticFeedback('medium'); handleAgencyLoginSelect(); }}
+              onClick={() => handleAgencyLoginSelect()}
             >
               <CardContent className="flex items-center gap-4 p-5">
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
@@ -434,7 +433,7 @@ export function AuthScreen() {
                   />
                   <button
                     type="button"
-                    onClick={() => { hapticFeedback('light'); setShowPassword(!showPassword); }}
+                    onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
                     {showPassword ? (
@@ -469,7 +468,6 @@ export function AuthScreen() {
 
             <button
               onClick={() => {
-                hapticFeedback('light');
                 setStep('role-select');
                 resetForm();
               }}
@@ -527,7 +525,7 @@ export function AuthScreen() {
                 />
                 <button
                   type="button"
-                  onClick={() => { hapticFeedback('light'); setShowPassword(!showPassword); }}
+                  onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -556,7 +554,6 @@ export function AuthScreen() {
 
             <button
               onClick={() => {
-                hapticFeedback('light');
                 setStep('role-select');
                 resetForm();
               }}
@@ -569,7 +566,6 @@ export function AuthScreen() {
               {t.auth.noAccount}{' '}
               <button
                 onClick={() => {
-                  hapticFeedback('light');
                   resetForm();
                   handleRoleSelect('agency_manager');
                 }}

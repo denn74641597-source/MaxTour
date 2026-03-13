@@ -5,7 +5,6 @@ import Image from 'next/image';
 import { Heart, Star, ShieldAlert } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { placeholderImage } from '@/lib/utils';
-import { hapticFeedback } from '@/lib/telegram';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import type { Tour, TourHotel } from '@/types';
@@ -51,7 +50,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         {/* Favorite button */}
         <div className="absolute top-3 right-3">
           <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); hapticFeedback('light'); toggleFavorite(tour.id); }}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
             className="p-2 bg-white/90 backdrop-blur rounded-full text-slate-900 shadow-lg hover:bg-white transition-colors"
           >
             <Heart className={`h-5 w-5 ${liked ? 'text-red-500 fill-red-500' : ''}`} />
