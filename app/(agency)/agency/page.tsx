@@ -4,10 +4,15 @@ import { AgencyDashboardContent } from './agency-dashboard-content';
 async function getAgencyDashboardData() {
   const supabase = await createServerSupabaseClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data: agency } = await supabase
     .from('agencies')
     .select('*')
-    .limit(1)
+    .eq('owner_id', user.id)
     .single();
 
   if (!agency) return null;
