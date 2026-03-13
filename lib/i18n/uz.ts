@@ -135,6 +135,7 @@ export const uz: Translations = {
     rating: 'Reyting',
     about: 'Haqida',
     aboutAgency: 'Agentlik haqida',
+    location: 'Joylashuv',
     verifiedByMaxTour: 'MaxTour tomonidan tasdiqlangan',
     verifiedDescription: 'Ushbu agentlik MaxTour tomonidan tekshirilgan va tasdiqlangan. Sizning to\'lovlaringiz himoyalangan.',
   },

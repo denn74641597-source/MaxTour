@@ -135,6 +135,7 @@ export const ru: Translations = {
     rating: 'Рейтинг',
     about: 'О нас',
     aboutAgency: 'Об агентстве',
+    location: 'Местоположение',
     verifiedByMaxTour: 'Проверено MaxTour',
     verifiedDescription: 'Это агентство проверено и одобрено MaxTour. Ваши платежи защищены.',
   },

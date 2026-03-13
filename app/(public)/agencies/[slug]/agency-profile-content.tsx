@@ -220,49 +220,90 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
 
         {/* About Tab */}
         {activeTab === 'about' && (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {agency.description && (
               <div>
                 <h3 className="font-semibold text-sm mb-2">{t.agencyProfile.aboutAgency}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{agency.description}</p>
               </div>
             )}
-            <div className="space-y-3">
-              {agency.address && (
-                <div className="flex items-center gap-3 text-sm">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span>{agency.address}{agency.city ? `, ${agency.city}` : ''}, {agency.country}</span>
+
+            {/* Location Card */}
+            {agency.address && (
+              <div className="bg-slate-50 rounded-2xl p-4 flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
+                  <MapPin className="h-5 w-5 text-red-500" />
                 </div>
-              )}
+                <div>
+                  <p className="text-xs text-muted-foreground">{t.agencyProfile.location}</p>
+                  <p className="text-sm font-medium">{agency.address}{agency.city ? `, ${agency.city}` : ''}, {agency.country}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Contact Buttons Grid */}
+            <div className="grid grid-cols-2 gap-3">
               {agency.phone && (
-                <div className="flex items-center gap-3 text-sm">
-                  <Phone className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <a href={`tel:${agency.phone}`} className="text-primary">{agency.phone}</a>
-                </div>
+                <a
+                  href={`tel:${agency.phone}`}
+                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+                    <Phone className="h-5 w-5 text-emerald-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.call}</p>
+                    <p className="text-xs font-semibold truncate">{agency.phone}</p>
+                  </div>
+                </a>
               )}
               {agency.telegram_username && (
-                <div className="flex items-center gap-3 text-sm">
-                  <MessageCircle className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <a href={telegramLink!} target="_blank" rel="noopener noreferrer" className="text-primary">
-                    {agency.telegram_username}
-                  </a>
-                </div>
+                <a
+                  href={telegramLink!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+                    <MessageCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.telegram}</p>
+                    <p className="text-xs font-semibold truncate">{agency.telegram_username}</p>
+                  </div>
+                </a>
               )}
               {agency.instagram_url && (
-                <div className="flex items-center gap-3 text-sm">
-                  <Instagram className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <a href={agency.instagram_url} target="_blank" rel="noopener noreferrer" className="text-primary truncate">
-                    {agency.instagram_url}
-                  </a>
-                </div>
+                <a
+                  href={agency.instagram_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center shrink-0">
+                    <Instagram className="h-5 w-5 text-pink-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.instagram}</p>
+                    <p className="text-xs font-semibold">Instagram</p>
+                  </div>
+                </a>
               )}
               {agency.website_url && (
-                <div className="flex items-center gap-3 text-sm">
-                  <Globe className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <a href={agency.website_url} target="_blank" rel="noopener noreferrer" className="text-primary truncate">
-                    {agency.website_url}
-                  </a>
-                </div>
+                <a
+                  href={agency.website_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+                    <Globe className="h-5 w-5 text-violet-600" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.website}</p>
+                    <p className="text-xs font-semibold">Website</p>
+                  </div>
+                </a>
               )}
             </div>
           </div>

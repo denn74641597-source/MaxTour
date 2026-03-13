@@ -120,6 +120,7 @@ export interface Translations {
     rating: string;
     about: string;
     aboutAgency: string;
+    location: string;
     verifiedByMaxTour: string;
     verifiedDescription: string;
   };
