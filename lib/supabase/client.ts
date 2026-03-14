@@ -13,5 +13,14 @@ export function createClient() {
     );
   }
 
-  return createBrowserClient(url, key);
+  return createBrowserClient(url, key, {
+    cookieOptions: {
+      // Persist cookies for ~13 months so sessions survive
+      // Telegram Mini App WebView restarts
+      maxAge: 60 * 60 * 24 * 400,
+      path: '/',
+      sameSite: 'lax' as const,
+      secure: true,
+    },
+  });
 }
