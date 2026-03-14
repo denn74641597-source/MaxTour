@@ -45,7 +45,6 @@ export const tourSchema = z.object({
     .string()
     .min(2)
     .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens'),
-  short_description: z.string().max(300).optional(),
   full_description: z.string().max(5000).optional(),
   country: z.string().min(1, 'Country is required'),
   city: z.string().optional(),
@@ -71,7 +70,6 @@ export const tourSchema = z.object({
   transport_type: z.enum(['flight', 'bus', 'train', 'self', 'mixed']).default('flight'),
   visa_required: z.boolean().default(false),
   included_services: z.array(z.string()).default([]),
-  excluded_services: z.array(z.string()).default([]),
   status: z.enum(['draft', 'pending', 'published', 'archived']).default('draft'),
 });
 

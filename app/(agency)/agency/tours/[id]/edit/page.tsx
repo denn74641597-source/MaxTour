@@ -25,7 +25,6 @@ export default async function EditTourPage({ params }: Props) {
       initialData={{
         title: tour.title,
         slug: tour.slug,
-        short_description: tour.short_description ?? undefined,
         full_description: tour.full_description ?? undefined,
         country: tour.country,
         city: tour.city ?? undefined,
@@ -50,7 +49,6 @@ export default async function EditTourPage({ params }: Props) {
         transport_type: tour.transport_type,
         visa_required: tour.visa_required,
         included_services: tour.included_services ?? [],
-        excluded_services: tour.excluded_services ?? [],
         status: tour.status,
       }}
     />

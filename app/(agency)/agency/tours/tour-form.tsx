@@ -18,12 +18,13 @@ import { ImageUploader } from '@/components/shared/image-uploader';
 import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
-import { Loader2, MapPin, Plus, X, Hotel, Star } from 'lucide-react';
+import { Loader2, MapPin, Plus, X, Hotel, Star, Search } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
+import { COUNTRIES, CITIES_BY_COUNTRY, AIRLINES } from '@/lib/tour-data';
 import type { TourHotel } from '@/types';
 
 interface TourFormProps {
@@ -45,11 +46,10 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   const [includedServices, setIncludedServices] = useState<string[]>(
     initialData?.included_services ?? []
   );
-  const [excludedServices, setExcludedServices] = useState<string[]>(
-    initialData?.excluded_services ?? []
-  );
   const [newIncluded, setNewIncluded] = useState('');
-  const [newExcluded, setNewExcluded] = useState('');
+  const [countrySearch, setCountrySearch] = useState('');
+  const [citySearch, setCitySearch] = useState('');
+  const [airlineSearch, setAirlineSearch] = useState('');
 
   // New fields state
   const [destinations, setDestinations] = useState<string[]>(
@@ -118,24 +118,14 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     setExtraCharges((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function addService(type: 'included' | 'excluded') {
-    const value = type === 'included' ? newIncluded : newExcluded;
-    if (!value.trim()) return;
-    if (type === 'included') {
-      setIncludedServices((prev) => [...prev, value.trim()]);
-      setNewIncluded('');
-    } else {
-      setExcludedServices((prev) => [...prev, value.trim()]);
-      setNewExcluded('');
-    }
+  function addService() {
+    if (!newIncluded.trim()) return;
+    setIncludedServices((prev) => [...prev, newIncluded.trim()]);
+    setNewIncluded('');
   }
 
-  function removeService(type: 'included' | 'excluded', index: number) {
-    if (type === 'included') {
-      setIncludedServices((prev) => prev.filter((_, i) => i !== index));
-    } else {
-      setExcludedServices((prev) => prev.filter((_, i) => i !== index));
-    }
+  function removeService(index: number) {
+    setIncludedServices((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function onSubmit(data: TourFormData) {
@@ -160,9 +150,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
     const payload = {
       title: data.title,
-      slug: data.slug,
+      slug: data.slug || slugify(data.title),
       cover_image_url: coverUrl || null,
-      short_description: data.short_description || null,
       full_description: data.full_description || null,
       country: data.country,
       city: data.city || null,
@@ -186,7 +175,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       transport_type: data.transport_type || 'flight',
       visa_required: data.visa_required || false,
       included_services: includedServices,
-      excluded_services: excludedServices,
+      excluded_services: [],
       status: data.status || 'draft',
       agency_id: agency.id,
       updated_at: new Date().toISOString(),
@@ -243,16 +232,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="slug">{t.agencyTours.urlSlug} *</Label>
-            <Input id="slug" placeholder={t.agencyTours.urlSlugPlaceholder} {...register('slug')} />
-            {errors.slug && <p className="text-xs text-destructive">{errors.slug.message}</p>}
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="short_description">{t.agencyTours.shortDescription}</Label>
-            <Textarea id="short_description" placeholder={t.agencyTours.shortDescriptionPlaceholder} rows={2} {...register('short_description')} />
-          </div>
+          <input type="hidden" {...register('slug')} />
 
           <div className="space-y-1.5">
             <Label htmlFor="full_description">{t.agencyTours.fullDescription}</Label>
@@ -266,15 +246,97 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         <CardContent className="p-4 space-y-3">
           <h2 className="font-semibold text-sm">{t.agencyTours.destinationDates}</h2>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3">
+            {/* Country searchable dropdown */}
             <div className="space-y-1.5">
-              <Label htmlFor="country">{t.agencyTours.country} *</Label>
-              <Input id="country" placeholder={t.agencyTours.countryPlaceholder} {...register('country')} />
+              <Label>{t.agencyTours.country} *</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t.agencyTours.countryPlaceholder}
+                  value={countrySearch}
+                  onChange={(e) => setCountrySearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              {countrySearch && (
+                <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+                  {COUNTRIES.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase())).map((country) => (
+                    <button
+                      key={country}
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
+                      onClick={() => {
+                        setValue('country', country);
+                        setCountrySearch('');
+                        setValue('city', '');
+                        setCitySearch('');
+                      }}
+                    >
+                      {country}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {watch('country') && (
+                <div className="flex items-center gap-2 bg-primary/10 text-primary rounded-full px-3 py-1.5 text-sm font-medium w-fit">
+                  <MapPin className="h-3 w-3" />
+                  <span>{watch('country')}</span>
+                  <button type="button" onClick={() => { setValue('country', ''); setValue('city', ''); }} className="hover:bg-primary/20 rounded-full p-0.5">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
               {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
             </div>
+
+            {/* City searchable dropdown */}
             <div className="space-y-1.5">
-              <Label htmlFor="city">{t.agencyTours.city}</Label>
-              <Input id="city" placeholder={t.agencyTours.cityPlaceholder} {...register('city')} />
+              <Label>{t.agencyTours.city}</Label>
+              {(() => {
+                const selectedCountry = watch('country');
+                const availableCities = selectedCountry ? (CITIES_BY_COUNTRY[selectedCountry] ?? []) : [];
+                return (
+                  <>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder={selectedCountry ? t.agencyTours.cityPlaceholder : 'Avval davlatni tanlang'}
+                        value={citySearch}
+                        onChange={(e) => setCitySearch(e.target.value)}
+                        className="pl-9"
+                        disabled={!selectedCountry}
+                      />
+                    </div>
+                    {citySearch && availableCities.length > 0 && (
+                      <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+                        {availableCities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase())).map((city) => (
+                          <button
+                            key={city}
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
+                            onClick={() => {
+                              setValue('city', city);
+                              setCitySearch('');
+                            }}
+                          >
+                            {city}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {watch('city') && (
+                      <div className="flex items-center gap-2 bg-blue-100 text-blue-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
+                        <MapPin className="h-3 w-3" />
+                        <span>{watch('city')}</span>
+                        <button type="button" onClick={() => setValue('city', '')} className="hover:bg-blue-200 rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
             </div>
           </div>
 
@@ -317,7 +379,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="departure_date">{t.agencyTours.departureDate}</Label>
               <Input id="departure_date" type="date" {...register('departure_date')} />
@@ -340,7 +402,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         <CardContent className="p-4 space-y-3">
           <h2 className="font-semibold text-sm">{t.agencyTours.pricingAvailability}</h2>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="price">{t.agencyTours.price} *</Label>
               <Input id="price" type="number" min={0} step="0.01" placeholder="850" {...register('price')} />
@@ -352,7 +414,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>{t.agencyTours.currency}</Label>
               <Select defaultValue={initialData?.currency || 'USD'} onValueChange={(v) => setValue('currency', v as 'USD' | 'UZS' | 'EUR')}>
@@ -366,7 +428,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="seats_total">{t.agencyTours.totalSeats}</Label>
               <Input id="seats_total" type="number" min={1} {...register('seats_total')} />
@@ -458,7 +520,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 </button>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label>{t.agencyTours.hotelName} *</Label>
                   <Input
@@ -560,17 +622,57 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         <CardContent className="p-4 space-y-3">
           <h2 className="font-semibold text-sm">{t.agencyTours.accommodationTransport}</h2>
 
-          {/* Airline (optional) */}
+          {/* Airline searchable dropdown */}
           <div className="space-y-1.5">
-            <Label htmlFor="airline">{t.agencyTours.airline}</Label>
-            <Input id="airline" placeholder={t.agencyTours.airlinePlaceholder} {...register('airline')} />
+            <Label>{t.agencyTours.airline}</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder={t.agencyTours.airlinePlaceholder}
+                value={airlineSearch}
+                onChange={(e) => setAirlineSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            {airlineSearch && (
+              <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+                {AIRLINES.filter(a => a.toLowerCase().includes(airlineSearch.toLowerCase())).map((airline) => (
+                  <button
+                    key={airline}
+                    type="button"
+                    className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
+                    onClick={() => {
+                      setValue('airline', airline);
+                      setAirlineSearch('');
+                    }}
+                  >
+                    {airline}
+                  </button>
+                ))}
+              </div>
+            )}
+            {watch('airline') && (
+              <div className="flex items-center gap-2 bg-sky-100 text-sky-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
+                <span>{watch('airline')}</span>
+                <button type="button" onClick={() => setValue('airline', '')} className="hover:bg-sky-200 rounded-full p-0.5">
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label>{t.agencyTours.mealType}</Label>
-              <Select defaultValue={initialData?.meal_type || 'none'} onValueChange={(v) => setValue('meal_type', v as 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                defaultValue={initialData?.meal_type || 'none'}
+                onValueChange={(v) => setValue('meal_type', v as 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive')}
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {t.mealTypes[watch('meal_type') || 'none']}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">{t.mealTypes.none}</SelectItem>
                   <SelectItem value="breakfast">{t.mealTypes.breakfast}</SelectItem>
@@ -582,8 +684,15 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             </div>
             <div className="space-y-1.5">
               <Label>{t.agencyTours.transport}</Label>
-              <Select defaultValue={initialData?.transport_type || 'flight'} onValueChange={(v) => setValue('transport_type', v as 'flight' | 'bus' | 'train' | 'self' | 'mixed')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+              <Select
+                defaultValue={initialData?.transport_type || 'flight'}
+                onValueChange={(v) => setValue('transport_type', v as 'flight' | 'bus' | 'train' | 'self' | 'mixed')}
+              >
+                <SelectTrigger>
+                  <SelectValue>
+                    {t.transportTypes[watch('transport_type') || 'flight']}
+                  </SelectValue>
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="flight">{t.transportTypes.flight}</SelectItem>
                   <SelectItem value="bus">{t.transportTypes.bus}</SelectItem>
@@ -611,7 +720,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               <div key={i} className="flex items-center gap-2 text-sm">
                 <span className="text-emerald-500">✓</span>
                 <span className="flex-1">{s}</span>
-                <button type="button" onClick={() => removeService('included', i)} className="text-red-400 text-xs">{t.common.remove}</button>
+                <button type="button" onClick={() => removeService(i)} className="text-red-400 text-xs">{t.common.remove}</button>
               </div>
             ))}
             <div className="flex gap-2">
@@ -619,36 +728,16 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 placeholder={t.agencyTours.addIncludedService}
                 value={newIncluded}
                 onChange={(e) => setNewIncluded(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService('included'); } }}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }}
               />
-              <Button type="button" variant="outline" size="sm" onClick={() => addService('included')}>{t.common.add}</Button>
-            </div>
-          </div>
-
-          <h2 className="font-semibold text-sm pt-2">{t.agencyTours.excludedServices}</h2>
-          <div className="space-y-2">
-            {excludedServices.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm">
-                <span className="text-red-400">✕</span>
-                <span className="flex-1">{s}</span>
-                <button type="button" onClick={() => removeService('excluded', i)} className="text-red-400 text-xs">{t.common.remove}</button>
-              </div>
-            ))}
-            <div className="flex gap-2">
-              <Input
-                placeholder={t.agencyTours.addExcludedService}
-                value={newExcluded}
-                onChange={(e) => setNewExcluded(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService('excluded'); } }}
-              />
-              <Button type="button" variant="outline" size="sm" onClick={() => addService('excluded')}>{t.common.add}</Button>
+              <Button type="button" variant="outline" size="sm" onClick={() => addService()}>{t.common.add}</Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Submit */}
-      <div className="flex gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <Button type="submit" className="flex-1" disabled={isSubmitting}>
           {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {isEditing ? t.agencyTours.updateTour : t.agencyTours.saveAsDraft}
