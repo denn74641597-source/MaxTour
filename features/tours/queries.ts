@@ -24,6 +24,36 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   if (filters?.meal) query = query.eq('meal_type', filters.meal);
   if (filters?.visaFree) query = query.eq('visa_required', false);
 
+  // Category filter — keyword-based search across title & descriptions
+  if (filters?.category) {
+    const CATEGORY_KEYWORDS: Record<string, string[]> = {
+      Beach: ['plyaj', 'dengiz', 'beach', 'ocean', 'okean', 'maldiv', 'bali', 'antalya', 'resort', 'qirg\'oq', 'orol'],
+      Umrah: ['umra', 'hajj', 'makka', 'madina', 'saudiya', 'ziyorat', 'haj'],
+      Family: ['oilaviy', 'family', 'bolalar', 'oila', 'kids', 'children'],
+      Honeymoon: ['asal oyi', 'honeymoon', 'romantik', 'romantic', 'yangi turmush'],
+      Budget: ['arzon', 'budget', 'cheap', 'tejamkor', 'aksiya', 'chegirma'],
+      Premium: ['premium', 'luxury', 'hashamatli', 'vip', 'deluxe', 'business'],
+      Adventure: ['sarguzasht', 'adventure', 'extreme', 'ekstrim', 'trekking', 'safari', 'hiking'],
+      Cultural: ['madaniy', 'cultural', 'tarixiy', 'muzey', 'heritage', 'history'],
+    };
+
+    if (filters.category === 'Visa-free') {
+      query = query.eq('visa_required', false);
+    } else {
+      const keywords = CATEGORY_KEYWORDS[filters.category];
+      if (keywords?.length) {
+        const conditions = keywords
+          .flatMap((kw) => [
+            `title.ilike.%${kw}%`,
+            `short_description.ilike.%${kw}%`,
+            `full_description.ilike.%${kw}%`,
+          ])
+          .join(',');
+        query = query.or(conditions);
+      }
+    }
+  }
+
   // Sorting
   switch (filters?.sortBy) {
     case 'price_asc':

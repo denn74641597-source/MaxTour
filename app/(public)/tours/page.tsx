@@ -11,6 +11,7 @@ export default async function ToursPage({ searchParams }: Props) {
   const filters: TourFilters = {
     search: params.q,
     country: params.country,
+    category: params.category,
     sortBy: (params.sort as TourFilters['sortBy']) ?? 'newest',
     visaFree: params.visaFree === 'true',
   };
