@@ -241,33 +241,26 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
               </div>
             )}
 
-            {/* Location Card */}
-            {(agency.address || agency.google_maps_url) && (
-              <div className="bg-slate-50 rounded-2xl p-4 flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
-                  <MapPin className="h-5 w-5 text-red-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-muted-foreground">{t.agencyProfile.location}</p>
-                  <p className="text-sm font-medium">
-                    {agency.address ? `${agency.address}${agency.city ? `, ${agency.city}` : ''}, ${agency.country}` : `${agency.city || ''} ${agency.country || ''}`.trim()}
-                  </p>
-                </div>
-                {agency.google_maps_url && (
-                  <a
-                    href={agency.google_maps_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm hover:bg-slate-100 transition-colors"
-                  >
-                    <ExternalLink className="h-4 w-4 text-primary" />
-                  </a>
-                )}
-              </div>
-            )}
-
-            {/* Contact Buttons Grid */}
+            {/* Contact & Location Grid */}
             <div className="grid grid-cols-2 gap-3">
+              {(agency.address || agency.google_maps_url) && (
+                <a
+                  href={agency.google_maps_url || '#'}
+                  target={agency.google_maps_url ? '_blank' : undefined}
+                  rel={agency.google_maps_url ? 'noopener noreferrer' : undefined}
+                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
+                    <MapPin className="h-5 w-5 text-red-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.location}</p>
+                    <p className="text-xs font-semibold truncate">
+                      {agency.address || agency.city || agency.country || 'Google Maps'}
+                    </p>
+                  </div>
+                </a>
+              )}
               {agency.phone && (
                 <a
                   href={`tel:${agency.phone}`}
