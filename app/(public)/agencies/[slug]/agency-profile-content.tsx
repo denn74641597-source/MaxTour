@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink, BadgeCheck } from 'lucide-react';
+import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink, ShieldCheck } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/lib/i18n';
@@ -74,17 +74,17 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
         <h1 className="text-xl font-bold mb-1.5">{agency.name}</h1>
         {/* Verified + Approved badges */}
         <div className="flex items-center gap-2 mb-2">
-          {agency.is_verified && (
-            <div className="flex items-center gap-1 bg-blue-50 text-blue-600 rounded-full px-2.5 py-1 text-xs font-semibold">
-              <VerifiedBadge size="sm" className="h-3.5 w-3.5" />
-              <span>{t.agencyView.verified}</span>
-            </div>
-          )}
           {agency.is_approved && (
-            <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 rounded-full px-2.5 py-1 text-xs font-semibold">
-              <BadgeCheck className="h-3.5 w-3.5" />
-              <span>{t.agencyView.approved}</span>
-            </div>
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              {t.agencyView.approved}
+            </span>
+          )}
+          {agency.is_verified && (
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
+              <VerifiedBadge size="sm" className="text-blue-700 h-3.5 w-3.5" />
+              {t.agencyView.verified}
+            </span>
           )}
         </div>
         {agency.city && (
