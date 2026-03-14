@@ -111,20 +111,20 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
       </div>
 
       {/* Stats Row */}
-      <div className="flex justify-center gap-4 px-4 pb-4">
+      <div className="grid grid-cols-3 gap-3 px-6 pb-4 max-w-sm mx-auto">
         {avgRating && (
-          <div className="flex flex-col items-center bg-slate-50 rounded-2xl px-5 py-3 min-w-[90px]">
+          <div className="flex flex-col items-center bg-slate-50 rounded-2xl py-3">
             <span className="text-lg font-bold flex items-center gap-1">
               {avgRating} <Star className="h-4 w-4 text-amber-400 fill-amber-400" />
             </span>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.rating}</span>
           </div>
         )}
-        <div className="flex flex-col items-center bg-slate-50 rounded-2xl px-5 py-3 min-w-[90px]">
+        <div className="flex flex-col items-center bg-slate-50 rounded-2xl py-3">
           <span className="text-lg font-bold">{reviews.length}</span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.reviews}</span>
         </div>
-        <div className="flex flex-col items-center bg-slate-50 rounded-2xl px-5 py-3 min-w-[90px]">
+        <div className="flex flex-col items-center bg-slate-50 rounded-2xl py-3">
           <span className="text-lg font-bold">{tours.length}</span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.activeTours}</span>
         </div>
