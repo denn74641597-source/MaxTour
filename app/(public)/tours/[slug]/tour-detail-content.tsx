@@ -20,7 +20,7 @@ interface TourDetailContentProps {
 }
 
 export function TourDetailContent({ tour }: TourDetailContentProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   const agency = tour.agency;
   const images = tour.images ?? [];
@@ -110,7 +110,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
               <div className="flex items-center gap-1.5 mt-1.5">
                 <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 rounded-full px-2.5 py-1 text-xs font-medium border border-emerald-200">
                   {categoryIcons[tour.domestic_category]}
-                  <span>{DOMESTIC_CATEGORIES[t.common?.language || 'uz']?.[tour.domestic_category] || tour.domestic_category}</span>
+                  <span>{DOMESTIC_CATEGORIES[language]?.[tour.domestic_category] || tour.domestic_category}</span>
                 </div>
               </div>
             )}
