@@ -61,7 +61,10 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
             </div>
             <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
               <MapPin className="h-3 w-3" />
-              {tour.city ? `${tour.city}, ` : ''}{tour.country}
+              {tour.tour_type === 'domestic'
+                ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
+                : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
+              }
             </p>
           </div>
           <div className="mt-3 flex items-end justify-between">

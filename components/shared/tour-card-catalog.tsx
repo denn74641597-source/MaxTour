@@ -31,7 +31,9 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
   const nightsText = tour.duration_days
     ? `${tour.duration_days} ${tour.duration_days > 1 ? t.common.nights : t.common.night}`
     : null;
-  const location = [tour.city, tour.country].filter(Boolean).join(', ');
+  const location = tour.tour_type === 'domestic'
+    ? [tour.district, tour.region || 'O\'zbekiston'].filter(Boolean).join(', ')
+    : [tour.city, tour.country].filter(Boolean).join(', ');
   const maxStars = getMaxHotelStars(tour);
   const liked = isFavorite(tour.id);
 

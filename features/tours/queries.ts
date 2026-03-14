@@ -13,7 +13,7 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
 
   if (filters?.search) {
     query = query.or(
-      `title.ilike.%${filters.search}%,short_description.ilike.%${filters.search}%,country.ilike.%${filters.search}%,city.ilike.%${filters.search}%`
+      `title.ilike.%${filters.search}%,short_description.ilike.%${filters.search}%,country.ilike.%${filters.search}%,city.ilike.%${filters.search}%,region.ilike.%${filters.search}%`
     );
   }
   if (filters?.country) query = query.eq('country', filters.country);

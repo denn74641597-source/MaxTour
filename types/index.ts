@@ -6,6 +6,8 @@ export type LeadStatus = 'new' | 'contacted' | 'closed' | 'won' | 'lost';
 export type SubscriptionStatus = 'active' | 'expired' | 'cancelled' | 'trial';
 export type MealType = 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive';
 export type TransportType = 'flight' | 'bus' | 'train' | 'self' | 'mixed';
+export type TourType = 'international' | 'domestic';
+export type DomesticTourCategory = 'excursion' | 'nature' | 'historical' | 'pilgrimage' | 'recreation' | 'adventure';
 export type Currency = 'USD' | 'UZS' | 'EUR';
 export type PlacementType = 'home_featured' | 'category_top' | 'search_boost';
 
@@ -106,6 +108,15 @@ export interface Tour {
   status: TourStatus;
   is_featured: boolean;
   cover_image_url: string | null;
+  operator_telegram_username: string | null;
+  tour_type: TourType;
+  domestic_category: DomesticTourCategory | null;
+  region: string | null;
+  district: string | null;
+  meeting_point: string | null;
+  what_to_bring: string[];
+  guide_name: string | null;
+  guide_phone: string | null;
   created_at: string;
   updated_at: string;
   // Joined

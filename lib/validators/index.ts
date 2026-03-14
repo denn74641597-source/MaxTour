@@ -46,7 +46,9 @@ export const tourSchema = z.object({
     .min(2)
     .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens'),
   full_description: z.string().max(5000).optional(),
-  country: z.string().min(1, 'Country is required'),
+  tour_type: z.enum(['international', 'domestic']).default('international'),
+  // International fields
+  country: z.string().optional(),
   city: z.string().optional(),
   departure_date: z.string().optional(),
   return_date: z.string().optional(),
@@ -70,6 +72,15 @@ export const tourSchema = z.object({
   transport_type: z.enum(['flight', 'bus', 'train', 'self', 'mixed']).default('flight'),
   visa_required: z.boolean().default(false),
   included_services: z.array(z.string()).default([]),
+  operator_telegram_username: z.string().optional().or(z.literal('')),
+  // Domestic fields
+  domestic_category: z.enum(['excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure']).optional(),
+  region: z.string().optional(),
+  district: z.string().optional(),
+  meeting_point: z.string().optional(),
+  what_to_bring: z.array(z.string()).default([]),
+  guide_name: z.string().optional(),
+  guide_phone: z.string().optional(),
   status: z.enum(['draft', 'pending', 'published', 'archived']).default('draft'),
 });
 

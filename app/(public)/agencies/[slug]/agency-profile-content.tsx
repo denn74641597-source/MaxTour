@@ -9,7 +9,8 @@ import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import type { Agency, Tour, Review } from '@/types';
+import { useFavorites } from '@/hooks/use-favorites';
+import type { Agency, Tour, Review, TourHotel } from '@/types';
 
 interface AgencyProfileContentProps {
   agency: Agency;
@@ -341,9 +342,21 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
 }
 
 /* ─── Tour Card for Agency Profile ─── */
+function getMaxHotelStars(tour: Tour): number | null {
+  const hotels = (tour.hotels as TourHotel[]) ?? [];
+  if (hotels.length > 0) {
+    const maxStars = Math.max(...hotels.filter(h => h.stars).map(h => h.stars!));
+    return maxStars > 0 ? maxStars : null;
+  }
+  return tour.hotel_stars ?? null;
+}
+
 function AgencyTourCard({ tour }: { tour: Tour }) {
   const { t } = useTranslation();
+  const { isFavorite, toggleFavorite } = useFavorites();
   const location = [tour.city, tour.country].filter(Boolean).join(', ');
+  const maxStars = getMaxHotelStars(tour);
+  const liked = isFavorite(tour.id);
 
   return (
     <Link href={`/tours/${tour.slug}`}>
@@ -358,9 +371,9 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
           />
           <button
             className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full"
-            onClick={(e) => e.preventDefault()}
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
           >
-            <Heart className="h-4 w-4 text-slate-600" />
+            <Heart className={`h-4 w-4 ${liked ? 'text-red-500 fill-red-500' : 'text-slate-600'}`} />
           </button>
           {tour.is_featured && (
             <div className="absolute bottom-3 left-3">
@@ -369,10 +382,10 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
               </span>
             </div>
           )}
-          {tour.hotel_stars && (
+          {maxStars && (
             <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur rounded-lg">
               <Star className="h-3 w-3 text-amber-500 fill-amber-500" />
-              <span className="text-xs font-bold">{tour.hotel_stars.toFixed(1)}</span>
+              <span className="text-xs font-bold">{maxStars}</span>
             </div>
           )}
         </div>

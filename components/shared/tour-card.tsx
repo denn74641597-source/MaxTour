@@ -59,8 +59,10 @@ export function TourCard({ tour, compact }: TourCardProps) {
           <div className="flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3 shrink-0" />
             <span className="truncate">
-              {tour.city ? `${tour.city}, ` : ''}
-              {tour.country}
+              {tour.tour_type === 'domestic'
+                ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
+                : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
+              }
             </span>
           </div>
 

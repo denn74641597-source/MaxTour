@@ -18,14 +18,14 @@ import { ImageUploader } from '@/components/shared/image-uploader';
 import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
-import { Loader2, MapPin, Plus, X, Hotel, Star, Search } from 'lucide-react';
+import { Loader2, MapPin, Plus, X, Hotel, Star, Search, Globe, Map, Mountain, Landmark, Heart, Compass, TreePine } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
-import { COUNTRIES, CITIES_BY_COUNTRY, AIRLINES } from '@/lib/tour-data';
-import type { TourHotel } from '@/types';
+import { COUNTRIES, CITIES_BY_COUNTRY, AIRLINES, UZ_REGIONS, UZ_DISTRICTS } from '@/lib/tour-data';
+import type { TourHotel, TourType, DomesticTourCategory } from '@/types';
 
 interface TourFormProps {
   initialData?: Partial<TourFormData> & {
@@ -35,6 +35,15 @@ interface TourFormProps {
     destinations?: string[];
     airline?: string | null;
     extra_charges?: { name: string; amount: number }[];
+    operator_telegram_username?: string | null;
+    tour_type?: TourType;
+    domestic_category?: DomesticTourCategory | null;
+    region?: string | null;
+    district?: string | null;
+    meeting_point?: string | null;
+    what_to_bring?: string[];
+    guide_name?: string | null;
+    guide_phone?: string | null;
   };
   tourId?: string;
 }
@@ -43,6 +52,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   const router = useRouter();
   const { t, language } = useTranslation();
   const [coverUrl, setCoverUrl] = useState(initialData?.cover_image_url ?? '');
+  const [tourType, setTourType] = useState<TourType>(initialData?.tour_type ?? 'international');
+  const [tourTypeSelected, setTourTypeSelected] = useState(!!tourId || !!initialData?.tour_type);
   const [includedServices, setIncludedServices] = useState<string[]>(
     initialData?.included_services ?? []
   );
@@ -65,6 +76,14 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   const [newChargeName, setNewChargeName] = useState('');
   const [newChargeAmount, setNewChargeAmount] = useState('');
 
+  // Domestic tour state
+  const [regionSearch, setRegionSearch] = useState('');
+  const [districtSearch, setDistrictSearch] = useState('');
+  const [whatToBring, setWhatToBring] = useState<string[]>(
+    initialData?.what_to_bring ?? []
+  );
+  const [newBringItem, setNewBringItem] = useState('');
+
   const isEditing = !!tourId;
 
   const {
@@ -82,6 +101,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       transport_type: 'flight',
       visa_required: false,
       status: 'draft',
+      tour_type: 'international',
       ...initialData,
     },
   });
@@ -153,14 +173,16 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       slug: data.slug || slugify(data.title),
       cover_image_url: coverUrl || null,
       full_description: data.full_description || null,
-      country: data.country,
-      city: data.city || null,
+      tour_type: tourType,
+      // International fields
+      country: tourType === 'international' ? (data.country || null) : 'O\'zbekiston',
+      city: tourType === 'international' ? (data.city || null) : (data.district || null),
       departure_date: data.departure_date || null,
       return_date: data.return_date || null,
       duration_days: data.duration_days ? Number(data.duration_days) : null,
       price: hotels.length > 0 ? hotels[0].price : Number(data.price),
       old_price: data.old_price ? Number(data.old_price) : null,
-      currency: data.currency || 'USD',
+      currency: tourType === 'domestic' ? 'UZS' : (data.currency || 'USD'),
       seats_total: data.seats_total ? Number(data.seats_total) : null,
       seats_left: data.seats_left ? Number(data.seats_left) : null,
       hotel_name: hotels.length > 0 ? hotels[0].name : (data.hotel_name || null),
@@ -169,13 +191,22 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       hotel_images: hotels.length > 0 ? hotels[0].images : [],
       hotels: hotels,
       destinations: destinations,
-      airline: data.airline || null,
+      airline: tourType === 'international' ? (data.airline || null) : null,
       extra_charges: extraCharges,
       meal_type: data.meal_type || 'none',
-      transport_type: data.transport_type || 'flight',
-      visa_required: data.visa_required || false,
+      transport_type: data.transport_type || (tourType === 'domestic' ? 'bus' : 'flight'),
+      visa_required: tourType === 'domestic' ? false : (data.visa_required || false),
       included_services: includedServices,
       excluded_services: [],
+      operator_telegram_username: data.operator_telegram_username || null,
+      // Domestic fields
+      domestic_category: tourType === 'domestic' ? (data.domestic_category || null) : null,
+      region: tourType === 'domestic' ? (data.region || null) : null,
+      district: tourType === 'domestic' ? (data.district || null) : null,
+      meeting_point: tourType === 'domestic' ? (data.meeting_point || null) : null,
+      what_to_bring: tourType === 'domestic' ? whatToBring : [],
+      guide_name: tourType === 'domestic' ? (data.guide_name || null) : null,
+      guide_phone: tourType === 'domestic' ? (data.guide_phone || null) : null,
       status: data.status || 'draft',
       agency_id: agency.id,
       updated_at: new Date().toISOString(),
@@ -207,9 +238,101 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     router.push('/agency/tours');
   }
 
+  function addBringItem() {
+    if (!newBringItem.trim()) return;
+    setWhatToBring((prev) => [...prev, newBringItem.trim()]);
+    setNewBringItem('');
+  }
+
+  function removeBringItem(index: number) {
+    setWhatToBring((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // If tour type not yet selected, show selection screen
+  if (!tourTypeSelected) {
+    return (
+      <div className="space-y-4">
+        <div className="text-center mb-6">
+          <h2 className="text-lg font-bold">{t.domesticTour.tourTypeSelection}</h2>
+          <p className="text-sm text-muted-foreground mt-1">{t.domesticTour.tourTypeHint}</p>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              setTourType('international');
+              setValue('tour_type', 'international');
+              setValue('currency', 'USD');
+              setValue('transport_type', 'flight');
+              setTourTypeSelected(true);
+            }}
+            className="flex items-start gap-4 p-5 bg-white border-2 border-slate-200 rounded-2xl hover:border-primary hover:bg-primary/5 transition-all text-left"
+          >
+            <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
+              <Globe className="h-7 w-7 text-blue-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base">{t.domesticTour.international}</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">{t.domesticTour.internationalHint}</p>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setTourType('domestic');
+              setValue('tour_type', 'domestic');
+              setValue('currency', 'UZS');
+              setValue('transport_type', 'bus');
+              setValue('visa_required', false);
+              setTourTypeSelected(true);
+            }}
+            className="flex items-start gap-4 p-5 bg-white border-2 border-slate-200 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left"
+          >
+            <div className="w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
+              <Map className="h-7 w-7 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="font-bold text-base">{t.domesticTour.domestic}</h3>
+              <p className="text-sm text-muted-foreground mt-0.5">{t.domesticTour.domesticHint}</p>
+            </div>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const isDomestic = tourType === 'domestic';
+  const categoryIcons: Record<string, React.ReactNode> = {
+    excursion: <Compass className="h-4 w-4" />,
+    nature: <Mountain className="h-4 w-4" />,
+    historical: <Landmark className="h-4 w-4" />,
+    pilgrimage: <Heart className="h-4 w-4" />,
+    recreation: <TreePine className="h-4 w-4" />,
+    adventure: <Map className="h-4 w-4" />,
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {/* Cover Image */}
+      {/* Tour Type Badge */}
+      <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${isDomestic ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+          {isDomestic ? <Map className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
+          {isDomestic ? t.domesticTour.domestic : t.domesticTour.international}
+        </div>
+        {!isEditing && (
+          <button
+            type="button"
+            onClick={() => setTourTypeSelected(false)}
+            className="text-xs text-muted-foreground hover:text-foreground underline"
+          >
+            {t.common.edit}
+          </button>
+        )}
+      </div>
+
+      <input type="hidden" {...register('tour_type')} />
       <Card>
         <CardContent className="p-4">
           <Label className="mb-2 block">{t.agencyTours.coverImage}</Label>
@@ -238,10 +361,40 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             <Label htmlFor="full_description">{t.agencyTours.fullDescription}</Label>
             <Textarea id="full_description" placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} />
           </div>
+
+          {/* Domestic category selection */}
+          {isDomestic && (
+            <div className="space-y-2">
+              <Label>{t.domesticTour.category} *</Label>
+              <p className="text-xs text-muted-foreground">{t.domesticTour.categoryHint}</p>
+              <div className="grid grid-cols-2 gap-2">
+                {(['excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure'] as const).map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setValue('domestic_category', cat)}
+                    className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition-all text-left ${
+                      watch('domestic_category') === cat
+                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
+                    }`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                      watch('domestic_category') === cat ? 'bg-emerald-100' : 'bg-slate-100'
+                    }`}>
+                      {categoryIcons[cat]}
+                    </div>
+                    {t.domesticTour[cat]}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
-      {/* Destination & Route */}
+      {/* Destination & Route - International */}
+      {!isDomestic && (
       <Card>
         <CardContent className="p-4 space-y-3">
           <h2 className="font-semibold text-sm">{t.agencyTours.destinationDates}</h2>
@@ -396,6 +549,128 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
           </div>
         </CardContent>
       </Card>
+      )}
+
+      {/* Destination & Route - Domestic */}
+      {isDomestic && (
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <h2 className="font-semibold text-sm">{t.domesticTour.regionDistrict}</h2>
+
+          <div className="grid grid-cols-1 gap-3">
+            {/* Region searchable dropdown */}
+            <div className="space-y-1.5">
+              <Label>{t.domesticTour.region} *</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={t.domesticTour.selectRegion}
+                  value={regionSearch}
+                  onChange={(e) => setRegionSearch(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+              {regionSearch && (
+                <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+                  {(UZ_REGIONS[language] || UZ_REGIONS['uz']).filter(r =>
+                    r.toLowerCase().includes(regionSearch.toLowerCase())
+                  ).map((region) => (
+                    <button
+                      key={region}
+                      type="button"
+                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
+                      onClick={() => {
+                        setValue('region', region);
+                        setRegionSearch('');
+                        setValue('district', '');
+                        setDistrictSearch('');
+                      }}
+                    >
+                      {region}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {watch('region') && (
+                <div className="flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
+                  <MapPin className="h-3 w-3" />
+                  <span>{watch('region')}</span>
+                  <button type="button" onClick={() => { setValue('region', ''); setValue('district', ''); }} className="hover:bg-emerald-200 rounded-full p-0.5">
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* District searchable dropdown */}
+            <div className="space-y-1.5">
+              <Label>{t.domesticTour.district}</Label>
+              {(() => {
+                const selectedRegion = watch('region');
+                const regionData = UZ_DISTRICTS[language] || UZ_DISTRICTS['uz'];
+                const availableDistricts = selectedRegion ? (regionData[selectedRegion] ?? []) : [];
+                return (
+                  <>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder={selectedRegion ? t.domesticTour.selectDistrict : t.domesticTour.selectRegionFirst}
+                        value={districtSearch}
+                        onChange={(e) => setDistrictSearch(e.target.value)}
+                        className="pl-9"
+                        disabled={!selectedRegion}
+                      />
+                    </div>
+                    {districtSearch && availableDistricts.length > 0 && (
+                      <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
+                        {availableDistricts.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase())).map((district) => (
+                          <button
+                            key={district}
+                            type="button"
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
+                            onClick={() => {
+                              setValue('district', district);
+                              setDistrictSearch('');
+                            }}
+                          >
+                            {district}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {watch('district') && (
+                      <div className="flex items-center gap-2 bg-blue-100 text-blue-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
+                        <MapPin className="h-3 w-3" />
+                        <span>{watch('district')}</span>
+                        <button type="button" onClick={() => setValue('district', '')} className="hover:bg-blue-200 rounded-full p-0.5">
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor="departure_date">{t.agencyTours.departureDate}</Label>
+              <Input id="departure_date" type="date" {...register('departure_date')} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="return_date">{t.agencyTours.returnDate}</Label>
+              <Input id="return_date" type="date" {...register('return_date')} />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="duration_days">{t.agencyTours.durationDays}</Label>
+            <Input id="duration_days" type="number" min={1} {...register('duration_days')} />
+          </div>
+        </CardContent>
+      </Card>
+      )}
 
       {/* Pricing & Seats */}
       <Card>
@@ -622,7 +897,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         <CardContent className="p-4 space-y-3">
           <h2 className="font-semibold text-sm">{t.agencyTours.accommodationTransport}</h2>
 
-          {/* Airline searchable dropdown */}
+          {/* Airline searchable dropdown - international only */}
+          {!isDomestic && (
           <div className="space-y-1.5">
             <Label>{t.agencyTours.airline}</Label>
             <div className="relative">
@@ -660,6 +936,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               </div>
             )}
           </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
@@ -704,10 +981,12 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             </div>
           </div>
 
+          {!isDomestic && (
           <div className="flex items-center gap-2">
             <input type="checkbox" id="visa_required" {...register('visa_required')} className="h-4 w-4 rounded border" />
             <Label htmlFor="visa_required">{t.agencyTours.visaRequired}</Label>
           </div>
+          )}
         </CardContent>
       </Card>
 
@@ -735,6 +1014,107 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Operator Telegram */}
+      <Card>
+        <CardContent className="p-4 space-y-3">
+          <h2 className="font-semibold text-sm">{t.agencyTours.operatorTelegram}</h2>
+          <p className="text-xs text-muted-foreground">{t.agencyTours.operatorTelegramHint}</p>
+          <div className="space-y-1.5">
+            <Label htmlFor="operator_telegram_username">{t.agencyTours.operatorTelegram}</Label>
+            <Input
+              id="operator_telegram_username"
+              placeholder={t.agencyTours.operatorTelegramPlaceholder}
+              {...register('operator_telegram_username')}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Domestic-only sections */}
+      {isDomestic && (
+        <>
+          {/* Meeting Point */}
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <h2 className="font-semibold text-sm">{t.domesticTour.meetingPoint}</h2>
+              <p className="text-xs text-muted-foreground">{t.domesticTour.meetingPointHint}</p>
+              <div className="space-y-1.5">
+                <Label htmlFor="meeting_point">{t.domesticTour.meetingPoint}</Label>
+                <Textarea
+                  id="meeting_point"
+                  placeholder={t.domesticTour.meetingPointPlaceholder}
+                  rows={2}
+                  {...register('meeting_point')}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Guide Info */}
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <h2 className="font-semibold text-sm">{t.domesticTour.guideInfo}</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="guide_name">{t.domesticTour.guideName}</Label>
+                  <Input
+                    id="guide_name"
+                    placeholder={t.domesticTour.guideNamePlaceholder}
+                    {...register('guide_name')}
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="guide_phone">{t.domesticTour.guidePhone}</Label>
+                  <Input
+                    id="guide_phone"
+                    placeholder={t.domesticTour.guidePhonePlaceholder}
+                    {...register('guide_phone')}
+                  />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* What to Bring */}
+          <Card>
+            <CardContent className="p-4 space-y-3">
+              <h2 className="font-semibold text-sm">{t.domesticTour.whatToBring}</h2>
+              <p className="text-xs text-muted-foreground">{t.domesticTour.whatToBringHint}</p>
+              {whatToBring.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {whatToBring.map((item, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center gap-1.5 bg-amber-50 text-amber-700 rounded-full px-3 py-1.5 text-sm font-medium"
+                    >
+                      <span>{item}</span>
+                      <button
+                        type="button"
+                        onClick={() => removeBringItem(i)}
+                        className="ml-0.5 hover:bg-amber-100 rounded-full p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Input
+                  placeholder={t.domesticTour.addItem}
+                  value={newBringItem}
+                  onChange={(e) => setNewBringItem(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addBringItem(); } }}
+                />
+                <Button type="button" variant="outline" size="sm" onClick={addBringItem}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {/* Submit */}
       <div className="flex flex-col sm:flex-row gap-3">

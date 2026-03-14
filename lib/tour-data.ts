@@ -528,6 +528,96 @@ export const CITIES_BY_COUNTRY: Record<string, Record<string, string[]>> = {
   },
 };
 
+// O'zbekiston viloyatlari va tumanlari (ichki turizm uchun)
+export const UZ_REGIONS: Record<string, string[]> = {
+  uz: [
+    'Toshkent shahri',
+    'Toshkent viloyati',
+    'Samarqand viloyati',
+    'Buxoro viloyati',
+    'Xorazm viloyati',
+    'Qashqadaryo viloyati',
+    'Surxondaryo viloyati',
+    'Navoiy viloyati',
+    'Farg\'ona viloyati',
+    'Andijon viloyati',
+    'Namangan viloyati',
+    'Jizzax viloyati',
+    'Sirdaryo viloyati',
+    'Qoraqalpog\'iston Respublikasi',
+  ],
+  ru: [
+    'Город Ташкент',
+    'Ташкентская область',
+    'Самаркандская область',
+    'Бухарская область',
+    'Хорезмская область',
+    'Кашкадарьинская область',
+    'Сурхандарьинская область',
+    'Навоийская область',
+    'Ферганская область',
+    'Андижанская область',
+    'Наманганская область',
+    'Джизакская область',
+    'Сырдарьинская область',
+    'Республика Каракалпакстан',
+  ],
+};
+
+export const UZ_DISTRICTS: Record<string, Record<string, string[]>> = {
+  uz: {
+    'Toshkent shahri': ['Bektemir', 'Chilonzor', 'Yakkasaroy', 'Mirobod', 'Mirzo Ulug\'bek', 'Olmazor', 'Sergeli', 'Shayxontoxur', 'Uchtepa', 'Yashnaobod', 'Yunusobod'],
+    'Toshkent viloyati': ['Angren', 'Olmaliq', 'Chirchiq', 'Nurafshon', 'Bekobod', 'Ohangaron', 'Yangiyo\'l', 'Bo\'ka', 'Bo\'stonliq', 'Chinoz', 'Qibray', 'Oqqo\'rg\'on', 'Parkent', 'Piskent', 'Quyi Chirchiq', 'O\'rta Chirchiq', 'Zangiota', 'Yuqori Chirchiq'],
+    'Samarqand viloyati': ['Samarqand', 'Kattaqo\'rg\'on', 'Bulung\'ur', 'Ishtixon', 'Jomboy', 'Narpay', 'Nurobod', 'Oqdaryo', 'Pastdarg\'om', 'Paxtachi', 'Payariq', 'Toyloq', 'Urgut'],
+    'Buxoro viloyati': ['Buxoro', 'Kogon', 'G\'ijduvon', 'Jondor', 'Olot', 'Peshku', 'Qorako\'l', 'Qorovulbozor', 'Romitan', 'Shofirkon', 'Vobkent'],
+    'Xorazm viloyati': ['Urganch', 'Xiva', 'Bog\'ot', 'Gurlan', 'Xonqa', 'Hazorasp', 'Qo\'shko\'pir', 'Shovot', 'Tuproqqal\'a', 'Yangiariq', 'Yangibozor'],
+    'Qashqadaryo viloyati': ['Qarshi', 'Shahrisabz', 'Kitob', 'Dehqonobod', 'G\'uzor', 'Kasbi', 'Koson', 'Mirishkor', 'Muborak', 'Nishon', 'Chiroqchi', 'Yakkabog\''],
+    'Surxondaryo viloyati': ['Termiz', 'Boysun', 'Denov', 'Jarqo\'rg\'on', 'Muzrabod', 'Oltinsoy', 'Qiziriq', 'Qumqo\'rg\'on', 'Sho\'rchi', 'Sherobod', 'Uzun', 'Angor', 'Bandixon'],
+    'Navoiy viloyati': ['Navoiy', 'Zarafshon', 'Konimex', 'Karmana', 'Navbahor', 'Nurota', 'Qiziltepa', 'Tomdi', 'Uchquduq', 'Xatirchi'],
+    'Farg\'ona viloyati': ['Farg\'ona', 'Marg\'ilon', 'Quva', 'Qo\'qon', 'Beshariq', 'Bog\'dod', 'Buvayda', 'Dang\'ara', 'Furqat', 'O\'zbekiston', 'Rishton', 'So\'x', 'Toshloq', 'Uchko\'prik', 'Yozyovon'],
+    'Andijon viloyati': ['Andijon', 'Xonobod', 'Asaka', 'Baliqchi', 'Bo\'z', 'Buloqboshi', 'Izboskan', 'Jalaquduq', 'Marxamat', 'Oltinko\'l', 'Paxtaobod', 'Qo\'rg\'ontepa', 'Shahrixon', 'Ulug\'nor', 'Xo\'jaobod'],
+    'Namangan viloyati': ['Namangan', 'Chortoq', 'Chust', 'Kosonsoy', 'Mingbuloq', 'Norin', 'Pop', 'To\'raqo\'rg\'on', 'Uchqo\'rg\'on', 'Uychi', 'Yangiqo\'rg\'on'],
+    'Jizzax viloyati': ['Jizzax', 'Do\'stlik', 'Arnasoy', 'Baxmal', 'Forish', 'G\'allaorol', 'Mirzacho\'l', 'Paxtakor', 'Yangiobod', 'Zafarobod', 'Zarbdor', 'Zomin'],
+    'Sirdaryo viloyati': ['Guliston', 'Yangiyer', 'Shirin', 'Boyovut', 'Hovos', 'Mirzaobod', 'Oqoltin', 'Sardoba', 'Sayxunobod'],
+    'Qoraqalpog\'iston Respublikasi': ['Nukus', 'Mo\'ynoq', 'Beruniy', 'Bo\'zatov', 'Chimboy', 'Ellikqal\'a', 'Kegeyli', 'Qanliko\'l', 'Qo\'ng\'irot', 'Qorao\'zak', 'Shumanay', 'Taxtako\'pir', 'To\'rtko\'l', 'Xo\'jayli'],
+  },
+  ru: {
+    'Город Ташкент': ['Бектемир', 'Чиланзар', 'Яккасарай', 'Мирабад', 'Мирзо Улугбек', 'Алмазар', 'Сергели', 'Шайхантахур', 'Учтепа', 'Яшнабад', 'Юнусабад'],
+    'Ташкентская область': ['Ангрен', 'Алмалык', 'Чирчик', 'Нурафшон', 'Бекабад', 'Ахангаран', 'Янгиюль', 'Бука', 'Бостанлык', 'Чиназ', 'Кибрай', 'Аккурган', 'Паркент', 'Пскент', 'Куйи Чирчик', 'Урта Чирчик', 'Зангиата', 'Юкори Чирчик'],
+    'Самаркандская область': ['Самарканд', 'Каттакурган', 'Булунгур', 'Иштыхан', 'Джамбай', 'Нарпай', 'Нурабад', 'Акдарья', 'Пастдаргом', 'Пахтачи', 'Пайарык', 'Тайлак', 'Ургут'],
+    'Бухарская область': ['Бухара', 'Каган', 'Гиждуван', 'Жондор', 'Алат', 'Пешку', 'Каракуль', 'Коровулбазар', 'Ромитан', 'Шафиркан', 'Вабкент'],
+    'Хорезмская область': ['Ургенч', 'Хива', 'Богат', 'Гурлен', 'Ханка', 'Хазарасп', 'Кушкупыр', 'Шават', 'Тупраккала', 'Янгиарык', 'Янгибазар'],
+    'Кашкадарьинская область': ['Карши', 'Шахрисабз', 'Китаб', 'Дехканабад', 'Гузар', 'Касби', 'Касан', 'Миришкор', 'Мубарек', 'Нишон', 'Чиракчи', 'Яккабаг'],
+    'Сурхандарьинская область': ['Термез', 'Байсун', 'Денау', 'Джаркурган', 'Музрабад', 'Алтынсай', 'Кизирик', 'Кумкурган', 'Шурчи', 'Шерабад', 'Узун', 'Ангор', 'Бандихан'],
+    'Навоийская область': ['Навои', 'Зарафшан', 'Конимех', 'Кармана', 'Навбахор', 'Нурата', 'Кызылтепа', 'Тамды', 'Учкудук', 'Хатырчи'],
+    'Ферганская область': ['Фергана', 'Маргилан', 'Кува', 'Коканд', 'Бешарык', 'Багдад', 'Бувайда', 'Дангара', 'Фуркат', 'Узбекистан', 'Риштан', 'Сох', 'Ташлак', 'Учкуприк', 'Язъяван'],
+    'Андижанская область': ['Андижан', 'Ханабад', 'Асака', 'Балыкчи', 'Буз', 'Булакбаши', 'Избоскан', 'Джалакудук', 'Мархамат', 'Алтынкуль', 'Пахтаабад', 'Кургантепа', 'Шахрихан', 'Улугнор', 'Ходжаабад'],
+    'Наманганская область': ['Наманган', 'Чартак', 'Чуст', 'Касансай', 'Мингбулак', 'Нарын', 'Поп', 'Туракурган', 'Учкурган', 'Уйчи', 'Янгикурган'],
+    'Джизакская область': ['Джизак', 'Дустлик', 'Арнасай', 'Бахмал', 'Фориш', 'Галляарал', 'Мирзачуль', 'Пахтакор', 'Янгиабад', 'Зафарабад', 'Зарбдар', 'Заамин'],
+    'Сырдарьинская область': ['Гулистан', 'Янгиер', 'Ширин', 'Баяут', 'Хавас', 'Мирзаабад', 'Акалтын', 'Сардоба', 'Сайхунабад'],
+    'Республика Каракалпакстан': ['Нукус', 'Муйнак', 'Беруни', 'Бозатау', 'Чимбай', 'Элликкала', 'Кегейли', 'Канлыкуль', 'Кунград', 'Караузяк', 'Шуманай', 'Тахтакупыр', 'Турткуль', 'Ходжейли'],
+  },
+};
+
+export const DOMESTIC_CATEGORIES: Record<string, Record<string, string>> = {
+  uz: {
+    excursion: 'Ekskursiya',
+    nature: 'Tabiat va tog\'lar',
+    historical: 'Tarixiy obidalar',
+    pilgrimage: 'Ziyorat',
+    recreation: 'Dam olish',
+    adventure: 'Sarguzasht',
+  },
+  ru: {
+    excursion: 'Экскурсия',
+    nature: 'Природа и горы',
+    historical: 'Исторические памятники',
+    pilgrimage: 'Паломничество',
+    recreation: 'Отдых',
+    adventure: 'Приключение',
+  },
+};
+
 export const AIRLINES: string[] = [
   // Central Asia & CIS
   'Uzbekistan Airways',

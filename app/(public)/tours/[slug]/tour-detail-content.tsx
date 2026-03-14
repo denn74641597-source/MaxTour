@@ -5,8 +5,10 @@ import Link from 'next/link';
 import {
   MapPin, CalendarDays, Clock, Users,
   ArrowLeft, Share2, Send, Star, Check, X,
-  Plane, DollarSign, Navigation, Hotel,
+  Plane, DollarSign, Navigation, Hotel, Map, Mountain,
+  Landmark, Heart, Compass, TreePine, Phone, User,
 } from 'lucide-react';
+import { DOMESTIC_CATEGORIES } from '@/lib/tour-data';
 import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
@@ -32,10 +34,23 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
   const destinations = (tour.destinations as string[]) ?? [];
   const extraCharges = (tour.extra_charges as { name: string; amount: number }[]) ?? [];
   const hotels = (tour.hotels as TourHotel[]) ?? [];
+  const whatToBring = (tour.what_to_bring as string[]) ?? [];
+  const isDomestic = tour.tour_type === 'domestic';
 
-  const telegramLink = agency?.telegram_username
-    ? `https://t.me/${agency.telegram_username.replace('@', '')}`
-    : null;
+  const categoryIcons: Record<string, React.ReactNode> = {
+    excursion: <Compass className="h-3.5 w-3.5" />,
+    nature: <TreePine className="h-3.5 w-3.5" />,
+    historical: <Landmark className="h-3.5 w-3.5" />,
+    pilgrimage: <Heart className="h-3.5 w-3.5" />,
+    recreation: <Mountain className="h-3.5 w-3.5" />,
+    adventure: <Map className="h-3.5 w-3.5" />,
+  };
+
+  const telegramLink = tour.operator_telegram_username
+    ? `https://t.me/${tour.operator_telegram_username.replace('@', '')}`
+    : agency?.telegram_username
+      ? `https://t.me/${agency.telegram_username.replace('@', '')}`
+      : null;
 
   return (
     <div className="pb-4 bg-[#f6f6f8]">
@@ -85,10 +100,20 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
             <div className="flex items-center gap-1 mt-1">
               <MapPin className="h-4 w-4 text-primary" />
               <p className="text-slate-600 text-sm font-medium">
-                {tour.city ? `${tour.city}, ` : ''}
-                {tour.country}
+                {isDomestic
+                  ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
+                  : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
+                }
               </p>
             </div>
+            {isDomestic && tour.domestic_category && (
+              <div className="flex items-center gap-1.5 mt-1.5">
+                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 rounded-full px-2.5 py-1 text-xs font-medium border border-emerald-200">
+                  {categoryIcons[tour.domestic_category]}
+                  <span>{DOMESTIC_CATEGORIES[t.common?.language || 'uz']?.[tour.domestic_category] || tour.domestic_category}</span>
+                </div>
+              </div>
+            )}
             {/* Multi-city route */}
             {destinations.length > 0 && (
               <div className="flex items-center gap-1.5 mt-2 flex-wrap">
@@ -233,6 +258,61 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                     <X className="h-3.5 w-3.5 text-red-400" />
                   </div>
                   <span className="text-sm text-slate-500">{service}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Meeting Point - Domestic */}
+        {isDomestic && tour.meeting_point && (
+          <section>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.domesticTour.meetingPoint}</h3>
+            <div className="bg-white rounded-xl border border-slate-100 px-3 py-2.5">
+              <div className="flex items-start gap-2.5">
+                <MapPin className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
+                <p className="text-sm text-slate-700">{tour.meeting_point}</p>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Guide Info - Domestic */}
+        {isDomestic && (tour.guide_name || tour.guide_phone) && (
+          <section>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.domesticTour.guideInfo}</h3>
+            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+              {tour.guide_name && (
+                <div className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="size-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <User className="h-3.5 w-3.5 text-blue-500" />
+                  </div>
+                  <span className="text-sm text-slate-700">{tour.guide_name}</span>
+                </div>
+              )}
+              {tour.guide_phone && (
+                <div className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="size-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                    <Phone className="h-3.5 w-3.5 text-blue-500" />
+                  </div>
+                  <span className="text-sm text-slate-700">{tour.guide_phone}</span>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* What to Bring - Domestic */}
+        {isDomestic && whatToBring.length > 0 && (
+          <section>
+            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.domesticTour.whatToBring}</h3>
+            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+              {whatToBring.map((item: string, i: number) => (
+                <div key={i} className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="size-5 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
+                    <Check className="h-3.5 w-3.5 text-amber-500" />
+                  </div>
+                  <span className="text-sm text-slate-700">{item}</span>
                 </div>
               ))}
             </div>
