@@ -216,7 +216,7 @@ export const uz: Translations = {
   // ─── Agency Dashboard ───
   agency: {
     dashboard: 'Boshqaruv paneli',
-    welcomeBack: 'Qaytganingiz bilan',
+    welcomeBack: 'Xush kelibsiz',
     activeTours: 'Faol turlar',
     totalLeads: 'Jami so\'rovlar',
     featuredTours: 'Tavsiya etilgan turlar',

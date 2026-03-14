@@ -52,3 +52,18 @@ export async function upsertAgencyProfileAction(payload: {
 export async function getMyAgencyAction() {
   return getMyAgency();
 }
+
+export async function incrementAgencyViews(agencyId: string) {
+  const supabase = await createServerSupabaseClient();
+  // Get current views and increment
+  const { data } = await supabase
+    .from('agencies')
+    .select('profile_views')
+    .eq('id', agencyId)
+    .single();
+  const currentViews = (data as any)?.profile_views ?? 0;
+  await supabase
+    .from('agencies')
+    .update({ profile_views: currentViews + 1 })
+    .eq('id', agencyId);
+}

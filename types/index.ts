@@ -39,6 +39,7 @@ export interface Agency {
   google_maps_url: string | null;
   is_verified: boolean;
   is_approved: boolean;
+  profile_views: number;
   created_at: string;
   updated_at: string;
 }

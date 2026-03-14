@@ -216,7 +216,7 @@ export const ru: Translations = {
   // ─── Agency Dashboard ───
   agency: {
     dashboard: 'Панель управления',
-    welcomeBack: 'С возвращением',
+    welcomeBack: 'Добро пожаловать',
     activeTours: 'Активные туры',
     totalLeads: 'Всего заявок',
     featuredTours: 'Рекомендуемые туры',

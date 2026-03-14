@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { getAgencyBySlug, getAgencyReviews } from '@/features/agencies/queries';
 import { getToursByAgency } from '@/features/tours/queries';
+import { incrementAgencyViews } from '@/features/agencies/actions';
 import { AgencyProfileContent } from './agency-profile-content';
 import type { Metadata } from 'next';
 
@@ -23,6 +24,7 @@ export default async function AgencyProfilePage({ params }: Props) {
   const [tours, reviews] = await Promise.all([
     getToursByAgency(agency.id),
     getAgencyReviews(agency.id),
+    incrementAgencyViews(agency.id),
   ]);
 
   return <AgencyProfileContent agency={agency} tours={tours} reviews={reviews} />;

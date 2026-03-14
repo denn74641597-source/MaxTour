@@ -1,10 +1,12 @@
 'use client';
 
-import { MapPin, Users, Eye, Plus, Settings, Bell, Star } from 'lucide-react';
+import Image from 'next/image';
+import { MapPin, Users, Eye, Plus, Settings, Bell, Star, Home } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
+import { placeholderImage } from '@/lib/utils';
 
 interface AgencyDashboardContentProps {
   data: {
@@ -13,6 +15,7 @@ interface AgencyDashboardContentProps {
     totalLeads: number;
     recentLeads: any[];
     featuredTours: number;
+    profileViews: number;
     subscription: any;
   } | null;
 }
@@ -58,7 +61,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
     {
       icon: <div className="h-10 w-10 rounded-xl bg-violet-50 flex items-center justify-center"><Eye className="h-5 w-5 text-violet-600" /></div>,
       label: t.agency.totalViews,
-      value: data.featuredTours,
+      value: data.profileViews,
       color: 'text-emerald-500',
     },
     {
@@ -71,15 +74,27 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
 
   return (
     <div className="space-y-6 pb-6">
+      {/* Mobile home button */}
+      <div className="md:hidden flex items-center justify-between mb-2">
+        <Link href="/" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors">
+          <Home className="h-4 w-4" />
+          <span>{t.errors.goHome}</span>
+        </Link>
+      </div>
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold text-sm">
-            {data.agency.name?.charAt(0)?.toUpperCase() ?? 'M'}
+          <div className="h-10 w-10 rounded-full overflow-hidden bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center shrink-0">
+            {data.agency.logo_url ? (
+              <Image src={data.agency.logo_url} alt={data.agency.name} width={40} height={40} className="h-10 w-10 rounded-full object-cover" />
+            ) : (
+              <span className="text-white font-bold text-sm">{data.agency.name?.charAt(0)?.toUpperCase() ?? 'A'}</span>
+            )}
           </div>
           <div>
-            <h1 className="text-base font-bold text-slate-800">MaxTour</h1>
-            <p className="text-xs text-slate-500">{t.agency.welcomeBack}, {data.agency.name}</p>
+            <h1 className="text-base font-bold text-slate-800">{data.agency.name}</h1>
+            <p className="text-xs text-slate-500">{t.agency.welcomeBack}</p>
           </div>
         </div>
         <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center">

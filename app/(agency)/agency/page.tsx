@@ -20,6 +20,7 @@ async function getAgencyDashboardData() {
     totalLeads: leadsRes.data?.length ?? 0,
     recentLeads: leadsRes.data ?? [],
     featuredTours: featuredRes.count ?? 0,
+    profileViews: (agency as any).profile_views ?? 0,
     subscription: subRes.data,
   };
 }
