@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink } from 'lucide-react';
+import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink, BadgeCheck } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { useTranslation } from '@/lib/i18n';
@@ -60,7 +60,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
         </button>
       </div>
 
-      {/* Logo + Name + Description */}
+      {/* Logo + Name + Badges */}
       <div className="flex flex-col items-center px-4 pt-2 pb-4">
         <div className="relative h-24 w-24 rounded-full overflow-hidden ring-4 ring-primary/20 bg-muted mb-3">
           <Image
@@ -71,9 +71,21 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
             sizes="96px"
           />
         </div>
-        <div className="flex items-center gap-1.5 mb-1">
-          <h1 className="text-xl font-bold">{agency.name}</h1>
-          {agency.is_verified && <VerifiedBadge size="md" className="h-5 w-5" />}
+        <h1 className="text-xl font-bold mb-1.5">{agency.name}</h1>
+        {/* Verified + Approved badges */}
+        <div className="flex items-center gap-2 mb-2">
+          {agency.is_verified && (
+            <div className="flex items-center gap-1 bg-blue-50 text-blue-600 rounded-full px-2.5 py-1 text-xs font-semibold">
+              <VerifiedBadge size="sm" className="h-3.5 w-3.5" />
+              <span>{t.agencyView.verified}</span>
+            </div>
+          )}
+          {agency.is_approved && (
+            <div className="flex items-center gap-1 bg-emerald-50 text-emerald-600 rounded-full px-2.5 py-1 text-xs font-semibold">
+              <BadgeCheck className="h-3.5 w-3.5" />
+              <span>{t.agencyView.approved}</span>
+            </div>
+          )}
         </div>
         {agency.city && (
           <p className="text-sm text-muted-foreground mb-2">
