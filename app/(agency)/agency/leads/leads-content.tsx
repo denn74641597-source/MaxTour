@@ -56,31 +56,40 @@ export function AgencyLeadsContent({ initialLeads }: AgencyLeadsContentProps) {
                     <p className="text-xs text-muted-foreground">
                       {(lead as any).tour?.title ?? 'Tour'} · {formatDate(lead.created_at)}
                     </p>
+                    {lead.people_count > 1 && (
+                      <p className="text-xs text-primary font-medium mt-0.5 flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {lead.people_count} {t.leadForm.peopleCount?.toLowerCase()}
+                      </p>
+                    )}
                   </div>
                   <StatusBadge status={lead.status} />
                 </div>
 
-                {/* Contact Info */}
-                <div className="flex gap-3 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Phone className="h-3 w-3" />
+                {/* Contact Actions */}
+                <div className="flex gap-2">
+                  <a
+                    href={`tel:${lead.phone}`}
+                    className="flex-1 flex items-center justify-center gap-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl py-2.5 text-sm font-medium transition-colors"
+                  >
+                    <Phone className="h-4 w-4" />
                     {lead.phone}
-                  </span>
+                  </a>
                   {lead.telegram_username && (
                     <a
                       href={`https://t.me/${lead.telegram_username.replace('@', '')}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-blue-500 hover:underline"
+                      className="flex-1 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl py-2.5 text-sm font-medium transition-colors"
                     >
-                      <MessageCircle className="h-3 w-3" />
-                      {lead.telegram_username}
+                      <MessageCircle className="h-4 w-4" />
+                      Telegram
                     </a>
                   )}
                 </div>
 
                 {lead.comment && (
-                  <p className="text-sm text-muted-foreground bg-muted/50 rounded p-2">
+                  <p className="text-sm text-muted-foreground bg-muted/50 rounded-lg p-2.5">
                     {lead.comment}
                   </p>
                 )}

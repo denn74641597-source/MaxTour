@@ -22,6 +22,7 @@ export async function submitLead(tourId: string, agencyId: string, formData: Lea
     user_id: user?.id ?? null,
     full_name: parsed.data.full_name,
     phone: parsed.data.phone,
+    people_count: parsed.data.people_count ?? 1,
     telegram_username: parsed.data.telegram_username ?? null,
     comment: parsed.data.comment ?? null,
     status: 'new',

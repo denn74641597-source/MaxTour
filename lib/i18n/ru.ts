@@ -43,6 +43,7 @@ export const ru: Translations = {
     current: 'Текущий',
     upgrade: 'Улучшить',
     switchTo: 'Перейти',
+    close: 'Закрыть',
   },
 
   // ─── Navigation ───
@@ -147,12 +148,13 @@ export const ru: Translations = {
     fullNamePlaceholder: 'Введите ваше имя',
     phone: 'Телефон',
     phonePlaceholder: '+998 90 123 45 67',
+    peopleCount: 'Количество человек',
     telegramUsername: 'Telegram имя пользователя',
     comment: 'Комментарий',
     commentPlaceholder: 'Вопросы или особые пожелания...',
     submit: 'Отправить заявку',
     submitted: 'Заявка отправлена!',
-    submittedHint: 'Агентство скоро свяжется с вами. Вы также можете связаться через Telegram.',
+    submittedHint: 'Тур оператор скоро свяжется с вами.',
   },
 
   // ─── Categories ───

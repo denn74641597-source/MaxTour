@@ -40,6 +40,7 @@ export interface Translations {
     current: string;
     upgrade: string;
     switchTo: string;
+    close: string;
   };
   nav: {
     explore: string;
@@ -130,6 +131,7 @@ export interface Translations {
     fullNamePlaceholder: string;
     phone: string;
     phonePlaceholder: string;
+    peopleCount: string;
     telegramUsername: string;
     comment: string;
     commentPlaceholder: string;

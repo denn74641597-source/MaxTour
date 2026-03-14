@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 import {
   MapPin, CalendarDays, Clock, Users,
   ArrowLeft, Share2, Send, Star, Check, X,
@@ -13,6 +14,8 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { LeadForm } from '@/components/shared/lead-form';
 import type { TourHotel } from '@/types';
 
 interface TourDetailContentProps {
@@ -21,6 +24,7 @@ interface TourDetailContentProps {
 
 export function TourDetailContent({ tour }: TourDetailContentProps) {
   const { t, language } = useTranslation();
+  const [showLeadForm, setShowLeadForm] = useState(false);
 
   const agency = tour.agency;
   const images = tour.images ?? [];
@@ -396,30 +400,42 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
       {/* CTA Bar — sits above BottomNav */}
       <div className="sticky bottom-16 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 z-40 mt-4">
         <div className="max-w-2xl mx-auto flex gap-2">
-          <Link
-            href={`/tours/${tour.slug}#request`}
-            className="flex-1 bg-slate-100 text-slate-900 font-bold py-3 rounded-xl text-center hover:bg-slate-200 transition-colors text-sm"
+          <button
+            onClick={() => setShowLeadForm(true)}
+            className="flex-1 bg-primary text-white font-bold py-3 rounded-xl text-center hover:bg-primary/90 transition-colors text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
           >
+            <Send className="h-4 w-4" />
             {t.tours.leaveRequest}
-          </Link>
-          {telegramLink ? (
+          </button>
+          {telegramLink && (
             <a
               href={telegramLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-[1.5] bg-primary text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm"
+              className="bg-slate-100 text-slate-900 font-bold py-3 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-all text-sm shrink-0"
             >
               <Send className="h-4 w-4" />
-              {t.tours.contactTelegram}
+              Telegram
             </a>
-          ) : (
-            <button className="flex-[1.5] bg-primary text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all text-sm">
-              <Send className="h-4 w-4" />
-              {t.tours.contactTelegram}
-            </button>
           )}
         </div>
       </div>
+
+      {/* Lead Form Sheet */}
+      <Sheet open={showLeadForm} onOpenChange={setShowLeadForm}>
+        <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{t.tours.leaveRequest}</SheetTitle>
+          </SheetHeader>
+          <div className="py-4">
+            <LeadForm
+              tourId={tour.id}
+              agencyId={tour.agency_id}
+              onClose={() => setShowLeadForm(false)}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

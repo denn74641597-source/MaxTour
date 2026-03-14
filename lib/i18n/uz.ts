@@ -43,6 +43,7 @@ export const uz: Translations = {
     current: 'Joriy',
     upgrade: 'Yangilash',
     switchTo: 'O\'tish',
+    close: 'Yopish',
   },
 
   // ─── Navigation ───
@@ -147,12 +148,13 @@ export const uz: Translations = {
     fullNamePlaceholder: 'Ismingizni kiriting',
     phone: 'Telefon',
     phonePlaceholder: '+998 90 123 45 67',
+    peopleCount: 'Necha kishi',
     telegramUsername: 'Telegram foydalanuvchi nomi',
     comment: 'Izoh',
     commentPlaceholder: 'Savollar yoki maxsus istaklar...',
     submit: 'So\'rov yuborish',
     submitted: 'So\'rov yuborildi!',
-    submittedHint: 'Agentlik tez orada siz bilan bog\'lanadi. Siz Telegram orqali ham murojaat qilishingiz mumkin.',
+    submittedHint: 'Tez orada tur operator siz bilan bog\'lanadi.',
   },
 
   // ─── Categories ───

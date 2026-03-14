@@ -142,6 +142,7 @@ export interface Lead {
   phone: string;
   telegram_username: string | null;
   comment: string | null;
+  people_count: number;
   status: LeadStatus;
   created_at: string;
   updated_at: string;
