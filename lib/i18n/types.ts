@@ -218,6 +218,7 @@ export interface Translations {
     countryPlaceholder: string;
     city: string;
     cityPlaceholder: string;
+    selectCountryFirst: string;
     departureDate: string;
     returnDate: string;
     durationDays: string;

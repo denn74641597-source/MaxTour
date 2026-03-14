@@ -257,6 +257,7 @@ export const uz: Translations = {
     countryPlaceholder: 'Turkiya',
     city: 'Shahar',
     cityPlaceholder: 'Istanbul',
+    selectCountryFirst: 'Avval davlatni tanlang',
     departureDate: 'Jo\'nash sanasi',
     returnDate: 'Qaytish sanasi',
     durationDays: 'Davomiyligi (kun)',

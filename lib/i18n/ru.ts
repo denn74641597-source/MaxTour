@@ -257,6 +257,7 @@ export const ru: Translations = {
     countryPlaceholder: 'Турция',
     city: 'Город',
     cityPlaceholder: 'Стамбул',
+    selectCountryFirst: 'Сначала выберите страну',
     departureDate: 'Дата вылета',
     returnDate: 'Дата возвращения',
     durationDays: 'Длительность (дней)',

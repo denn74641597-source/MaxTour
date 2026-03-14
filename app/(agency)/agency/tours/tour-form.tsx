@@ -41,7 +41,7 @@ interface TourFormProps {
 
 export function TourForm({ initialData, tourId }: TourFormProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [coverUrl, setCoverUrl] = useState(initialData?.cover_image_url ?? '');
   const [includedServices, setIncludedServices] = useState<string[]>(
     initialData?.included_services ?? []
@@ -261,7 +261,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               </div>
               {countrySearch && (
                 <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
-                  {COUNTRIES.filter(c => c.toLowerCase().includes(countrySearch.toLowerCase())).map((country) => (
+                  {COUNTRIES[language].filter(c => c.toLowerCase().includes(countrySearch.toLowerCase())).map((country) => (
                     <button
                       key={country}
                       type="button"
@@ -295,13 +295,13 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               <Label>{t.agencyTours.city}</Label>
               {(() => {
                 const selectedCountry = watch('country');
-                const availableCities = selectedCountry ? (CITIES_BY_COUNTRY[selectedCountry] ?? []) : [];
+                const availableCities = selectedCountry ? (CITIES_BY_COUNTRY[language][selectedCountry] ?? []) : [];
                 return (
                   <>
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                       <Input
-                        placeholder={selectedCountry ? t.agencyTours.cityPlaceholder : 'Avval davlatni tanlang'}
+                        placeholder={selectedCountry ? t.agencyTours.cityPlaceholder : t.agencyTours.selectCountryFirst}
                         value={citySearch}
                         onChange={(e) => setCitySearch(e.target.value)}
                         className="pl-9"
