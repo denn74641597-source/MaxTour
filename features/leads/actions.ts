@@ -25,7 +25,7 @@ export async function submitLead(tourId: string, agencyId: string, formData: Rec
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { error } = await supabase.from('leads').insert({
+  const insertData: Record<string, unknown> = {
     tour_id: tourId,
     agency_id: agencyId,
     user_id: user?.id ?? null,
@@ -35,7 +35,15 @@ export async function submitLead(tourId: string, agencyId: string, formData: Rec
     telegram_username: parsed.data.telegram_username ?? null,
     comment: parsed.data.comment ?? null,
     status: 'new',
-  });
+  };
+
+  let { error } = await supabase.from('leads').insert(insertData);
+
+  // Retry without people_count if column doesn't exist yet
+  if (error && error.message?.includes('people_count')) {
+    delete insertData.people_count;
+    ({ error } = await supabase.from('leads').insert(insertData));
+  }
 
   if (error) {
     console.error('Lead submission error:', error);
