@@ -114,20 +114,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                 </div>
               </div>
             )}
-            {/* Multi-city route */}
-            {destinations.length > 0 && (
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                <Navigation className="h-3.5 w-3.5 text-primary shrink-0" />
-                <div className="flex items-center gap-1 flex-wrap">
-                  {destinations.map((dest: string, i: number) => (
-                    <span key={i} className="text-xs font-medium">
-                      <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{dest}</span>
-                      {i < destinations.length - 1 && <span className="text-slate-400 mx-0.5">→</span>}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </div>
           <div className="text-right shrink-0">
             {tour.old_price && (
@@ -231,10 +218,25 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         )}
 
         {/* What's Included */}
-        {includedServices.length > 0 && (
+        {(includedServices.length > 0 || destinations.length > 0) && (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.whatsIncluded}</h3>
             <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+              {destinations.length > 0 && (
+                <div className="flex items-center gap-2.5 px-3 py-2">
+                  <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                    <Navigation className="h-3.5 w-3.5 text-emerald-500" />
+                  </div>
+                  <div className="flex items-center gap-1 flex-wrap">
+                    {destinations.map((dest: string, i: number) => (
+                      <span key={i} className="text-xs font-medium">
+                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{dest}</span>
+                        {i < destinations.length - 1 && <span className="text-slate-400 mx-0.5">→</span>}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
               {includedServices.map((service, i) => (
                 <div key={i} className="flex items-center gap-2.5 px-3 py-2">
                   <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
@@ -247,22 +249,7 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
           </section>
         )}
 
-        {/* What's Excluded */}
-        {excludedServices.length > 0 && (
-          <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.whatsExcluded}</h3>
-            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
-              {excludedServices.map((service, i) => (
-                <div key={i} className="flex items-center gap-2.5 px-3 py-2">
-                  <div className="size-5 rounded-full bg-red-50 flex items-center justify-center shrink-0">
-                    <X className="h-3.5 w-3.5 text-red-400" />
-                  </div>
-                  <span className="text-sm text-slate-500">{service}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+
 
         {/* Meeting Point - Domestic */}
         {isDomestic && tour.meeting_point && (
