@@ -229,6 +229,16 @@ export const uz: Translations = {
     noAgencyFound: 'Agentlik topilmadi. Avval profilingizni sozlang.',
     setupAgency: 'Agentlikni sozlash',
     agencyDashboard: 'Agentlik boshqaruvi',
+    quickActions: 'Tezkor amallar',
+    manageTours: 'Turlarni boshqarish',
+    addTour: 'Tur qo\'shish',
+    seeAll: 'Barchasini ko\'rish',
+    totalViews: 'Ko\'rishlar',
+    subscriptionActive: 'Obuna faol',
+    premiumPlan: 'PREMIUM PLAN',
+    renewsIn: 'Yangilanadi',
+    days: 'kun',
+    upgrade: 'Yangilash',
   },
 
   // ─── Agency Tours ───

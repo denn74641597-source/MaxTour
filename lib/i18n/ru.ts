@@ -229,6 +229,16 @@ export const ru: Translations = {
     noAgencyFound: 'Агентство не найдено. Сначала настройте свой профиль.',
     setupAgency: 'Настроить агентство',
     agencyDashboard: 'Панель агентства',
+    quickActions: 'Быстрые действия',
+    manageTours: 'Управление турами',
+    addTour: 'Добавить тур',
+    seeAll: 'Смотреть все',
+    totalViews: 'Просмотры',
+    subscriptionActive: 'Подписка активна',
+    premiumPlan: 'PREMIUM PLAN',
+    renewsIn: 'Обновляется через',
+    days: 'дней',
+    upgrade: 'Улучшить',
   },
 
   // ─── Agency Tours ───

@@ -192,6 +192,16 @@ export interface Translations {
     noAgencyFound: string;
     setupAgency: string;
     agencyDashboard: string;
+    quickActions: string;
+    manageTours: string;
+    addTour: string;
+    seeAll: string;
+    totalViews: string;
+    subscriptionActive: string;
+    premiumPlan: string;
+    renewsIn: string;
+    days: string;
+    upgrade: string;
   };
   agencyTours: {
     title: string;
