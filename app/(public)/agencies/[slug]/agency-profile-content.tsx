@@ -2,14 +2,18 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Share2, Globe, Instagram, MessageCircle, Phone, Star, Heart, MapPin, Clock, ChevronRight, ExternalLink, ShieldCheck, Send, Loader2, User, CheckCircle2 } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFavorites } from '@/hooks/use-favorites';
+import { useProfile } from '@/hooks/use-profile';
+import { submitReview } from '@/features/agencies/actions';
 import type { Agency, Tour, Review, TourHotel } from '@/types';
 
 interface AgencyProfileContentProps {
@@ -24,6 +28,14 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('tours');
+  const { profile, loading: profileLoading } = useProfile();
+
+  // Review form state
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
 
   const telegramLink = agency.telegram_username
     ? `https://t.me/${agency.telegram_username.replace('@', '')}`
@@ -197,7 +209,88 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
 
         {/* Reviews Tab */}
         {activeTab === 'reviews' && (
-          <div className="space-y-3">
+          <div className="space-y-4">
+            {/* Write Review Form */}
+            {!reviewSubmitted ? (
+              <Card>
+                <CardContent className="p-4 space-y-3">
+                  <h3 className="font-semibold text-sm">{t.agencyProfile.writeReview}</h3>
+                  {!profileLoading && !profile ? (
+                    <div className="flex items-center gap-2 py-3">
+                      <User className="h-5 w-5 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground flex-1">{t.agencyProfile.loginToReview}</p>
+                      <Button size="sm" variant="outline" onClick={() => router.push('/profile')}>
+                        Kirish
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Star Rating */}
+                      <div>
+                        <p className="text-xs text-muted-foreground mb-1.5">{t.agencyProfile.yourRating}</p>
+                        <div className="flex gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setReviewRating(i + 1)}
+                              className="p-0.5"
+                            >
+                              <Star
+                                className={`h-7 w-7 transition-colors ${
+                                  i < reviewRating
+                                    ? 'text-amber-400 fill-amber-400'
+                                    : 'text-slate-300'
+                                }`}
+                              />
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      {/* Comment */}
+                      <Textarea
+                        placeholder={t.agencyProfile.reviewCommentPlaceholder}
+                        value={reviewComment}
+                        onChange={(e) => setReviewComment(e.target.value)}
+                        rows={3}
+                      />
+                      {reviewError && (
+                        <p className="text-xs text-destructive">
+                          {reviewError === 'already_reviewed' ? t.agencyProfile.alreadyReviewed : reviewError}
+                        </p>
+                      )}
+                      <Button
+                        className="w-full"
+                        disabled={reviewRating === 0 || reviewSubmitting}
+                        onClick={async () => {
+                          setReviewSubmitting(true);
+                          setReviewError(null);
+                          const result = await submitReview(agency.id, reviewRating, reviewComment || null);
+                          if (result.success) {
+                            setReviewSubmitted(true);
+                          } else {
+                            setReviewError(result.error || 'Xatolik yuz berdi');
+                          }
+                          setReviewSubmitting(false);
+                        }}
+                      >
+                        {reviewSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                        {t.agencyProfile.submitReview}
+                      </Button>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            ) : (
+              <Card>
+                <CardContent className="p-4 flex flex-col items-center gap-2 py-6">
+                  <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+                  <p className="font-semibold text-sm">{t.agencyProfile.reviewSubmitted}</p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Existing Reviews */}
             {reviews.length > 0 ? (
               reviews.map((review) => (
                 <Card key={review.id} className="overflow-hidden">
@@ -226,7 +319,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
                 </Card>
               ))
             ) : (
-              <p className="text-sm text-muted-foreground text-center py-8">{t.agencyProfile.noReviews}</p>
+              !reviewSubmitted && <p className="text-sm text-muted-foreground text-center py-4">{t.agencyProfile.noReviews}</p>
             )}
           </div>
         )}

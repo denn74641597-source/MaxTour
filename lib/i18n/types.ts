@@ -125,6 +125,14 @@ export interface Translations {
     viewOnMap: string;
     verifiedByMaxTour: string;
     verifiedDescription: string;
+    writeReview: string;
+    yourRating: string;
+    reviewComment: string;
+    reviewCommentPlaceholder: string;
+    submitReview: string;
+    reviewSubmitted: string;
+    alreadyReviewed: string;
+    loginToReview: string;
   };
   leadForm: {
     fullName: string;

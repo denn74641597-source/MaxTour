@@ -140,6 +140,14 @@ export const uz: Translations = {
     viewOnMap: 'Xaritada ko\'rish',
     verifiedByMaxTour: 'MaxTour tomonidan tasdiqlangan',
     verifiedDescription: 'Ushbu agentlik MaxTour tomonidan tekshirilgan va tasdiqlangan. Sizning to\'lovlaringiz himoyalangan.',
+    writeReview: 'Sharh qoldirish',
+    yourRating: 'Bahoingiz',
+    reviewComment: 'Sharh',
+    reviewCommentPlaceholder: 'Fikringizni yozing...',
+    submitReview: 'Sharh yuborish',
+    reviewSubmitted: 'Sharh yuborildi!',
+    alreadyReviewed: 'Siz allaqachon sharh qoldirgansiz',
+    loginToReview: 'Sharh qoldirish uchun tizimga kiring',
   },
 
   // ─── Lead Form ───

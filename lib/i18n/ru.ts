@@ -140,6 +140,14 @@ export const ru: Translations = {
     viewOnMap: 'Показать на карте',
     verifiedByMaxTour: 'Проверено MaxTour',
     verifiedDescription: 'Это агентство проверено и одобрено MaxTour. Ваши платежи защищены.',
+    writeReview: 'Оставить отзыв',
+    yourRating: 'Ваша оценка',
+    reviewComment: 'Комментарий',
+    reviewCommentPlaceholder: 'Напишите ваш отзыв...',
+    submitReview: 'Отправить отзыв',
+    reviewSubmitted: 'Отзыв отправлен!',
+    alreadyReviewed: 'Вы уже оставляли отзыв',
+    loginToReview: 'Войдите, чтобы оставить отзыв',
   },
 
   // ─── Lead Form ───

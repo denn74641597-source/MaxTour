@@ -67,3 +67,37 @@ export async function incrementAgencyViews(agencyId: string) {
     .update({ profile_views: currentViews + 1 })
     .eq('id', agencyId);
 }
+
+export async function submitReview(agencyId: string, rating: number, comment: string | null) {
+  if (rating < 1 || rating > 5) return { success: false, error: 'Invalid rating' };
+
+  const supabase = await createServerSupabaseClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { success: false, error: 'Not authenticated' };
+
+  // Check if user already reviewed this agency
+  const { data: existing } = await supabase
+    .from('reviews')
+    .select('id')
+    .eq('agency_id', agencyId)
+    .eq('user_id', user.id)
+    .single();
+
+  if (existing) {
+    return { success: false, error: 'already_reviewed' };
+  }
+
+  const { error } = await supabase.from('reviews').insert({
+    agency_id: agencyId,
+    user_id: user.id,
+    rating,
+    comment: comment || null,
+  });
+
+  if (error) {
+    console.error('Review submission error:', error);
+    return { success: false, error: 'Failed to submit review' };
+  }
+
+  return { success: true };
+}
