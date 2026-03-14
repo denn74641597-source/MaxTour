@@ -27,14 +27,14 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   // Category filter — keyword-based search across title & descriptions
   if (filters?.category) {
     const CATEGORY_KEYWORDS: Record<string, string[]> = {
-      Beach: ['plyaj', 'dengiz', 'beach', 'ocean', 'okean', 'maldiv', 'bali', 'antalya', 'resort', 'qirg\'oq', 'orol'],
-      Umrah: ['umra', 'hajj', 'makka', 'madina', 'saudiya', 'ziyorat', 'haj'],
-      Family: ['oilaviy', 'family', 'bolalar', 'oila', 'kids', 'children'],
-      Honeymoon: ['asal oyi', 'honeymoon', 'romantik', 'romantic', 'yangi turmush'],
-      Budget: ['arzon', 'budget', 'cheap', 'tejamkor', 'aksiya', 'chegirma'],
-      Premium: ['premium', 'luxury', 'hashamatli', 'vip', 'deluxe', 'business'],
-      Adventure: ['sarguzasht', 'adventure', 'extreme', 'ekstrim', 'trekking', 'safari', 'hiking'],
-      Cultural: ['madaniy', 'cultural', 'tarixiy', 'muzey', 'heritage', 'history'],
+      Beach: ['plyaj', 'плаж', 'пляж', 'dengiz', 'море', 'beach', 'ocean', 'okean', 'океан', 'maldiv', 'мальдив', 'bali', 'бали', 'antalya', 'анталья', 'resort', 'курорт', 'qirg\'oq', 'берег', 'orol', 'остров'],
+      Umrah: ['umra', 'умра', 'hajj', 'хадж', 'makka', 'мекка', 'madina', 'медина', 'saudiya', 'саудов', 'ziyorat', 'паломничество', 'haj'],
+      Family: ['oilaviy', 'семейн', 'family', 'bolalar', 'дети', 'детск', 'oila', 'семья', 'kids', 'children'],
+      Honeymoon: ['asal oyi', 'медовый', 'honeymoon', 'romantik', 'романтик', 'romantic', 'yangi turmush', 'свадеб', 'молодожён'],
+      Budget: ['arzon', 'бюджет', 'budget', 'cheap', 'tejamkor', 'эконом', 'aksiya', 'акция', 'chegirma', 'скидк', 'дёшев', 'дешёв'],
+      Premium: ['premium', 'премиум', 'luxury', 'люкс', 'hashamatli', 'роскош', 'vip', 'deluxe', 'делюкс', 'business', 'бизнес'],
+      Adventure: ['sarguzasht', 'приключен', 'adventure', 'extreme', 'ekstrim', 'экстрим', 'trekking', 'треккинг', 'safari', 'сафари', 'hiking', 'поход'],
+      Cultural: ['madaniy', 'культур', 'cultural', 'tarixiy', 'историч', 'muzey', 'музей', 'heritage', 'history', 'история'],
     };
 
     if (filters.category === 'Visa-free') {
