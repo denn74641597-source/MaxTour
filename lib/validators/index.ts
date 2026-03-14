@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const leadFormSchema = z.object({
   full_name: z.string().min(2, 'Name must be at least 2 characters'),
   phone: z.string().min(7, 'Enter a valid phone number'),
-  people_count: z.coerce.number().int().min(1).max(100),
+  people_count: z.number().int().min(1).max(100),
   telegram_username: z.string().optional(),
   comment: z.string().max(500, 'Comment must be under 500 characters').optional(),
 });

@@ -98,7 +98,7 @@ export function LeadForm({ tourId, agencyId, onClose }: LeadFormProps) {
           type="number"
           min={1}
           max={100}
-          {...register('people_count')}
+          {...register('people_count', { valueAsNumber: true })}
         />
         {errors.people_count && (
           <p className="text-xs text-destructive">{errors.people_count.message}</p>
