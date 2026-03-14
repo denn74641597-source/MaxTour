@@ -131,37 +131,29 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
       </div>
 
       {/* Social Links Row */}
-      <div className="flex justify-center gap-6 px-4 pb-4">
-        {agency.website_url && (
-          <a href={agency.website_url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1">
-            <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
-              <Globe className="h-5 w-5 text-slate-600" />
-            </div>
-            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.website}</span>
-          </a>
-        )}
+      <div className="grid grid-cols-4 gap-2 px-6 pb-4 max-w-sm mx-auto">
         {agency.instagram_url && (
-          <a href={agency.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1">
+          <a href={agency.instagram_url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5">
             <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
               <Instagram className="h-5 w-5 text-slate-600" />
             </div>
-            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.instagram}</span>
+            <span className="text-[10px] text-muted-foreground text-center truncate w-full">{t.agencyProfile.instagram}</span>
           </a>
         )}
         {telegramLink && (
-          <a href={telegramLink} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1">
+          <a href={telegramLink} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center gap-1.5">
             <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
               <MessageCircle className="h-5 w-5 text-slate-600" />
             </div>
-            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.telegram}</span>
+            <span className="text-[10px] text-muted-foreground text-center truncate w-full">{t.agencyProfile.telegram}</span>
           </a>
         )}
         {agency.phone && (
-          <a href={`tel:${agency.phone}`} className="flex flex-col items-center gap-1">
+          <a href={`tel:${agency.phone}`} className="flex flex-col items-center gap-1.5">
             <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
               <Phone className="h-5 w-5 text-slate-600" />
             </div>
-            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.call}</span>
+            <span className="text-[10px] text-muted-foreground text-center truncate w-full">{t.agencyProfile.call}</span>
           </a>
         )}
         {(agency.address || agency.google_maps_url) && (
@@ -169,12 +161,12 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
             href={agency.google_maps_url || '#'}
             target={agency.google_maps_url ? '_blank' : undefined}
             rel={agency.google_maps_url ? 'noopener noreferrer' : undefined}
-            className="flex flex-col items-center gap-1"
+            className="flex flex-col items-center gap-1.5"
           >
             <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
               <MapPin className="h-5 w-5 text-slate-600" />
             </div>
-            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.location}</span>
+            <span className="text-[10px] text-muted-foreground text-center truncate w-full">{t.agencyProfile.location}</span>
           </a>
         )}
       </div>
