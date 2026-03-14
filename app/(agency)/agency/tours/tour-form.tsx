@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -18,7 +17,7 @@ import { ImageUploader } from '@/components/shared/image-uploader';
 import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
-import { Loader2, MapPin, Plus, X, Hotel, Star, Search, Globe, Map, Mountain, Landmark, Heart, Compass, TreePine } from 'lucide-react';
+import { Loader2, MapPin, Plus, X, Hotel, Star, Search, Globe, Map, Mountain, Landmark, Heart, Compass, TreePine, ArrowLeft, Send, CalendarDays, Clock, DollarSign, Utensils, Bus, Plane, Image as ImageIcon, FileText, CheckCircle2, Phone, User } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -313,642 +312,508 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     adventure: <Map className="h-4 w-4" />,
   };
 
+  // Section header component
+  const SectionHeader = ({ icon, label, color = 'text-primary' }: { icon: React.ReactNode; label: string; color?: string }) => (
+    <div className="flex items-center gap-2 mb-4">
+      <div className={`${color}`}>{icon}</div>
+      <h2 className={`text-xs font-bold uppercase tracking-wider ${color}`}>{label}</h2>
+    </div>
+  );
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="pb-6">
+      <input type="hidden" {...register('tour_type')} />
+      <input type="hidden" {...register('slug')} />
+
       {/* Tour Type Badge */}
-      <div className="flex items-center gap-2">
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium ${isDomestic ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
+      <div className="flex items-center gap-2 mb-5">
+        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold ${isDomestic ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-blue-50 text-blue-600 border border-blue-200'}`}>
           {isDomestic ? <Map className="h-3.5 w-3.5" /> : <Globe className="h-3.5 w-3.5" />}
           {isDomestic ? t.domesticTour.domestic : t.domesticTour.international}
         </div>
         {!isEditing && (
-          <button
-            type="button"
-            onClick={() => setTourTypeSelected(false)}
-            className="text-xs text-muted-foreground hover:text-foreground underline"
-          >
+          <button type="button" onClick={() => setTourTypeSelected(false)} className="text-xs text-muted-foreground hover:text-foreground underline">
             {t.common.edit}
           </button>
         )}
       </div>
 
-      <input type="hidden" {...register('tour_type')} />
-      <Card>
-        <CardContent className="p-4">
-          <Label className="mb-2 block">{t.agencyTours.coverImage}</Label>
-          <ImageUploader
-            value={coverUrl}
-            onChange={setCoverUrl}
-            label={t.agencyTours.uploadCoverImage}
-          />
-        </CardContent>
-      </Card>
-
-      {/* Basic Info */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.agencyTours.basicInfo}</h2>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="title">{t.agencyTours.titleLabel} *</Label>
-            <Input id="title" placeholder={t.agencyTours.titlePlaceholder} {...register('title')} onBlur={autoSlug} />
-            {errors.title && <p className="text-xs text-destructive">{errors.title.message}</p>}
-          </div>
-
-          <input type="hidden" {...register('slug')} />
-
-          <div className="space-y-1.5">
-            <Label htmlFor="full_description">{t.agencyTours.fullDescription}</Label>
-            <Textarea id="full_description" placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} />
-          </div>
-
-          {/* Domestic category selection */}
-          {isDomestic && (
-            <div className="space-y-2">
-              <Label>{t.domesticTour.category} *</Label>
-              <p className="text-xs text-muted-foreground">{t.domesticTour.categoryHint}</p>
-              <div className="grid grid-cols-2 gap-2">
-                {(['excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure'] as const).map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setValue('domestic_category', cat)}
-                    className={`flex items-center gap-2 p-3 rounded-xl border-2 text-sm font-medium transition-all text-left ${
-                      watch('domestic_category') === cat
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                        : 'border-slate-200 hover:border-slate-300 text-slate-600'
-                    }`}
-                  >
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                      watch('domestic_category') === cat ? 'bg-emerald-100' : 'bg-slate-100'
-                    }`}>
-                      {categoryIcons[cat]}
-                    </div>
-                    {t.domesticTour[cat]}
-                  </button>
-                ))}
-              </div>
+      <div className="space-y-6">
+        {/* ── TOUR BASICS ── */}
+        <section>
+          <SectionHeader icon={<FileText className="h-4 w-4" />} label={t.agencyTours.basicInfo} />
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="title" className="text-sm font-medium text-slate-700">{t.agencyTours.titleLabel}</Label>
+              <Input id="title" placeholder={t.agencyTours.titlePlaceholder} {...register('title')} onBlur={autoSlug} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Destination & Route - International */}
-      {!isDomestic && (
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.agencyTours.destinationDates}</h2>
-
-          <div className="grid grid-cols-1 gap-3">
-            {/* Country searchable dropdown */}
-            <div className="space-y-1.5">
-              <Label>{t.agencyTours.country} *</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t.agencyTours.countryPlaceholder}
-                  value={countrySearch}
-                  onChange={(e) => setCountrySearch(e.target.value)}
-                  className="pl-9"
-                />
+            {/* Country & City — International */}
+            {!isDomestic && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">{t.agencyTours.country}</Label>
+                  <div className="relative mt-1.5">
+                    {watch('country') ? (
+                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                        <span className="flex-1 text-sm truncate">{watch('country')}</span>
+                        <button type="button" onClick={() => { setValue('country', ''); setValue('city', ''); }} className="text-slate-400 hover:text-slate-600">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Input
+                          placeholder={t.agencyTours.countryPlaceholder}
+                          value={countrySearch}
+                          onChange={(e) => setCountrySearch(e.target.value)}
+                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                        />
+                        {countrySearch && (
+                          <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                            {COUNTRIES[language].filter(c => c.toLowerCase().includes(countrySearch.toLowerCase())).map((country) => (
+                              <button key={country} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('country', country); setCountrySearch(''); setValue('city', ''); setCitySearch(''); }}>
+                                {country}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">{t.agencyTours.city}</Label>
+                  <div className="relative mt-1.5">
+                    {watch('city') ? (
+                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                        <span className="flex-1 text-sm truncate">{watch('city')}</span>
+                        <button type="button" onClick={() => setValue('city', '')} className="text-slate-400 hover:text-slate-600">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Input
+                          placeholder={watch('country') ? t.agencyTours.cityPlaceholder : t.agencyTours.selectCountryFirst}
+                          value={citySearch}
+                          onChange={(e) => setCitySearch(e.target.value)}
+                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                          disabled={!watch('country')}
+                        />
+                        {citySearch && (() => {
+                          const cities = CITIES_BY_COUNTRY[language][watch('country') ?? ''] ?? [];
+                          const filtered = cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase()));
+                          return filtered.length > 0 ? (
+                            <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                              {filtered.map((city) => (
+                                <button key={city} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('city', city); setCitySearch(''); }}>
+                                  {city}
+                                </button>
+                              ))}
+                            </div>
+                          ) : null;
+                        })()}
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
-              {countrySearch && (
-                <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
-                  {COUNTRIES[language].filter(c => c.toLowerCase().includes(countrySearch.toLowerCase())).map((country) => (
+            )}
+
+            {/* Region & District — Domestic */}
+            {isDomestic && (
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.region}</Label>
+                  <div className="relative mt-1.5">
+                    {watch('region') ? (
+                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                        <span className="flex-1 text-sm truncate">{watch('region')}</span>
+                        <button type="button" onClick={() => { setValue('region', ''); setValue('district', ''); }} className="text-slate-400 hover:text-slate-600">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Input
+                          placeholder={t.domesticTour.selectRegion}
+                          value={regionSearch}
+                          onChange={(e) => setRegionSearch(e.target.value)}
+                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                        />
+                        {regionSearch && (
+                          <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                            {(UZ_REGIONS[language] || UZ_REGIONS['uz']).filter(r => r.toLowerCase().includes(regionSearch.toLowerCase())).map((region) => (
+                              <button key={region} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('region', region); setRegionSearch(''); setValue('district', ''); setDistrictSearch(''); }}>
+                                {region}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.district}</Label>
+                  <div className="relative mt-1.5">
+                    {watch('district') ? (
+                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                        <span className="flex-1 text-sm truncate">{watch('district')}</span>
+                        <button type="button" onClick={() => setValue('district', '')} className="text-slate-400 hover:text-slate-600">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <Input
+                          placeholder={watch('region') ? t.domesticTour.selectDistrict : t.domesticTour.selectRegionFirst}
+                          value={districtSearch}
+                          onChange={(e) => setDistrictSearch(e.target.value)}
+                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                          disabled={!watch('region')}
+                        />
+                        {districtSearch && (() => {
+                          const regionData = UZ_DISTRICTS[language] || UZ_DISTRICTS['uz'];
+                          const districts = regionData[watch('region') ?? ''] ?? [];
+                          const filtered = districts.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase()));
+                          return filtered.length > 0 ? (
+                            <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                              {filtered.map((district) => (
+                                <button key={district} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('district', district); setDistrictSearch(''); }}>
+                                  {district}
+                                </button>
+                              ))}
+                            </div>
+                          ) : null;
+                        })()}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Domestic Category */}
+            {isDomestic && (
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.domesticTour.category}</Label>
+                <div className="grid grid-cols-3 gap-2 mt-1.5">
+                  {(['excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure'] as const).map((cat) => (
                     <button
-                      key={country}
+                      key={cat}
                       type="button"
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
-                      onClick={() => {
-                        setValue('country', country);
-                        setCountrySearch('');
-                        setValue('city', '');
-                        setCitySearch('');
-                      }}
+                      onClick={() => setValue('domestic_category', cat)}
+                      className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-medium transition-all ${
+                        watch('domestic_category') === cat
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-slate-200 hover:border-slate-300 text-slate-500'
+                      }`}
                     >
-                      {country}
+                      {categoryIcons[cat]}
+                      <span className="leading-tight text-center">{t.domesticTour[cat]}</span>
                     </button>
                   ))}
                 </div>
-              )}
-              {watch('country') && (
-                <div className="flex items-center gap-2 bg-primary/10 text-primary rounded-full px-3 py-1.5 text-sm font-medium w-fit">
-                  <MapPin className="h-3 w-3" />
-                  <span>{watch('country')}</span>
-                  <button type="button" onClick={() => { setValue('country', ''); setValue('city', ''); }} className="hover:bg-primary/20 rounded-full p-0.5">
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
-              {errors.country && <p className="text-xs text-destructive">{errors.country.message}</p>}
+              </div>
+            )}
+          </div>
+        </section>
+
+        <div className="border-t border-slate-100" />
+
+        {/* ── LOGISTICS ── */}
+        <section>
+          <SectionHeader icon={<CalendarDays className="h-4 w-4" />} label={t.agencyTours.destinationDates} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.departureDate}</Label>
+                <Input type="date" {...register('departure_date')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.durationDays}</Label>
+                <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              </div>
             </div>
 
-            {/* City searchable dropdown */}
-            <div className="space-y-1.5">
-              <Label>{t.agencyTours.city}</Label>
-              {(() => {
-                const selectedCountry = watch('country');
-                const availableCities = selectedCountry ? (CITIES_BY_COUNTRY[language][selectedCountry] ?? []) : [];
-                return (
-                  <>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder={selectedCountry ? t.agencyTours.cityPlaceholder : t.agencyTours.selectCountryFirst}
-                        value={citySearch}
-                        onChange={(e) => setCitySearch(e.target.value)}
-                        className="pl-9"
-                        disabled={!selectedCountry}
-                      />
-                    </div>
-                    {citySearch && availableCities.length > 0 && (
-                      <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
-                        {availableCities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase())).map((city) => (
-                          <button
-                            key={city}
-                            type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
-                            onClick={() => {
-                              setValue('city', city);
-                              setCitySearch('');
-                            }}
-                          >
-                            {city}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {watch('city') && (
-                      <div className="flex items-center gap-2 bg-blue-100 text-blue-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
-                        <MapPin className="h-3 w-3" />
-                        <span>{watch('city')}</span>
-                        <button type="button" onClick={() => setValue('city', '')} className="hover:bg-blue-200 rounded-full p-0.5">
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.returnDate}</Label>
+              <Input type="date" {...register('return_date')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+            </div>
+
+            {/* Multi-city destinations — International */}
+            {!isDomestic && (
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.destinations}</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.destinationsHint}</p>
+                {destinations.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+                    {destinations.map((dest, i) => (
+                      <div key={i} className="flex items-center gap-1 bg-primary/5 text-primary rounded-full px-2.5 py-1 text-xs font-medium">
+                        <span>{dest}</span>
+                        <button type="button" onClick={() => removeDestination(i)} className="hover:bg-primary/10 rounded-full p-0.5">
                           <X className="h-3 w-3" />
                         </button>
                       </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-
-          {/* Multi-city destinations */}
-          <div className="space-y-2">
-            <Label>{t.agencyTours.destinations}</Label>
-            <p className="text-xs text-muted-foreground">{t.agencyTours.destinationsHint}</p>
-            {destinations.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {destinations.map((dest, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-1.5 bg-primary/10 text-primary rounded-full px-3 py-1.5 text-sm font-medium"
-                  >
-                    <MapPin className="h-3 w-3" />
-                    <span>{dest}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeDestination(i)}
-                      className="ml-0.5 hover:bg-primary/20 rounded-full p-0.5"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+                    ))}
                   </div>
-                ))}
+                )}
+                {destinations.length < 3 && (
+                  <div className="flex gap-2 mt-2">
+                    <Input placeholder={t.agencyTours.destinationPlaceholder} value={newDestination} onChange={(e) => setNewDestination(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDestination(); } }} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                    <Button type="button" variant="outline" size="icon" onClick={addDestination} className="rounded-xl h-11 w-11 shrink-0">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
-            {destinations.length < 3 && (
-              <div className="flex gap-2">
-                <Input
-                  placeholder={t.agencyTours.destinationPlaceholder}
-                  value={newDestination}
-                  onChange={(e) => setNewDestination(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDestination(); } }}
-                />
-                <Button type="button" variant="outline" size="sm" onClick={addDestination}>
+          </div>
+        </section>
+
+        <div className="border-t border-slate-100" />
+
+        {/* ── PRICING ── */}
+        <section>
+          <SectionHeader icon={<DollarSign className="h-4 w-4" />} label={t.agencyTours.pricingAvailability} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.price}</Label>
+                <div className="relative mt-1.5">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{isDomestic ? 'UZS' : '$'}</span>
+                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('price')} className="pl-11 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                </div>
+                {errors.price && <p className="text-xs text-destructive mt-1">{errors.price.message}</p>}
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.oldPrice}</Label>
+                <div className="relative mt-1.5">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{isDomestic ? 'UZS' : '$'}</span>
+                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('old_price')} className="pl-11 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                </div>
+              </div>
+            </div>
+
+            {!isDomestic && (
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.currency}</Label>
+                <Select defaultValue={initialData?.currency || 'USD'} onValueChange={(v) => setValue('currency', v as 'USD' | 'UZS' | 'EUR')}>
+                  <SelectTrigger className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="UZS">UZS</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.totalSeats}</Label>
+                <Input type="number" min={1} {...register('seats_total')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.seatsLeft}</Label>
+                <Input type="number" min={0} {...register('seats_left')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              </div>
+            </div>
+
+            {/* Extra Charges */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.extraCharges}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.extraChargesHint}</p>
+              {extraCharges.length > 0 && (
+                <div className="space-y-1.5 mt-2">
+                  {extraCharges.map((charge, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-amber-50/80 rounded-xl px-3 py-2 text-sm">
+                      <span className="flex-1 font-medium text-slate-700">{charge.name}</span>
+                      <span className="text-amber-600 font-bold text-xs">${charge.amount}</span>
+                      <button type="button" onClick={() => removeExtraCharge(i)} className="text-slate-400 hover:text-red-500">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2 mt-2">
+                <Input placeholder={t.agencyTours.extraChargeName} value={newChargeName} onChange={(e) => setNewChargeName(e.target.value)} className="flex-1 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newChargeAmount} onChange={(e) => setNewChargeAmount(e.target.value)} className="w-24 rounded-xl border-slate-200 bg-slate-50/50 h-11" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExtraCharge(); } }} />
+                <Button type="button" variant="outline" size="icon" onClick={addExtraCharge} className="rounded-xl h-11 w-11 shrink-0">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="departure_date">{t.agencyTours.departureDate}</Label>
-              <Input id="departure_date" type="date" {...register('departure_date')} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="return_date">{t.agencyTours.returnDate}</Label>
-              <Input id="return_date" type="date" {...register('return_date')} />
             </div>
           </div>
+        </section>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="duration_days">{t.agencyTours.durationDays}</Label>
-            <Input id="duration_days" type="number" min={1} {...register('duration_days')} />
-          </div>
-        </CardContent>
-      </Card>
-      )}
+        <div className="border-t border-slate-100" />
 
-      {/* Destination & Route - Domestic */}
-      {isDomestic && (
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.domesticTour.regionDistrict}</h2>
+        {/* ── DETAILS ── */}
+        <section>
+          <SectionHeader icon={<CheckCircle2 className="h-4 w-4" />} label={t.agencyTours.includedServices} />
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.fullDescription}</Label>
+              <Textarea placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50" />
+            </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            {/* Region searchable dropdown */}
-            <div className="space-y-1.5">
-              <Label>{t.domesticTour.region} *</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder={t.domesticTour.selectRegion}
-                  value={regionSearch}
-                  onChange={(e) => setRegionSearch(e.target.value)}
-                  className="pl-9"
-                />
-              </div>
-              {regionSearch && (
-                <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
-                  {(UZ_REGIONS[language] || UZ_REGIONS['uz']).filter(r =>
-                    r.toLowerCase().includes(regionSearch.toLowerCase())
-                  ).map((region) => (
-                    <button
-                      key={region}
-                      type="button"
-                      className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
-                      onClick={() => {
-                        setValue('region', region);
-                        setRegionSearch('');
-                        setValue('district', '');
-                        setDistrictSearch('');
-                      }}
-                    >
-                      {region}
-                    </button>
+            {/* Included Services */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.includedServices}</Label>
+              {includedServices.length > 0 && (
+                <div className="space-y-1 mt-2">
+                  {includedServices.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm bg-emerald-50/50 rounded-lg px-3 py-1.5">
+                      <span className="text-emerald-500 text-xs">✓</span>
+                      <span className="flex-1 text-slate-700">{s}</span>
+                      <button type="button" onClick={() => removeService(i)} className="text-slate-400 hover:text-red-500">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   ))}
                 </div>
               )}
-              {watch('region') && (
-                <div className="flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
-                  <MapPin className="h-3 w-3" />
-                  <span>{watch('region')}</span>
-                  <button type="button" onClick={() => { setValue('region', ''); setValue('district', ''); }} className="hover:bg-emerald-200 rounded-full p-0.5">
-                    <X className="h-3 w-3" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* District searchable dropdown */}
-            <div className="space-y-1.5">
-              <Label>{t.domesticTour.district}</Label>
-              {(() => {
-                const selectedRegion = watch('region');
-                const regionData = UZ_DISTRICTS[language] || UZ_DISTRICTS['uz'];
-                const availableDistricts = selectedRegion ? (regionData[selectedRegion] ?? []) : [];
-                return (
-                  <>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                      <Input
-                        placeholder={selectedRegion ? t.domesticTour.selectDistrict : t.domesticTour.selectRegionFirst}
-                        value={districtSearch}
-                        onChange={(e) => setDistrictSearch(e.target.value)}
-                        className="pl-9"
-                        disabled={!selectedRegion}
-                      />
-                    </div>
-                    {districtSearch && availableDistricts.length > 0 && (
-                      <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
-                        {availableDistricts.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase())).map((district) => (
-                          <button
-                            key={district}
-                            type="button"
-                            className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
-                            onClick={() => {
-                              setValue('district', district);
-                              setDistrictSearch('');
-                            }}
-                          >
-                            {district}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    {watch('district') && (
-                      <div className="flex items-center gap-2 bg-blue-100 text-blue-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
-                        <MapPin className="h-3 w-3" />
-                        <span>{watch('district')}</span>
-                        <button type="button" onClick={() => setValue('district', '')} className="hover:bg-blue-200 rounded-full p-0.5">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="departure_date">{t.agencyTours.departureDate}</Label>
-              <Input id="departure_date" type="date" {...register('departure_date')} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="return_date">{t.agencyTours.returnDate}</Label>
-              <Input id="return_date" type="date" {...register('return_date')} />
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label htmlFor="duration_days">{t.agencyTours.durationDays}</Label>
-            <Input id="duration_days" type="number" min={1} {...register('duration_days')} />
-          </div>
-        </CardContent>
-      </Card>
-      )}
-
-      {/* Pricing & Seats */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.agencyTours.pricingAvailability}</h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="price">{t.agencyTours.price} *</Label>
-              <Input id="price" type="number" min={0} step="0.01" placeholder="850" {...register('price')} />
-              {errors.price && <p className="text-xs text-destructive">{errors.price.message}</p>}
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="old_price">{t.agencyTours.oldPrice}</Label>
-              <Input id="old_price" type="number" min={0} step="0.01" placeholder="1200" {...register('old_price')} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t.agencyTours.currency}</Label>
-              <Select defaultValue={initialData?.currency || 'USD'} onValueChange={(v) => setValue('currency', v as 'USD' | 'UZS' | 'EUR')}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="UZS">UZS</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label htmlFor="seats_total">{t.agencyTours.totalSeats}</Label>
-              <Input id="seats_total" type="number" min={1} {...register('seats_total')} />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="seats_left">{t.agencyTours.seatsLeft}</Label>
-              <Input id="seats_left" type="number" min={0} {...register('seats_left')} />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Extra Charges (optional) */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.agencyTours.extraCharges}</h2>
-          <p className="text-xs text-muted-foreground">{t.agencyTours.extraChargesHint}</p>
-
-          {extraCharges.length > 0 && (
-            <div className="space-y-2">
-              {extraCharges.map((charge, i) => (
-                <div key={i} className="flex items-center gap-2 bg-amber-50 rounded-lg px-3 py-2 text-sm">
-                  <span className="flex-1 font-medium text-slate-700">{charge.name}</span>
-                  <span className="text-amber-700 font-bold">${charge.amount}</span>
-                  <button type="button" onClick={() => removeExtraCharge(i)} className="text-red-400 hover:text-red-500">
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-2">
-            <Input
-              placeholder={t.agencyTours.extraChargeName}
-              value={newChargeName}
-              onChange={(e) => setNewChargeName(e.target.value)}
-              className="flex-1"
-            />
-            <Input
-              placeholder={t.agencyTours.extraChargeAmount}
-              type="number"
-              min={0}
-              value={newChargeAmount}
-              onChange={(e) => setNewChargeAmount(e.target.value)}
-              className="w-24"
-              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExtraCharge(); } }}
-            />
-            <Button type="button" variant="outline" size="sm" onClick={addExtraCharge}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Accommodation, Transport & Airline */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold text-sm">{t.tours.hotels}</h2>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setHotels((prev) => [...prev, { name: '', stars: null, price: 0, description: null, booking_url: null, images: [] }])}
-            >
-              <Plus className="h-4 w-4 mr-1" /> {t.tours.addHotel}
-            </Button>
-          </div>
-
-          {hotels.length === 0 && (
-            <p className="text-xs text-muted-foreground text-center py-4">{t.tours.addHotel}</p>
-          )}
-
-          {hotels.map((hotel, hotelIndex) => (
-            <div key={hotelIndex} className="border border-slate-200 rounded-xl p-3 space-y-3 relative">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Hotel className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-semibold">#{hotelIndex + 1}</span>
-                  {hotelIndex === 0 && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Asosiy</span>}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setHotels((prev) => prev.filter((_, i) => i !== hotelIndex))}
-                  className="text-red-400 hover:text-red-500 text-xs"
-                >
-                  {t.tours.removeHotel}
-                </button>
+              <div className="flex gap-2 mt-2">
+                <Input placeholder={t.agencyTours.addIncludedService} value={newIncluded} onChange={(e) => setNewIncluded(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                <Button type="button" variant="outline" size="icon" onClick={() => addService()} className="rounded-xl h-11 w-11 shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label>{t.agencyTours.hotelName} *</Label>
-                  <Input
-                    placeholder={t.agencyTours.hotelNamePlaceholder}
-                    value={hotel.name}
-                    onChange={(e) => {
-                      const updated = [...hotels];
-                      updated[hotelIndex] = { ...hotel, name: e.target.value };
-                      setHotels(updated);
-                    }}
-                  />
+            {/* Operator Telegram */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.operatorTelegram}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.operatorTelegramHint}</p>
+              <Input placeholder={t.agencyTours.operatorTelegramPlaceholder} {...register('operator_telegram_username')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+            </div>
+          </div>
+        </section>
+
+        <div className="border-t border-slate-100" />
+
+        {/* ── STAY & TRAVEL ── */}
+        <section>
+          <SectionHeader icon={<Hotel className="h-4 w-4" />} label={t.agencyTours.accommodationTransport} />
+          <div className="space-y-4">
+            {/* Hotels */}
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium text-slate-700">{t.tours.hotels}</Label>
+              <button
+                type="button"
+                onClick={() => setHotels((prev) => [...prev, { name: '', stars: null, price: 0, description: null, booking_url: null, images: [] }])}
+                className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"
+              >
+                <Plus className="h-3.5 w-3.5" /> {t.tours.addHotel}
+              </button>
+            </div>
+
+            {hotels.map((hotel, hotelIndex) => (
+              <div key={hotelIndex} className="rounded-xl border border-slate-200 bg-slate-50/30 p-3.5 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Hotel className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-semibold text-slate-700">#{hotelIndex + 1}</span>
+                    {hotelIndex === 0 && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Asosiy</span>}
+                  </div>
+                  <button type="button" onClick={() => setHotels((prev) => prev.filter((_, i) => i !== hotelIndex))} className="text-red-400 hover:text-red-500 text-xs font-medium">
+                    {t.tours.removeHotel}
+                  </button>
                 </div>
-                <div className="space-y-1.5">
-                  <Label>{t.agencyTours.stars}</Label>
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <button
-                        key={star}
-                        type="button"
-                        onClick={() => {
-                          const updated = [...hotels];
-                          updated[hotelIndex] = { ...hotel, stars: star };
-                          setHotels(updated);
-                        }}
-                        className="p-0.5"
-                      >
-                        <Star className={`h-5 w-5 ${hotel.stars && star <= hotel.stars ? 'text-yellow-500 fill-yellow-500' : 'text-slate-300'}`} />
-                      </button>
-                    ))}
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-slate-500">{t.agencyTours.hotelName}</Label>
+                    <Input placeholder={t.agencyTours.hotelNamePlaceholder} value={hotel.name} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, name: e.target.value }; setHotels(u); }} className="mt-1 rounded-xl border-slate-200 bg-white h-10 text-sm" />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-slate-500">{t.agencyTours.stars}</Label>
+                    <div className="flex items-center gap-0.5 mt-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button key={star} type="button" onClick={() => { const u = [...hotels]; u[hotelIndex] = { ...hotel, stars: star }; setHotels(u); }} className="p-0.5">
+                          <Star className={`h-5 w-5 ${hotel.stars && star <= hotel.stars ? 'text-yellow-500 fill-yellow-500' : 'text-slate-200'}`} />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-xs text-slate-500">{t.tours.hotelPrice}</Label>
+                  <Input type="number" min={0} step="0.01" placeholder="850" value={hotel.price || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, price: Number(e.target.value) }; setHotels(u); if (hotelIndex === 0) setValue('price', Number(e.target.value)); }} className="mt-1 rounded-xl border-slate-200 bg-white h-10 text-sm" />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-slate-500">{t.tours.hotelDescription}</Label>
+                  <Textarea placeholder={t.tours.hotelDescriptionPlaceholder} rows={2} value={hotel.description || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, description: e.target.value || null }; setHotels(u); }} className="mt-1 rounded-xl border-slate-200 bg-white text-sm" />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-slate-500">{t.agencyTours.hotelBookingUrl}</Label>
+                  <Input placeholder={t.agencyTours.hotelBookingUrlPlaceholder} value={hotel.booking_url || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, booking_url: e.target.value || null }; setHotels(u); }} className="mt-1 rounded-xl border-slate-200 bg-white h-10 text-sm" />
+                </div>
+
+                <div>
+                  <Label className="text-xs text-slate-500">{t.agencyTours.hotelImages}</Label>
+                  <div className="mt-1">
+                    <MultiImageUploader values={hotel.images} onChange={(imgs) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, images: imgs }; setHotels(u); }} maxImages={4} label={t.agencyTours.uploadHotelImage} folder="hotels" />
                   </div>
                 </div>
               </div>
+            ))}
 
-              <div className="space-y-1.5">
-                <Label>{t.tours.hotelPrice} *</Label>
-                <Input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  placeholder="850"
-                  value={hotel.price || ''}
-                  onChange={(e) => {
-                    const updated = [...hotels];
-                    updated[hotelIndex] = { ...hotel, price: Number(e.target.value) };
-                    setHotels(updated);
-                    if (hotelIndex === 0) setValue('price', Number(e.target.value));
-                  }}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>{t.tours.hotelDescription}</Label>
-                <Textarea
-                  placeholder={t.tours.hotelDescriptionPlaceholder}
-                  rows={2}
-                  value={hotel.description || ''}
-                  onChange={(e) => {
-                    const updated = [...hotels];
-                    updated[hotelIndex] = { ...hotel, description: e.target.value || null };
-                    setHotels(updated);
-                  }}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>{t.agencyTours.hotelBookingUrl}</Label>
-                <Input
-                  placeholder={t.agencyTours.hotelBookingUrlPlaceholder}
-                  value={hotel.booking_url || ''}
-                  onChange={(e) => {
-                    const updated = [...hotels];
-                    updated[hotelIndex] = { ...hotel, booking_url: e.target.value || null };
-                    setHotels(updated);
-                  }}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t.agencyTours.hotelImages}</Label>
-                <MultiImageUploader
-                  values={hotel.images}
-                  onChange={(imgs) => {
-                    const updated = [...hotels];
-                    updated[hotelIndex] = { ...hotel, images: imgs };
-                    setHotels(updated);
-                  }}
-                  maxImages={4}
-                  label={t.agencyTours.uploadHotelImage}
-                  folder="hotels"
-                />
-              </div>
+            {/* Transport type */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.transport}</Label>
+              <Input placeholder={t.transportTypes[watch('transport_type') || 'flight']} readOnly value={t.transportTypes[watch('transport_type') || 'flight']} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11 cursor-pointer" onClick={() => {
+                const types: Array<'flight' | 'bus' | 'train' | 'self' | 'mixed'> = ['flight', 'bus', 'train', 'self', 'mixed'];
+                const current = watch('transport_type') || 'flight';
+                const idx = types.indexOf(current);
+                setValue('transport_type', types[(idx + 1) % types.length]);
+              }} />
             </div>
-          ))}
-        </CardContent>
-      </Card>
 
-      {/* Transport & Airline */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.agencyTours.accommodationTransport}</h2>
-
-          {/* Airline searchable dropdown - international only */}
-          {!isDomestic && (
-          <div className="space-y-1.5">
-            <Label>{t.agencyTours.airline}</Label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder={t.agencyTours.airlinePlaceholder}
-                value={airlineSearch}
-                onChange={(e) => setAirlineSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            {airlineSearch && (
-              <div className="border rounded-lg max-h-48 overflow-y-auto bg-white shadow-lg">
-                {AIRLINES.filter(a => a.toLowerCase().includes(airlineSearch.toLowerCase())).map((airline) => (
-                  <button
-                    key={airline}
-                    type="button"
-                    className="w-full text-left px-3 py-2 text-sm hover:bg-primary/10 transition-colors"
-                    onClick={() => {
-                      setValue('airline', airline);
-                      setAirlineSearch('');
-                    }}
-                  >
-                    {airline}
-                  </button>
-                ))}
+            {/* Airline — International */}
+            {!isDomestic && (
+              <div>
+                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.airline}</Label>
+                <div className="relative mt-1.5">
+                  {watch('airline') ? (
+                    <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                      <span className="flex-1 text-sm">{watch('airline')}</span>
+                      <button type="button" onClick={() => setValue('airline', '')} className="text-slate-400 hover:text-slate-600">
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <Input placeholder={t.agencyTours.airlinePlaceholder} value={airlineSearch} onChange={(e) => setAirlineSearch(e.target.value)} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                      {airlineSearch && (
+                        <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                          {AIRLINES.filter(a => a.toLowerCase().includes(airlineSearch.toLowerCase())).map((airline) => (
+                            <button key={airline} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('airline', airline); setAirlineSearch(''); }}>
+                              {airline}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
               </div>
             )}
-            {watch('airline') && (
-              <div className="flex items-center gap-2 bg-sky-100 text-sky-700 rounded-full px-3 py-1.5 text-sm font-medium w-fit">
-                <span>{watch('airline')}</span>
-                <button type="button" onClick={() => setValue('airline', '')} className="hover:bg-sky-200 rounded-full p-0.5">
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-          </div>
-          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>{t.agencyTours.mealType}</Label>
-              <Select
-                defaultValue={initialData?.meal_type || 'none'}
-                onValueChange={(v) => setValue('meal_type', v as 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive')}
-              >
-                <SelectTrigger>
-                  <SelectValue>
-                    {t.mealTypes[watch('meal_type') || 'none']}
-                  </SelectValue>
+            {/* Meal type */}
+            <div>
+              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.mealType}</Label>
+              <Select defaultValue={initialData?.meal_type || 'none'} onValueChange={(v) => setValue('meal_type', v as 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive')}>
+                <SelectTrigger className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11">
+                  <SelectValue>{t.mealTypes[watch('meal_type') || 'none']}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">{t.mealTypes.none}</SelectItem>
@@ -959,181 +824,106 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>{t.agencyTours.transport}</Label>
-              <Select
-                defaultValue={initialData?.transport_type || 'flight'}
-                onValueChange={(v) => setValue('transport_type', v as 'flight' | 'bus' | 'train' | 'self' | 'mixed')}
-              >
-                <SelectTrigger>
-                  <SelectValue>
-                    {t.transportTypes[watch('transport_type') || 'flight']}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="flight">{t.transportTypes.flight}</SelectItem>
-                  <SelectItem value="bus">{t.transportTypes.bus}</SelectItem>
-                  <SelectItem value="train">{t.transportTypes.train}</SelectItem>
-                  <SelectItem value="self">{t.transportTypes.self}</SelectItem>
-                  <SelectItem value="mixed">{t.transportTypes.mixed}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+
+            {/* Visa — International */}
+            {!isDomestic && (
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input type="checkbox" {...register('visa_required')} className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
+                <span className="text-sm text-slate-700">{t.agencyTours.visaRequired}</span>
+              </label>
+            )}
           </div>
+        </section>
 
-          {!isDomestic && (
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="visa_required" {...register('visa_required')} className="h-4 w-4 rounded border" />
-            <Label htmlFor="visa_required">{t.agencyTours.visaRequired}</Label>
-          </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Services */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.agencyTours.includedServices}</h2>
-          <div className="space-y-2">
-            {includedServices.map((s, i) => (
-              <div key={i} className="flex items-center gap-2 text-sm">
-                <span className="text-emerald-500">✓</span>
-                <span className="flex-1">{s}</span>
-                <button type="button" onClick={() => removeService(i)} className="text-red-400 text-xs">{t.common.remove}</button>
-              </div>
-            ))}
-            <div className="flex gap-2">
-              <Input
-                placeholder={t.agencyTours.addIncludedService}
-                value={newIncluded}
-                onChange={(e) => setNewIncluded(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }}
-              />
-              <Button type="button" variant="outline" size="sm" onClick={() => addService()}>{t.common.add}</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Operator Telegram */}
-      <Card>
-        <CardContent className="p-4 space-y-3">
-          <h2 className="font-semibold text-sm">{t.agencyTours.operatorTelegram}</h2>
-          <p className="text-xs text-muted-foreground">{t.agencyTours.operatorTelegramHint}</p>
-          <div className="space-y-1.5">
-            <Label htmlFor="operator_telegram_username">{t.agencyTours.operatorTelegram}</Label>
-            <Input
-              id="operator_telegram_username"
-              placeholder={t.agencyTours.operatorTelegramPlaceholder}
-              {...register('operator_telegram_username')}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Domestic-only sections */}
-      {isDomestic && (
-        <>
-          {/* Meeting Point */}
-          <Card>
-            <CardContent className="p-4 space-y-3">
-              <h2 className="font-semibold text-sm">{t.domesticTour.meetingPoint}</h2>
-              <p className="text-xs text-muted-foreground">{t.domesticTour.meetingPointHint}</p>
-              <div className="space-y-1.5">
-                <Label htmlFor="meeting_point">{t.domesticTour.meetingPoint}</Label>
-                <Textarea
-                  id="meeting_point"
-                  placeholder={t.domesticTour.meetingPointPlaceholder}
-                  rows={2}
-                  {...register('meeting_point')}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Guide Info */}
-          <Card>
-            <CardContent className="p-4 space-y-3">
-              <h2 className="font-semibold text-sm">{t.domesticTour.guideInfo}</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="guide_name">{t.domesticTour.guideName}</Label>
-                  <Input
-                    id="guide_name"
-                    placeholder={t.domesticTour.guideNamePlaceholder}
-                    {...register('guide_name')}
-                  />
+        {/* ── DOMESTIC EXTRAS ── */}
+        {isDomestic && (
+          <>
+            <div className="border-t border-slate-100" />
+            <section>
+              <SectionHeader icon={<MapPin className="h-4 w-4" />} label={t.domesticTour.guideInfo} color="text-emerald-600" />
+              <div className="space-y-4">
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.meetingPoint}</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t.domesticTour.meetingPointHint}</p>
+                  <Textarea placeholder={t.domesticTour.meetingPointPlaceholder} rows={2} {...register('meeting_point')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50" />
                 </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="guide_phone">{t.domesticTour.guidePhone}</Label>
-                  <Input
-                    id="guide_phone"
-                    placeholder={t.domesticTour.guidePhonePlaceholder}
-                    {...register('guide_phone')}
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* What to Bring */}
-          <Card>
-            <CardContent className="p-4 space-y-3">
-              <h2 className="font-semibold text-sm">{t.domesticTour.whatToBring}</h2>
-              <p className="text-xs text-muted-foreground">{t.domesticTour.whatToBringHint}</p>
-              {whatToBring.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {whatToBring.map((item, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center gap-1.5 bg-amber-50 text-amber-700 rounded-full px-3 py-1.5 text-sm font-medium"
-                    >
-                      <span>{item}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeBringItem(i)}
-                        className="ml-0.5 hover:bg-amber-100 rounded-full p-0.5"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">{t.domesticTour.guideName}</Label>
+                    <Input placeholder={t.domesticTour.guideNamePlaceholder} {...register('guide_name')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-slate-700">{t.domesticTour.guidePhone}</Label>
+                    <Input placeholder={t.domesticTour.guidePhonePlaceholder} {...register('guide_phone')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                  </div>
+                </div>
+
+                {/* What to Bring */}
+                <div>
+                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.whatToBring}</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">{t.domesticTour.whatToBringHint}</p>
+                  {whatToBring.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {whatToBring.map((item, i) => (
+                        <div key={i} className="flex items-center gap-1 bg-amber-50 text-amber-700 rounded-full px-2.5 py-1 text-xs font-medium">
+                          <span>{item}</span>
+                          <button type="button" onClick={() => removeBringItem(i)} className="hover:bg-amber-100 rounded-full p-0.5">
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    <Input placeholder={t.domesticTour.addItem} value={newBringItem} onChange={(e) => setNewBringItem(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addBringItem(); } }} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                    <Button type="button" variant="outline" size="icon" onClick={addBringItem} className="rounded-xl h-11 w-11 shrink-0">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-              )}
-              <div className="flex gap-2">
-                <Input
-                  placeholder={t.domesticTour.addItem}
-                  value={newBringItem}
-                  onChange={(e) => setNewBringItem(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addBringItem(); } }}
-                />
-                <Button type="button" variant="outline" size="sm" onClick={addBringItem}>
-                  <Plus className="h-4 w-4" />
-                </Button>
               </div>
-            </CardContent>
-          </Card>
-        </>
-      )}
+            </section>
+          </>
+        )}
 
-      {/* Submit */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <Button type="submit" className="flex-1" disabled={isSubmitting}>
-          {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-          {isEditing ? t.agencyTours.updateTour : t.agencyTours.saveAsDraft}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          className="flex-1"
-          disabled={isSubmitting}
-          onClick={() => {
-            setValue('status', 'pending');
-            handleSubmit(onSubmit)();
-          }}
-        >
-          {t.agencyTours.submitForReview}
-        </Button>
+        <div className="border-t border-slate-100" />
+
+        {/* ── MEDIA ── */}
+        <section>
+          <SectionHeader icon={<ImageIcon className="h-4 w-4" />} label={t.agencyTours.coverImage} />
+          <ImageUploader
+            value={coverUrl}
+            onChange={setCoverUrl}
+            label={t.agencyTours.uploadCoverImage}
+          />
+        </section>
+
+        {/* ── PUBLISH BUTTON ── */}
+        <div className="pt-4 space-y-3">
+          <Button type="submit" className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/20" disabled={isSubmitting}>
+            {isSubmitting ? (
+              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4 mr-2" />
+            )}
+            {isEditing ? t.agencyTours.updateTour : t.agencyTours.submitForReview}
+          </Button>
+          {!isEditing && (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full h-11 rounded-2xl text-sm"
+              disabled={isSubmitting}
+              onClick={() => {
+                setValue('status', 'draft');
+                handleSubmit(onSubmit)();
+              }}
+            >
+              {t.agencyTours.saveAsDraft}
+            </Button>
+          )}
+        </div>
       </div>
     </form>
   );
