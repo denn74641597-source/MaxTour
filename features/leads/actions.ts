@@ -1,11 +1,20 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { leadFormSchema, type LeadFormData } from '@/lib/validators';
+import { z } from 'zod';
 
-export async function submitLead(tourId: string, agencyId: string, formData: LeadFormData) {
-  const parsed = leadFormSchema.safeParse(formData);
+const serverLeadSchema = z.object({
+  full_name: z.string().min(2),
+  phone: z.string().min(7),
+  people_count: z.coerce.number().int().min(1).max(100).default(1),
+  telegram_username: z.string().optional(),
+  comment: z.string().max(500).optional(),
+});
+
+export async function submitLead(tourId: string, agencyId: string, formData: Record<string, unknown>) {
+  const parsed = serverLeadSchema.safeParse(formData);
   if (!parsed.success) {
+    console.error('Lead validation error:', parsed.error.flatten());
     return { success: false, error: 'Invalid form data' };
   }
 

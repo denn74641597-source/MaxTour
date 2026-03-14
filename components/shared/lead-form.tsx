@@ -21,6 +21,7 @@ interface LeadFormProps {
 
 export function LeadForm({ tourId, agencyId, onClose }: LeadFormProps) {
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
   const { profile, loading: profileLoading } = useProfile();
   const router = useRouter();
@@ -44,18 +45,29 @@ export function LeadForm({ tourId, agencyId, onClose }: LeadFormProps) {
     }
   }, [profile, setValue]);
 
-  // If not logged in, redirect to login
-  useEffect(() => {
-    if (!profileLoading && !profile) {
-      router.push('/profile');
-    }
-  }, [profileLoading, profile, router]);
-
   async function onSubmit(data: LeadFormData) {
+    setError(null);
     const result = await submitLead(tourId, agencyId, data);
     if (result.success) {
       setSubmitted(true);
+    } else {
+      setError(result.error || 'Xatolik yuz berdi');
     }
+  }
+
+  // If not logged in, show login prompt
+  if (!profileLoading && !profile) {
+    return (
+      <div className="flex flex-col items-center py-8 text-center gap-3">
+        <User className="h-10 w-10 text-muted-foreground" />
+        <p className="text-sm text-muted-foreground">
+          So'rov yuborish uchun avval tizimga kiring
+        </p>
+        <Button onClick={() => router.push('/profile')}>
+          Tizimga kirish
+        </Button>
+      </div>
+    );
   }
 
   if (profileLoading) {
@@ -128,6 +140,10 @@ export function LeadForm({ tourId, agencyId, onClose }: LeadFormProps) {
           <p className="text-xs text-destructive">{errors.phone.message}</p>
         )}
       </div>
+
+      {error && (
+        <p className="text-sm text-destructive bg-destructive/10 rounded-lg p-2.5">{error}</p>
+      )}
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
