@@ -22,7 +22,7 @@ interface AgencyProfileContentProps {
   reviews: Review[];
 }
 
-type TabKey = 'tours' | 'reviews' | 'about';
+type TabKey = 'tours' | 'reviews';
 
 export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileContentProps) {
   const { t } = useTranslation();
@@ -49,7 +49,6 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
   const tabs: { key: TabKey; label: string }[] = [
     { key: 'tours', label: t.agencyProfile.activeTours },
     { key: 'reviews', label: t.agencyProfile.reviews },
-    { key: 'about', label: t.agencyProfile.about },
   ];
 
   return (
@@ -163,6 +162,19 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
               <Phone className="h-5 w-5 text-slate-600" />
             </div>
             <span className="text-[10px] text-muted-foreground">{t.agencyProfile.call}</span>
+          </a>
+        )}
+        {(agency.address || agency.google_maps_url) && (
+          <a
+            href={agency.google_maps_url || '#'}
+            target={agency.google_maps_url ? '_blank' : undefined}
+            rel={agency.google_maps_url ? 'noopener noreferrer' : undefined}
+            className="flex flex-col items-center gap-1"
+          >
+            <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
+              <MapPin className="h-5 w-5 text-slate-600" />
+            </div>
+            <span className="text-[10px] text-muted-foreground">{t.agencyProfile.location}</span>
           </a>
         )}
       </div>
@@ -324,101 +336,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
           </div>
         )}
 
-        {/* About Tab */}
-        {activeTab === 'about' && (
-          <div className="space-y-5">
-            {agency.description && (
-              <div>
-                <h3 className="font-semibold text-sm mb-2">{t.agencyProfile.aboutAgency}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{agency.description}</p>
-              </div>
-            )}
 
-            {/* Contact & Location Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              {(agency.address || agency.google_maps_url) && (
-                <a
-                  href={agency.google_maps_url || '#'}
-                  target={agency.google_maps_url ? '_blank' : undefined}
-                  rel={agency.google_maps_url ? 'noopener noreferrer' : undefined}
-                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-red-100 flex items-center justify-center shrink-0">
-                    <MapPin className="h-5 w-5 text-red-500" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.location}</p>
-                    <p className="text-xs font-semibold truncate">
-                      {agency.address || agency.city || agency.country || 'Google Maps'}
-                    </p>
-                  </div>
-                </a>
-              )}
-              {agency.phone && (
-                <a
-                  href={`tel:${agency.phone}`}
-                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
-                    <Phone className="h-5 w-5 text-emerald-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.call}</p>
-                    <p className="text-xs font-semibold truncate">{agency.phone}</p>
-                  </div>
-                </a>
-              )}
-              {agency.telegram_username && (
-                <a
-                  href={telegramLink!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
-                    <MessageCircle className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.telegram}</p>
-                    <p className="text-xs font-semibold truncate">{agency.telegram_username}</p>
-                  </div>
-                </a>
-              )}
-              {agency.instagram_url && (
-                <a
-                  href={agency.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-pink-100 flex items-center justify-center shrink-0">
-                    <Instagram className="h-5 w-5 text-pink-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.instagram}</p>
-                    <p className="text-xs font-semibold">Instagram</p>
-                  </div>
-                </a>
-              )}
-              {agency.website_url && (
-                <a
-                  href={agency.website_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-2xl p-4"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
-                    <Globe className="h-5 w-5 text-violet-600" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-[10px] text-muted-foreground">{t.agencyProfile.website}</p>
-                    <p className="text-xs font-semibold">Website</p>
-                  </div>
-                </a>
-              )}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Verified Badge Card */}
