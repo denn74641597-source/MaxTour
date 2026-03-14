@@ -242,14 +242,16 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
             )}
 
             {/* Location Card */}
-            {agency.address && (
+            {(agency.address || agency.google_maps_url) && (
               <div className="bg-slate-50 rounded-2xl p-4 flex items-start gap-3">
                 <div className="w-10 h-10 rounded-xl bg-white flex items-center justify-center shrink-0 shadow-sm">
                   <MapPin className="h-5 w-5 text-red-500" />
                 </div>
                 <div className="flex-1">
                   <p className="text-xs text-muted-foreground">{t.agencyProfile.location}</p>
-                  <p className="text-sm font-medium">{agency.address}{agency.city ? `, ${agency.city}` : ''}, {agency.country}</p>
+                  <p className="text-sm font-medium">
+                    {agency.address ? `${agency.address}${agency.city ? `, ${agency.city}` : ''}, ${agency.country}` : `${agency.city || ''} ${agency.country || ''}`.trim()}
+                  </p>
                 </div>
                 {agency.google_maps_url && (
                   <a
