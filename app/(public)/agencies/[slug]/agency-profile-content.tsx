@@ -26,12 +26,23 @@ interface AgencyProfileContentProps {
 
 type TabKey = 'tours' | 'reviews';
 
-export function AgencyProfileContent({ agency, tours, reviews, followersCount }: AgencyProfileContentProps) {
+export function AgencyProfileContent({ agency, tours, reviews: initialReviews, followersCount: initialFollowersCount }: AgencyProfileContentProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('tours');
   const { profile, loading: profileLoading } = useProfile();
   const { isFollowing, toggleFollow } = useFollows();
+
+  // Local followers count — updates instantly on follow/unfollow
+  const [localFollowersCount, setLocalFollowersCount] = useState(initialFollowersCount);
+  const handleToggleFollow = () => {
+    const wasFollowing = isFollowing(agency.id);
+    toggleFollow(agency.id);
+    setLocalFollowersCount((prev) => wasFollowing ? Math.max(0, prev - 1) : prev + 1);
+  };
+
+  // Local reviews list — updates instantly on submit
+  const [localReviews, setLocalReviews] = useState(initialReviews);
 
   // Review form state
   const [reviewRating, setReviewRating] = useState(0);
@@ -44,9 +55,9 @@ export function AgencyProfileContent({ agency, tours, reviews, followersCount }:
     ? `https://t.me/${agency.telegram_username.replace('@', '')}`
     : null;
 
-  // Calculate average rating from reviews
-  const avgRating = reviews.length > 0
-    ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+  // Calculate average rating from local reviews
+  const avgRating = localReviews.length > 0
+    ? (localReviews.reduce((sum, r) => sum + r.rating, 0) / localReviews.length).toFixed(1)
     : null;
 
   const tabs: { key: TabKey; label: string }[] = [
@@ -116,7 +127,7 @@ export function AgencyProfileContent({ agency, tours, reviews, followersCount }:
           variant={isFollowing(agency.id) ? 'outline' : 'default'}
           size="sm"
           className="mt-3 rounded-full px-6"
-          onClick={() => toggleFollow(agency.id)}
+          onClick={handleToggleFollow}
         >
           {isFollowing(agency.id) ? t.agencyProfile.following : t.agencyProfile.follow}
         </Button>
@@ -133,7 +144,7 @@ export function AgencyProfileContent({ agency, tours, reviews, followersCount }:
           </div>
         )}
         <div className="flex flex-col items-center bg-slate-50 rounded-2xl py-3">
-          <span className="text-lg font-bold">{followersCount}</span>
+          <span className="text-lg font-bold">{localFollowersCount}</span>
           <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.followers}</span>
         </div>
         <div className="flex flex-col items-center bg-slate-50 rounded-2xl py-3">
@@ -284,6 +295,18 @@ export function AgencyProfileContent({ agency, tours, reviews, followersCount }:
                           const result = await submitReview(agency.id, reviewRating, reviewComment || null);
                           if (result.success) {
                             setReviewSubmitted(true);
+                            setLocalReviews((prev) => [
+                              {
+                                id: crypto.randomUUID(),
+                                agency_id: agency.id,
+                                user_id: profile?.id ?? '',
+                                rating: reviewRating,
+                                comment: reviewComment || null,
+                                created_at: new Date().toISOString(),
+                                profile: { full_name: profile?.full_name ?? 'User', avatar_url: profile?.avatar_url ?? null },
+                              } as Review,
+                              ...prev,
+                            ]);
                           } else {
                             setReviewError(result.error || 'Xatolik yuz berdi');
                           }
@@ -307,8 +330,8 @@ export function AgencyProfileContent({ agency, tours, reviews, followersCount }:
             )}
 
             {/* Existing Reviews */}
-            {reviews.length > 0 ? (
-              reviews.map((review) => (
+            {localReviews.length > 0 ? (
+              localReviews.map((review) => (
                 <Card key={review.id} className="overflow-hidden">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-2">
@@ -335,7 +358,7 @@ export function AgencyProfileContent({ agency, tours, reviews, followersCount }:
                 </Card>
               ))
             ) : (
-              !reviewSubmitted && <p className="text-sm text-muted-foreground text-center py-4">{t.agencyProfile.noReviews}</p>
+              !reviewSubmitted && localReviews.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">{t.agencyProfile.noReviews}</p>
             )}
           </div>
         )}
