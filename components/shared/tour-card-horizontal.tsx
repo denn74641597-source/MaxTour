@@ -122,6 +122,7 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
             </span>
           </div>
         </div>
+        </div>
       </Link>
     </div>
   );
