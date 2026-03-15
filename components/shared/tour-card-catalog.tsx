@@ -7,6 +7,7 @@ import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
+import { useFollows } from '@/hooks/use-follows';
 import type { Tour, TourHotel } from '@/types';
 
 interface TourCardCatalogProps {
@@ -25,9 +26,13 @@ function getMaxHotelStars(tour: Tour): number | null {
 export function TourCardCatalog({ tour }: TourCardCatalogProps) {
   const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFollowing, toggleFollow } = useFollows();
   const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
   const isApproved = tour.agency?.is_approved ?? false;
+  const agencySlug = tour.agency?.slug;
+  const agencyLogo = tour.agency?.logo_url;
+  const agencyId = tour.agency?.id;
   const nightsText = tour.duration_days
     ? `${tour.duration_days} ${tour.duration_days > 1 ? t.common.nights : t.common.night}`
     : null;
@@ -39,6 +44,38 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
 
   return (
     <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
+      {/* Agency Header */}
+      <div className="flex items-center gap-2.5 px-4 py-2.5">
+        <Link
+          href={agencySlug ? `/agencies/${agencySlug}` : '#'}
+          className="flex items-center gap-2.5 flex-1 min-w-0"
+        >
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+            <Image
+              src={agencyLogo || placeholderImage(64, 64, agencyName[0])}
+              alt={agencyName}
+              width={32}
+              height={32}
+              className="object-cover w-full h-full"
+            />
+          </div>
+          <span className="text-sm font-semibold truncate">{agencyName}</span>
+          {isVerified && <VerifiedBadge size="sm" />}
+        </Link>
+        {agencyId && (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFollow(agencyId); }}
+            className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
+              isFollowing(agencyId)
+                ? 'text-slate-500 bg-slate-100'
+                : 'text-primary bg-primary/10'
+            }`}
+          >
+            {isFollowing(agencyId) ? t.agencyProfile.following : t.agencyProfile.follow}
+          </button>
+        )}
+      </div>
+
       {/* Image */}
       <div className="relative aspect-[16/9] w-full overflow-hidden">
         <Image
@@ -106,13 +143,6 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
           {location}
           {nightsText ? ` • ${nightsText}` : ''}
         </p>
-
-        {/* Agency */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-xs text-slate-400">{t.common.by}</span>
-          <span className="text-xs font-semibold text-slate-700">{agencyName}</span>
-          {isVerified && <VerifiedBadge size="sm" />}
-        </div>
 
         {/* Price + CTA */}
         <div className="flex items-center justify-between pt-3 border-t border-slate-100">
