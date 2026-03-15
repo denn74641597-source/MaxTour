@@ -15,6 +15,7 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { useProfile } from '@/hooks/use-profile';
 import { useFollows } from '@/hooks/use-follows';
 import { submitReview } from '@/features/agencies/actions';
+import { getTelegramWebApp } from '@/lib/telegram';
 import type { Agency, Tour, Review, TourHotel } from '@/types';
 
 interface AgencyProfileContentProps {
@@ -172,7 +173,17 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
           </a>
         )}
         {agency.phone && (
-          <a href={`tel:${agency.phone}`} className="flex flex-col items-center gap-1.5">
+          <a
+            href={`tel:${agency.phone}`}
+            onClick={(e) => {
+              const tg = getTelegramWebApp();
+              if (tg) {
+                e.preventDefault();
+                tg.openLink(`tel:${agency.phone}`);
+              }
+            }}
+            className="flex flex-col items-center gap-1.5"
+          >
             <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
               <Phone className="h-5 w-5 text-slate-600" />
             </div>
