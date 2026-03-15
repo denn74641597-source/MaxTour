@@ -7,7 +7,6 @@ import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { formatPrice, placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
-import { useFollows } from '@/hooks/use-follows';
 import type { Tour } from '@/types';
 
 interface TourCardHorizontalProps {
@@ -17,51 +16,13 @@ interface TourCardHorizontalProps {
 export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
   const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { isFollowing, toggleFollow, loading: followsLoading } = useFollows();
-  const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
   const isApproved = tour.agency?.is_approved ?? false;
-  const agencySlug = tour.agency?.slug;
-  const agencyLogo = tour.agency?.logo_url;
-  const agencyId = tour.agency?.id;
   const liked = isFavorite(tour.id);
 
   return (
-    <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
-      {/* Agency Header */}
-      <div className="flex items-center gap-2 px-3 py-2 border-b border-slate-50">
-        <Link
-          href={agencySlug ? `/agencies/${agencySlug}` : '#'}
-          className="flex items-center gap-2 flex-1 min-w-0"
-        >
-          <div className="w-7 h-7 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
-            <Image
-              src={agencyLogo || placeholderImage(56, 56, agencyName[0])}
-              alt={agencyName}
-              width={28}
-              height={28}
-              className="object-cover w-full h-full"
-            />
-          </div>
-          <span className="text-xs font-semibold truncate">{agencyName}</span>
-          {isVerified && <VerifiedBadge size="sm" />}
-        </Link>
-        {agencyId && !followsLoading && (
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFollow(agencyId); }}
-            className={`text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors ${
-              isFollowing(agencyId)
-                ? 'text-slate-500 bg-slate-100'
-                : 'text-primary bg-primary/10'
-            }`}
-          >
-            {isFollowing(agencyId) ? t.agencyProfile.following : t.agencyProfile.follow}
-          </button>
-        )}
-      </div>
-
-      <Link href={`/tours/${tour.slug}`}>
-        <div className="flex">
+    <Link href={`/tours/${tour.slug}`}>
+      <div className="bg-white rounded-xl overflow-hidden shadow-sm flex border border-slate-100">
         {/* Image */}
         <div className="w-1/3 relative min-h-[120px]">
           <Image
@@ -122,8 +83,7 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
             </span>
           </div>
         </div>
-        </div>
-      </Link>
-    </div>
+      </div>
+    </Link>
   );
 }
