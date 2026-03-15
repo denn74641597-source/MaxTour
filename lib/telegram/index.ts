@@ -64,6 +64,16 @@ export interface TelegramWebApp {
   };
   openLink: (url: string) => void;
   openTelegramLink: (url: string) => void;
+  showPopup: (params: {
+    title?: string;
+    message: string;
+    buttons?: Array<{
+      id?: string;
+      type?: 'default' | 'ok' | 'close' | 'cancel' | 'destructive';
+      text?: string;
+    }>;
+  }, callback?: (buttonId: string) => void) => void;
+  showAlert: (message: string, callback?: () => void) => void;
 }
 
 /** Get the Telegram WebApp object, or null if not running inside Telegram */

@@ -179,8 +179,20 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
               const tg = getTelegramWebApp();
               if (tg) {
                 e.preventDefault();
-                const callUrl = `${window.location.origin}/api/call?phone=${encodeURIComponent(agency.phone!)}`;
-                tg.openLink(callUrl);
+                const phone = agency.phone!;
+                navigator.clipboard.writeText(phone).then(() => {
+                  tg.showPopup({
+                    title: "Telefon raqami",
+                    message: `${phone}\n\nRaqam nusxalandi! Qo'ng'iroq qilish uchun telefon ilovasiga o'ting.`,
+                    buttons: [{ type: 'close', text: 'Yopish' }]
+                  });
+                }).catch(() => {
+                  tg.showPopup({
+                    title: "Telefon raqami",
+                    message: phone,
+                    buttons: [{ type: 'close', text: 'Yopish' }]
+                  });
+                });
               }
             }}
             className="flex flex-col items-center gap-1.5"
