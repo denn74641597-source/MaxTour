@@ -172,14 +172,7 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
           </a>
         )}
         {agency.phone && (
-          <a
-            href={`tel:${agency.phone}`}
-            onClick={(e) => {
-              e.preventDefault();
-              window.location.href = `tel:${agency.phone}`;
-            }}
-            className="flex flex-col items-center gap-1.5"
-          >
+          <a href={`tel:${agency.phone}`} className="flex flex-col items-center gap-1.5">
             <div className="w-11 h-11 rounded-full bg-slate-100 flex items-center justify-center">
               <Phone className="h-5 w-5 text-slate-600" />
             </div>
