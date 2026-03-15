@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useProfile } from '@/hooks/use-profile';
+import { useFollows } from '@/hooks/use-follows';
 import { submitReview } from '@/features/agencies/actions';
 import type { Agency, Tour, Review, TourHotel } from '@/types';
 
@@ -29,6 +30,7 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('tours');
   const { profile, loading: profileLoading } = useProfile();
+  const { isFollowing, toggleFollow } = useFollows();
 
   // Review form state
   const [reviewRating, setReviewRating] = useState(0);
@@ -108,6 +110,15 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
             {agency.description}
           </p>
         )}
+        {/* Follow Button */}
+        <Button
+          variant={isFollowing(agency.id) ? 'outline' : 'default'}
+          size="sm"
+          className="mt-3 rounded-full px-6"
+          onClick={() => toggleFollow(agency.id)}
+        >
+          {isFollowing(agency.id) ? t.agencyProfile.following : t.agencyProfile.follow}
+        </Button>
       </div>
 
       {/* Stats Row */}

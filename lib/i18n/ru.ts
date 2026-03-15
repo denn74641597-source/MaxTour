@@ -148,6 +148,9 @@ export const ru: Translations = {
     reviewSubmitted: 'Отзыв отправлен!',
     alreadyReviewed: 'Вы уже оставляли отзыв',
     loginToReview: 'Войдите, чтобы оставить отзыв',
+    follow: 'Подписаться',
+    following: 'Подписка',
+    followers: 'Подписчики',
   },
 
   // ─── Lead Form ───

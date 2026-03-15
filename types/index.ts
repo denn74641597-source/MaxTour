@@ -183,6 +183,13 @@ export interface Favorite {
   tour?: Tour;
 }
 
+export interface AgencyFollow {
+  id: string;
+  user_id: string;
+  agency_id: string;
+  created_at: string;
+}
+
 // Filter & search types
 export interface TourFilters {
   search?: string;

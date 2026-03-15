@@ -133,6 +133,9 @@ export interface Translations {
     reviewSubmitted: string;
     alreadyReviewed: string;
     loginToReview: string;
+    follow: string;
+    following: string;
+    followers: string;
   };
   leadForm: {
     fullName: string;

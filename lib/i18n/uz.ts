@@ -148,6 +148,9 @@ export const uz: Translations = {
     reviewSubmitted: 'Sharh yuborildi!',
     alreadyReviewed: 'Siz allaqachon sharh qoldirgansiz',
     loginToReview: 'Sharh qoldirish uchun tizimga kiring',
+    follow: 'Obuna bo\'lish',
+    following: 'Obuna',
+    followers: 'Obunachilar',
   },
 
   // ─── Lead Form ───
