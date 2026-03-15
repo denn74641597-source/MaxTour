@@ -1,11 +1,10 @@
 'use client';
 
-import { Suspense, useMemo } from 'react';
+import { Suspense } from 'react';
 import { SearchBar } from '@/components/shared/search-bar';
 import { TourCardCatalog } from '@/components/shared/tour-card-catalog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from '@/lib/i18n';
-import { useFollows } from '@/hooks/use-follows';
 import { ToursFilterBar } from './tours-filter-bar';
 import type { Tour } from '@/types';
 
@@ -15,13 +14,6 @@ interface ToursContentProps {
 
 export function ToursContent({ tours }: ToursContentProps) {
   const { t } = useTranslation();
-  const { followedAgencyIds, loading: followsLoading } = useFollows();
-
-  // Filter tours by followed agencies (if user follows any)
-  const filteredTours = useMemo(() => {
-    if (followsLoading || followedAgencyIds.length === 0) return tours;
-    return tours.filter((tour) => followedAgencyIds.includes(tour.agency_id));
-  }, [tours, followedAgencyIds, followsLoading]);
 
   return (
     <div>
@@ -44,8 +36,8 @@ export function ToursContent({ tours }: ToursContentProps) {
 
       {/* Tour list */}
       <div className="p-4 space-y-6">
-        {filteredTours.length > 0 ? (
-          filteredTours.map((tour) => (
+        {tours.length > 0 ? (
+          tours.map((tour) => (
             <TourCardCatalog key={tour.id} tour={tour} />
           ))
         ) : (

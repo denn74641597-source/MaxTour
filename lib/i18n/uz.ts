@@ -114,10 +114,15 @@ export const uz: Translations = {
 
   // ─── Favorites ───
   favorites: {
-    title: 'Saqlangan turlar',
+    title: 'Obuna',
     empty: 'Hali saqlangan turlar yo\'q',
     emptyHint: 'Turlarni ko\'rib chiqing va yurak belgisini bosib shu yerga saqlang.',
     browseTours: 'Turlarni ko\'rish',
+    subscriptionsTab: 'Obunalar',
+    favoritesTab: 'Sevimlilar',
+    noFollows: 'Hali obuna bo\'lmadingiz',
+    noFollowsHint: 'Agentliklarga obuna bo\'ling va ularning turlarini shu yerda ko\'ring.',
+    followAgencies: 'Agentliklar',
   },
 
   // ─── Agency Public Profile ───

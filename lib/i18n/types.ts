@@ -105,6 +105,11 @@ export interface Translations {
     empty: string;
     emptyHint: string;
     browseTours: string;
+    subscriptionsTab: string;
+    favoritesTab: string;
+    noFollows: string;
+    noFollowsHint: string;
+    followAgencies: string;
   };
   agencyProfile: {
     title: string;

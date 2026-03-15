@@ -14,7 +14,7 @@ export const BottomNav = memo(function BottomNav() {
   const NAV_ITEMS = useMemo(() => [
     { href: '/', label: t.nav.explore, icon: Compass },
     { href: '/tours', label: t.nav.bookings, icon: Ticket },
-    { href: '/favorites', label: t.nav.wishlist, icon: Heart },
+    { href: '/favorites', label: t.nav.subscriptions, icon: Heart },
     { href: '/profile', label: t.nav.profile, icon: User },
   ], [t.nav]);
 

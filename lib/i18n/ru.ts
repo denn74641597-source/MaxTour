@@ -114,10 +114,15 @@ export const ru: Translations = {
 
   // ─── Favorites ───
   favorites: {
-    title: 'Сохранённые туры',
+    title: 'Подписка',
     empty: 'Пока нет сохранённых туров',
     emptyHint: 'Просматривайте туры и нажмите на сердечко, чтобы сохранить здесь.',
     browseTours: 'Смотреть туры',
+    subscriptionsTab: 'Подписки',
+    favoritesTab: 'Избранное',
+    noFollows: 'Вы ни на кого не подписаны',
+    noFollowsHint: 'Подпишитесь на агентства, чтобы видеть их туры здесь.',
+    followAgencies: 'Агентства',
   },
 
   // ─── Agency Public Profile ───
