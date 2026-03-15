@@ -110,14 +110,6 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
                 }
               </p>
             </div>
-            {isDomestic && tour.domestic_category && (
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 rounded-full px-2.5 py-1 text-xs font-medium border border-emerald-200">
-                  {categoryIcons[tour.domestic_category]}
-                  <span>{DOMESTIC_CATEGORIES[language]?.[tour.domestic_category] || tour.domestic_category}</span>
-                </div>
-              </div>
-            )}
 
           </div>
           <div className="text-right shrink-0">
@@ -215,6 +207,14 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
         {tour.full_description && (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.aboutTour}</h3>
+            {isDomestic && tour.domestic_category && (
+              <div className="flex items-center gap-1.5 mb-2">
+                <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 rounded-full px-2.5 py-1 text-xs font-medium border border-emerald-200">
+                  {categoryIcons[tour.domestic_category]}
+                  <span>{DOMESTIC_CATEGORIES[language]?.[tour.domestic_category] || tour.domestic_category}</span>
+                </div>
+              </div>
+            )}
             <p className="text-sm text-slate-600 leading-snug whitespace-pre-line">
               {tour.full_description}
             </p>
