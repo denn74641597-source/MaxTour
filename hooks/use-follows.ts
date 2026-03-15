@@ -25,12 +25,15 @@ export function useFollows() {
       return;
     }
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('agency_follows')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
+    if (error) {
+      console.error('fetchFollows error:', error);
+    }
     setFollows(data ?? []);
     setLoading(false);
   }, []);
@@ -52,12 +55,15 @@ export function useFollows() {
         ...prev,
         { id: tempId, user_id: user.id, agency_id: agencyId, created_at: new Date().toISOString() },
       ]);
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('agency_follows')
         .insert({ user_id: user.id, agency_id: agencyId })
         .select()
         .single();
-      if (data) {
+      if (error) {
+        console.error('toggleFollow insert error:', error);
+        setFollows((prev) => prev.filter((f) => f.id !== tempId));
+      } else if (data) {
         setFollows((prev) => prev.map((f) => (f.id === tempId ? data : f)));
       } else {
         setFollows((prev) => prev.filter((f) => f.id !== tempId));
