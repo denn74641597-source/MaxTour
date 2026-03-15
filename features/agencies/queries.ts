@@ -57,6 +57,21 @@ export async function getVerifiedAgencies(limit = 10): Promise<Agency[]> {
   return data ?? [];
 }
 
+/** Fetch followers count for an agency */
+export async function getAgencyFollowersCount(agencyId: string): Promise<number> {
+  const supabase = await createServerSupabaseClient();
+  const { count, error } = await supabase
+    .from('agency_follows')
+    .select('*', { count: 'exact', head: true })
+    .eq('agency_id', agencyId);
+
+  if (error) {
+    console.error('getAgencyFollowersCount error:', error);
+    return 0;
+  }
+  return count ?? 0;
+}
+
 /** Fetch reviews for an agency */
 export async function getAgencyReviews(agencyId: string): Promise<Review[]> {
   const supabase = await createServerSupabaseClient();

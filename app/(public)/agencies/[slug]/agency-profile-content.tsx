@@ -21,11 +21,12 @@ interface AgencyProfileContentProps {
   agency: Agency;
   tours: Tour[];
   reviews: Review[];
+  followersCount: number;
 }
 
 type TabKey = 'tours' | 'reviews';
 
-export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileContentProps) {
+export function AgencyProfileContent({ agency, tours, reviews, followersCount }: AgencyProfileContentProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<TabKey>('tours');
@@ -132,8 +133,8 @@ export function AgencyProfileContent({ agency, tours, reviews }: AgencyProfileCo
           </div>
         )}
         <div className="flex flex-col items-center bg-slate-50 rounded-2xl py-3">
-          <span className="text-lg font-bold">{reviews.length}</span>
-          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.reviews}</span>
+          <span className="text-lg font-bold">{followersCount}</span>
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider">{t.agencyProfile.followers}</span>
         </div>
         <div className="flex flex-col items-center bg-slate-50 rounded-2xl py-3">
           <span className="text-lg font-bold">{tours.length}</span>
