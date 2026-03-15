@@ -13,9 +13,9 @@ CREATE INDEX IF NOT EXISTS idx_agency_follows_agency ON public.agency_follows(ag
 -- RLS
 ALTER TABLE public.agency_follows ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own follows"
+CREATE POLICY "Anyone can count follows per agency"
   ON public.agency_follows FOR SELECT
-  USING (auth.uid() = user_id);
+  USING (true);
 
 CREATE POLICY "Users can follow agencies"
   ON public.agency_follows FOR INSERT
