@@ -179,7 +179,7 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
               const tg = getTelegramWebApp();
               if (tg) {
                 e.preventDefault();
-                const callUrl = `${window.location.origin}/api/call?phone=${encodeURIComponent(agency.phone)}`;
+                const callUrl = `${window.location.origin}/api/call?phone=${encodeURIComponent(agency.phone!)}`;
                 tg.openLink(callUrl);
               }
             }}
