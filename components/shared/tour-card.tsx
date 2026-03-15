@@ -21,7 +21,7 @@ interface TourCardProps {
 
 export function TourCard({ tour, compact }: TourCardProps) {
   const { t } = useTranslation();
-  const { isFollowing, toggleFollow } = useFollows();
+  const { isFollowing, toggleFollow, loading: followsLoading } = useFollows();
   const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
   const agencySlug = tour.agency?.slug;
@@ -55,7 +55,7 @@ export function TourCard({ tour, compact }: TourCardProps) {
           <span className="text-xs font-semibold truncate">{agencyName}</span>
           {isVerified && <VerifiedBadge size="sm" />}
         </Link>
-        {agencyId && (
+        {agencyId && !followsLoading && (
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFollow(agencyId); }}
             className={`text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors ${
