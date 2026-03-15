@@ -26,7 +26,7 @@ function getMaxHotelStars(tour: Tour): number | null {
 export function TourCardCatalog({ tour }: TourCardCatalogProps) {
   const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const { isFollowing, toggleFollow, loading: followsLoading } = useFollows();
+  const { isFollowing, toggleFollow } = useFollows();
   const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
   const isApproved = tour.agency?.is_approved ?? false;
@@ -62,7 +62,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
           <span className="text-sm font-semibold truncate">{agencyName}</span>
           {isVerified && <VerifiedBadge size="sm" />}
         </Link>
-        {agencyId && !followsLoading && (
+        {agencyId && (
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFollow(agencyId); }}
             className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
