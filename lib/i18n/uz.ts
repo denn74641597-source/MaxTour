@@ -334,6 +334,13 @@ export const uz: Translations = {
     operatorTelegram: 'Operator Telegram',
     operatorTelegramPlaceholder: '@username',
     operatorTelegramHint: 'Ushbu tur bo\'yicha mas\'ul operator Telegram username\'i. Mijozlar shu operatorga ulanadi.',
+    tourLimitLabel: 'Tur limiti',
+    tourLimitReached: 'Siz oylik tur limitiga yetdingiz. Paketingizni oshiring.',
+    tourLimitReachedTitle: 'Tur limiti tugadi',
+    tourLimitReachedHint: 'Joriy paketingiz bo\'yicha oylik tur limiti tuggan. Ko\'proq tur joylashtirish uchun paketingizni yangilang.',
+    preview: 'Ko\'rish',
+    previewTitle: 'Tur ko\'rinishi',
+    backToEdit: 'Tahrirlashga qaytish',
   },
 
   // ─── Domestic Tour ───

@@ -295,6 +295,13 @@ export interface Translations {
     operatorTelegram: string;
     operatorTelegramPlaceholder: string;
     operatorTelegramHint: string;
+    tourLimitLabel: string;
+    tourLimitReached: string;
+    tourLimitReachedTitle: string;
+    tourLimitReachedHint: string;
+    preview: string;
+    previewTitle: string;
+    backToEdit: string;
   };
   domesticTour: {
     tourTypeSelection: string;

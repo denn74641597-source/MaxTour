@@ -334,6 +334,13 @@ export const ru: Translations = {
     operatorTelegram: 'Telegram оператора',
     operatorTelegramPlaceholder: '@username',
     operatorTelegramHint: 'Telegram username ответственного оператора по этому туру. Клиенты будут связываться с этим оператором.',
+    tourLimitLabel: 'Лимит туров',
+    tourLimitReached: 'Вы достигли месячного лимита туров. Обновите свой пакет.',
+    tourLimitReachedTitle: 'Лимит туров исчерпан',
+    tourLimitReachedHint: 'Месячный лимит туров по вашему текущему пакету исчерпан. Обновите пакет для размещения большего количества туров.',
+    preview: 'Предпросмотр',
+    previewTitle: 'Предпросмотр тура',
+    backToEdit: 'Вернуться к редактированию',
   },
 
   // ─── Domestic Tour ───

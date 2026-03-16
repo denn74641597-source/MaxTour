@@ -88,3 +88,47 @@ export async function getAgencyReviews(agencyId: string): Promise<Review[]> {
   }
   return data ?? [];
 }
+
+export interface TourLimitInfo {
+  planName: string;
+  maxTours: number;
+  currentTours: number;
+  canCreate: boolean;
+}
+
+/** Get tour limit info for the current user's agency */
+export async function getAgencyTourLimit(agencyId: string): Promise<TourLimitInfo> {
+  const supabase = await createServerSupabaseClient();
+
+  // Get active subscription with plan
+  const { data: sub } = await supabase
+    .from('agency_subscriptions')
+    .select('*, plan:subscription_plans(name, max_active_tours)')
+    .eq('agency_id', agencyId)
+    .eq('status', 'active')
+    .limit(1)
+    .single();
+
+  const planName = (sub?.plan as any)?.name ?? 'Start';
+  const maxTours = (sub?.plan as any)?.max_active_tours ?? 5;
+
+  // Count current month's tours (not archived)
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+  const { count } = await supabase
+    .from('tours')
+    .select('*', { count: 'exact', head: true })
+    .eq('agency_id', agencyId)
+    .gte('created_at', monthStart)
+    .neq('status', 'archived');
+
+  const currentTours = count ?? 0;
+
+  return {
+    planName,
+    maxTours,
+    currentTours,
+    canCreate: currentTours < maxTours,
+  };
+}

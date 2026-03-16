@@ -17,7 +17,8 @@ import { ImageUploader } from '@/components/shared/image-uploader';
 import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
-import { Loader2, MapPin, Plus, X, Hotel, Star, Search, Globe, Map, Mountain, Landmark, Heart, Compass, TreePine, ArrowLeft, Send, CalendarDays, Clock, DollarSign, Utensils, Bus, Plane, Image as ImageIcon, FileText, CheckCircle2, Phone, User } from 'lucide-react';
+import { Loader2, MapPin, Plus, X, Hotel, Star, Search, Globe, Map, Mountain, Landmark, Heart, Compass, TreePine, ArrowLeft, Send, CalendarDays, Clock, DollarSign, Utensils, Bus, Plane, Image as ImageIcon, FileText, CheckCircle2, Phone, User, Eye, AlertTriangle } from 'lucide-react';
+import type { TourLimitInfo } from '@/features/agencies/queries';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -45,9 +46,10 @@ interface TourFormProps {
     guide_phone?: string | null;
   };
   tourId?: string;
+  tourLimit?: TourLimitInfo;
 }
 
-export function TourForm({ initialData, tourId }: TourFormProps) {
+export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   const router = useRouter();
   const { t, language } = useTranslation();
   const [coverUrl, setCoverUrl] = useState(initialData?.cover_image_url ?? '');
@@ -82,6 +84,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     initialData?.what_to_bring ?? []
   );
   const [newBringItem, setNewBringItem] = useState('');
+  const [showPreview, setShowPreview] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<'pending' | 'draft'>('pending');
 
   const isEditing = !!tourId;
 
@@ -148,6 +152,12 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   }
 
   async function onSubmit(data: TourFormData) {
+    // Check tour limit for new tours
+    if (!isEditing && tourLimit && !tourLimit.canCreate) {
+      toast.error(t.agencyTours.tourLimitReached);
+      return;
+    }
+
     const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -899,15 +909,20 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
           />
         </section>
 
-        {/* ── PUBLISH BUTTON ── */}
+        {/* ── PREVIEW / PUBLISH BUTTONS ── */}
         <div className="pt-4 space-y-3">
-          <Button type="submit" className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/20" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4 mr-2" />
-            )}
-            {isEditing ? t.agencyTours.updateTour : t.agencyTours.submitForReview}
+          {/* Preview Button */}
+          <Button
+            type="button"
+            className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/20"
+            disabled={isSubmitting}
+            onClick={() => {
+              setPendingStatus('pending');
+              handleSubmit(() => setShowPreview(true))();
+            }}
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            {t.agencyTours.preview}
           </Button>
           {!isEditing && (
             <Button
@@ -916,8 +931,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               className="w-full h-11 rounded-2xl text-sm"
               disabled={isSubmitting}
               onClick={() => {
-                setValue('status', 'draft');
-                handleSubmit(onSubmit)();
+                setPendingStatus('draft');
+                handleSubmit(() => setShowPreview(true))();
               }}
             >
               {t.agencyTours.saveAsDraft}
@@ -925,6 +940,133 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
           )}
         </div>
       </div>
+
+      {/* ── PREVIEW MODAL ── */}
+      {showPreview && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center sm:items-center">
+          <div className="bg-white w-full max-w-lg max-h-[85vh] rounded-t-3xl sm:rounded-3xl overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-slate-100 p-4 flex items-center justify-between rounded-t-3xl z-10">
+              <h2 className="text-lg font-bold">{t.agencyTours.previewTitle}</h2>
+              <button type="button" onClick={() => setShowPreview(false)} className="p-1.5 rounded-full hover:bg-slate-100">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4">
+              {/* Cover image preview */}
+              {coverUrl && (
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-100">
+                  <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
+                </div>
+              )}
+
+              {/* Title */}
+              <div>
+                <h3 className="text-xl font-bold">{watch('title') || '—'}</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {isDomestic ? `${watch('region') || ''}${watch('district') ? `, ${watch('district')}` : ''}` : `${watch('country') || ''}${watch('city') ? `, ${watch('city')}` : ''}`}
+                </p>
+              </div>
+
+              {/* Key info grid */}
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.price}</p>
+                  <p className="text-lg font-bold">
+                    {hotels.length > 0 ? hotels[0].price : watch('price') || '0'}
+                    <span className="text-xs font-normal ml-1">{isDomestic ? 'UZS' : (watch('currency') || 'USD')}</span>
+                  </p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.durationDays}</p>
+                  <p className="text-lg font-bold">{watch('duration_days') || '—'} {t.common.days || 'kun'}</p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.departureDate}</p>
+                  <p className="text-sm font-semibold">{watch('departure_date') || '—'}</p>
+                </div>
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.totalSeats}</p>
+                  <p className="text-lg font-bold">{watch('seats_total') || '—'}</p>
+                </div>
+              </div>
+
+              {/* Hotels */}
+              {hotels.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase text-muted-foreground mb-2">{t.agencyTours.accommodationTransport}</p>
+                  {hotels.map((h, i) => (
+                    <div key={i} className="bg-slate-50 rounded-xl p-3 mb-2">
+                      <p className="font-semibold text-sm">{h.name} {'⭐'.repeat(h.stars || 0)}</p>
+                      {h.price > 0 && <p className="text-xs text-muted-foreground">{h.price} {isDomestic ? 'UZS' : (watch('currency') || 'USD')}</p>}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Services */}
+              {includedServices.length > 0 && (
+                <div>
+                  <p className="text-xs font-bold uppercase text-muted-foreground mb-2">{t.agencyTours.includedServices}</p>
+                  <div className="space-y-1">
+                    {includedServices.map((s, i) => (
+                      <div key={i} className="flex items-center gap-2 text-sm">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                        {s}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {watch('full_description') && (
+                <div>
+                  <p className="text-xs font-bold uppercase text-muted-foreground mb-2">{t.agencyTours.fullDescription}</p>
+                  <p className="text-sm text-slate-600 whitespace-pre-wrap">{watch('full_description')}</p>
+                </div>
+              )}
+
+              {/* Tour limit warning */}
+              {tourLimit && !tourLimit.canCreate && !isEditing && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600">
+                  <AlertTriangle className="h-4 w-4 shrink-0" />
+                  <span className="text-xs">{t.agencyTours.tourLimitReached}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Confirm buttons */}
+            <div className="sticky bottom-0 bg-white border-t border-slate-100 p-4 space-y-2">
+              <Button
+                type="button"
+                className="w-full h-12 rounded-2xl text-base font-bold"
+                disabled={isSubmitting || (tourLimit && !tourLimit.canCreate && !isEditing)}
+                onClick={() => {
+                  setShowPreview(false);
+                  setValue('status', pendingStatus);
+                  handleSubmit(onSubmit)();
+                }}
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4 mr-2" />
+                )}
+                {isEditing ? t.agencyTours.updateTour : (pendingStatus === 'draft' ? t.agencyTours.saveAsDraft : t.agencyTours.submitForReview)}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full h-11 rounded-2xl text-sm"
+                onClick={() => setShowPreview(false)}
+              >
+                {t.agencyTours.backToEdit}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </form>
   );
 }
