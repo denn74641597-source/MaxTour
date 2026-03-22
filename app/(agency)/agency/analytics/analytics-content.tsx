@@ -59,9 +59,9 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
           <div className="bg-surface rounded-[1.5rem] shadow-ambient overflow-hidden">
             <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 bg-surface-container-low text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               <span>{t.analytics.tourName}</span>
-              <span className="text-center w-12">{t.analytics.interests}</span>
-              <span className="text-center w-12">{t.analytics.calls}</span>
-              <span className="text-center w-12">{t.analytics.telegram}</span>
+              <span className="text-center w-12"><Heart className="h-3.5 w-3.5 text-pink-400 mx-auto" /></span>
+              <span className="text-center w-12"><Phone className="h-3.5 w-3.5 text-emerald-400 mx-auto" /></span>
+              <span className="text-center w-12"><Send className="h-3.5 w-3.5 text-blue-400 mx-auto" /></span>
             </div>
             {analytics.map((row) => (
               <div

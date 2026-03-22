@@ -17,7 +17,6 @@ import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { LeadForm } from '@/components/shared/lead-form';
 import { TourCard } from '@/components/shared/tour-card';
-import { createClient } from '@/lib/supabase/client';
 import type { Tour, TourHotel } from '@/types';
 
 interface TourDetailContentProps {
@@ -63,14 +62,11 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   const operatorPhone = tour.operator_phone || agency?.phone || null;
 
   function trackClick(type: 'call' | 'telegram') {
-    try {
-      const supabase = createClient();
-      supabase.from('call_tracking').insert({
-        tour_id: tour.id,
-        agency_id: tour.agency_id,
-        type,
-      }).then();
-    } catch {}
+    fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tour_id: tour.id, agency_id: tour.agency_id, type }),
+    }).catch(() => {});
   }
 
   return (
