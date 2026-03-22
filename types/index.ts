@@ -134,6 +134,7 @@ export interface Tour {
   operator_telegram_username: string | null;
   operator_phone: string | null;
   category: TourCategoryTag | null;
+  additional_info: string | null;
   view_count: number;
   tour_type: TourType;
   domestic_category: DomesticTourCategory | null;

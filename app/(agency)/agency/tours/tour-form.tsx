@@ -216,6 +216,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       operator_telegram_username: data.operator_telegram_username || null,
       operator_phone: data.operator_phone || null,
       category: selectedCategory || null,
+      additional_info: additionalInfo || null,
       // Domestic fields
       domestic_category: tourType === 'domestic' ? (data.domestic_category || null) : null,
       region: tourType === 'domestic' ? (data.region || null) : null,

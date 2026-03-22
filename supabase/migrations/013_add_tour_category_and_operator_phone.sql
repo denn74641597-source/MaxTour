@@ -7,6 +7,9 @@ ALTER TABLE tours ADD COLUMN IF NOT EXISTS operator_phone TEXT;
 -- Add view_count column to tours for tracking popular tours
 ALTER TABLE tours ADD COLUMN IF NOT EXISTS view_count INTEGER DEFAULT 0;
 
+-- Add additional_info column to tours for extra tour information
+ALTER TABLE tours ADD COLUMN IF NOT EXISTS additional_info TEXT;
+
 -- Create index on category for faster filtering
 CREATE INDEX IF NOT EXISTS idx_tours_category ON tours(category);
 

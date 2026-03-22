@@ -42,7 +42,6 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
 
       {/* Categories */}
       <div className="mb-8">
-        <h3 className="text-lg font-bold text-foreground mb-3">{t.home.categories}</h3>
         <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 pb-1">
           {TOUR_CATEGORIES.map((cat) => (
             <Link

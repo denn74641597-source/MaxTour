@@ -144,8 +144,15 @@ export async function getPopularTours(limit = 10): Promise<Tour[]> {
     .limit(limit);
 
   if (error) {
-    console.error('getPopularTours error:', error);
-    return [];
+    // Fallback: view_count column may not exist yet, use featured + newest
+    const { data: fallback } = await supabase
+      .from('tours')
+      .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+      .eq('status', 'published')
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    return fallback ?? [];
   }
   return data ?? [];
 }
@@ -170,18 +177,25 @@ export async function getToursByCategory(category: string, limit = 20): Promise<
 
 /** Increment tour view count */
 export async function incrementTourViewCount(tourId: string): Promise<void> {
-  const supabase = await createServerSupabaseClient();
-  // Simple increment via raw SQL or direct update
-  const { data } = await supabase
-    .from('tours')
-    .select('view_count')
-    .eq('id', tourId)
-    .single();
-
-  if (data) {
-    await supabase
-      .from('tours')
-      .update({ view_count: (data.view_count ?? 0) + 1 })
-      .eq('id', tourId);
+  try {
+    const supabase = await createServerSupabaseClient();
+    // Try RPC function first (faster, atomic)
+    const { error: rpcError } = await supabase.rpc('increment_view_count', { tour_id_input: tourId });
+    if (rpcError) {
+      // Fallback: direct update if RPC doesn't exist
+      const { data } = await supabase
+        .from('tours')
+        .select('view_count')
+        .eq('id', tourId)
+        .single();
+      if (data) {
+        await supabase
+          .from('tours')
+          .update({ view_count: (data.view_count ?? 0) + 1 })
+          .eq('id', tourId);
+      }
+    }
+  } catch {
+    // Silently fail — view_count column may not exist yet
   }
 }
