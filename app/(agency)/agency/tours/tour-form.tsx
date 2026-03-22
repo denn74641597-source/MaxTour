@@ -25,7 +25,8 @@ import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
 import { COUNTRIES, CITIES_BY_COUNTRY, AIRLINES, UZ_REGIONS, UZ_DISTRICTS } from '@/lib/tour-data';
-import type { TourHotel, TourType, DomesticTourCategory } from '@/types';
+import { TOUR_CATEGORIES } from '@/types';
+import type { TourHotel, TourType, DomesticTourCategory, TourCategoryTag } from '@/types';
 
 interface TourFormProps {
   initialData?: Partial<TourFormData> & {
@@ -36,6 +37,9 @@ interface TourFormProps {
     airline?: string | null;
     extra_charges?: { name: string; amount: number }[];
     operator_telegram_username?: string | null;
+    operator_phone?: string | null;
+    category?: string | null;
+    additional_info?: string | null;
     tour_type?: TourType;
     domestic_category?: DomesticTourCategory | null;
     region?: string | null;
@@ -86,6 +90,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   const [newBringItem, setNewBringItem] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<'pending' | 'draft'>('pending');
+  const [selectedCategory, setSelectedCategory] = useState<string>(initialData?.category ?? '');
+  const [additionalInfo, setAdditionalInfo] = useState<string>(initialData?.additional_info ?? '');
 
   const isEditing = !!tourId;
 
@@ -191,7 +197,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       duration_days: data.duration_days ? Number(data.duration_days) : null,
       price: hotels.length > 0 ? hotels[0].price : Number(data.price),
       old_price: data.old_price ? Number(data.old_price) : null,
-      currency: tourType === 'domestic' ? 'UZS' : (data.currency || 'USD'),
+      currency: tourType === 'domestic' ? 'UZS' : 'USD',
       seats_total: data.seats_total ? Number(data.seats_total) : null,
       seats_left: data.seats_left ? Number(data.seats_left) : null,
       hotel_name: hotels.length > 0 ? hotels[0].name : (data.hotel_name || null),
@@ -208,6 +214,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       included_services: includedServices,
       excluded_services: [],
       operator_telegram_username: data.operator_telegram_username || null,
+      operator_phone: data.operator_phone || null,
+      category: selectedCategory || null,
       // Domestic fields
       domestic_category: tourType === 'domestic' ? (data.domestic_category || null) : null,
       region: tourType === 'domestic' ? (data.region || null) : null,
@@ -357,6 +365,34 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               <Label htmlFor="title" className="text-sm font-medium text-foreground">{t.agencyTours.titleLabel}</Label>
               <Input id="title" placeholder={t.agencyTours.titlePlaceholder} {...register('title')} onBlur={autoSlug} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
+            </div>
+
+            {/* Tour Category Selection */}
+            <div>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.tourCategory}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.tourCategoryHint}</p>
+              <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-muted bg-surface-container-low">
+                {TOUR_CATEGORIES.map((cat) => (
+                  <button
+                    key={cat}
+                    type="button"
+                    onClick={() => setSelectedCategory(selectedCategory === cat ? '' : cat)}
+                    className={`w-full text-left px-3 py-2.5 text-sm transition-colors border-b border-muted last:border-b-0 ${
+                      selectedCategory === cat
+                        ? 'bg-primary/10 text-primary font-semibold'
+                        : 'text-foreground hover:bg-primary/5'
+                    }`}
+                  >
+                    {t.tourCategories[cat as keyof typeof t.tourCategories]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Full Description - moved here from included services */}
+            <div>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.fullDescription}</Label>
+              <Textarea placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low" />
             </div>
 
             {/* Country & City вЂ” International */}
@@ -536,12 +572,12 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
         {/* в”Ђв”Ђ LOGISTICS в”Ђв”Ђ */}
         <section>
-          <SectionHeader icon={<CalendarDays className="h-4 w-4" />} label={t.agencyTours.destinationDates} />
+          <SectionHeader icon={<CalendarDays className="h-4 w-4" />} label={t.agencyTours.dates} />
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureDate}</Label>
-                <Input type="date" {...register('departure_date')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+                <Input type="date" {...register('departure_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationDays}</Label>
@@ -551,36 +587,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
             <div>
               <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
-              <Input type="date" {...register('return_date')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+              <Input type="date" {...register('return_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
             </div>
-
-            {/* Multi-city destinations вЂ” International */}
-            {!isDomestic && (
-              <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.destinations}</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.destinationsHint}</p>
-                {destinations.length > 0 && (
-                  <div className="flex flex-wrap gap-1.5 mt-2">
-                    {destinations.map((dest, i) => (
-                      <div key={i} className="flex items-center gap-1 bg-primary/5 text-primary rounded-full px-2.5 py-1 text-xs font-medium">
-                        <span>{dest}</span>
-                        <button type="button" onClick={() => removeDestination(i)} className="hover:bg-primary/10 rounded-full p-0.5">
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {destinations.length < 3 && (
-                  <div className="flex gap-2 mt-2">
-                    <Input placeholder={t.agencyTours.destinationPlaceholder} value={newDestination} onChange={(e) => setNewDestination(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDestination(); } }} className="rounded-xl border-muted bg-surface-container-low h-11" />
-                    <Button type="button" variant="outline" size="icon" onClick={addDestination} className="rounded-xl h-11 w-11 shrink-0">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                )}
-              </div>
-            )}
           </div>
         </section>
 
@@ -594,33 +602,19 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.price}</Label>
                 <div className="relative mt-1.5">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{isDomestic ? 'UZS' : '$'}</span>
-                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('price')} className="pl-11 rounded-xl border-muted bg-surface-container-low h-11" />
+                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('price')} className="pl-3 pr-14 rounded-xl border-muted bg-surface-container-low h-11" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">USD</span>
                 </div>
                 {errors.price && <p className="text-xs text-destructive mt-1">{errors.price.message}</p>}
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.oldPrice}</Label>
                 <div className="relative mt-1.5">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{isDomestic ? 'UZS' : '$'}</span>
-                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('old_price')} className="pl-11 rounded-xl border-muted bg-surface-container-low h-11" />
+                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('old_price')} className="pl-3 pr-14 rounded-xl border-muted bg-surface-container-low h-11" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">USD</span>
                 </div>
               </div>
             </div>
-
-            {!isDomestic && (
-              <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.currency}</Label>
-                <Select defaultValue={initialData?.currency || 'USD'} onValueChange={(v) => setValue('currency', v as 'USD' | 'UZS' | 'EUR')}>
-                  <SelectTrigger className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="USD">USD</SelectItem>
-                    <SelectItem value="UZS">UZS</SelectItem>
-                    <SelectItem value="EUR">EUR</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
 
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -667,11 +661,6 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
         <section>
           <SectionHeader icon={<CheckCircle2 className="h-4 w-4" />} label={t.agencyTours.includedServices} />
           <div className="space-y-4">
-            <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.fullDescription}</Label>
-              <Textarea placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low" />
-            </div>
-
             {/* Included Services */}
             <div>
               <Label className="text-sm font-medium text-foreground">{t.agencyTours.includedServices}</Label>
@@ -696,11 +685,26 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               </div>
             </div>
 
-            {/* Operator Telegram */}
+            {/* Additional Info under included services */}
+            <div>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.additionalInfo}</Label>
+              <Textarea
+                placeholder={t.agencyTours.additionalInfoPlaceholder}
+                rows={3}
+                value={additionalInfo}
+                onChange={(e) => setAdditionalInfo(e.target.value)}
+                className="mt-1.5 rounded-xl border-muted bg-surface-container-low"
+              />
+            </div>
+
+            {/* Operator Info */}
             <div>
               <Label className="text-sm font-medium text-foreground">{t.agencyTours.operatorTelegram}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.operatorTelegramHint}</p>
-              <Input placeholder={t.agencyTours.operatorTelegramPlaceholder} {...register('operator_telegram_username')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+              <div className="space-y-2 mt-1.5">
+                <Input placeholder={t.agencyTours.operatorTelegramPlaceholder} {...register('operator_telegram_username')} className="rounded-xl border-muted bg-surface-container-low h-11" />
+                <Input placeholder={t.agencyTours.operatorPhonePlaceholder} {...register('operator_phone')} className="rounded-xl border-muted bg-surface-container-low h-11" />
+              </div>
             </div>
           </div>
         </section>
@@ -709,7 +713,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
         {/* в”Ђв”Ђ STAY & TRAVEL в”Ђв”Ђ */}
         <section>
-          <SectionHeader icon={<Hotel className="h-4 w-4" />} label={t.agencyTours.accommodationTransport} />
+          <SectionHeader icon={<Hotel className="h-4 w-4" />} label={t.agencyTours.accommodation} />
           <div className="space-y-4">
             {/* Hotels */}
             <div className="flex items-center justify-between">
@@ -776,72 +780,6 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
               </div>
             ))}
-
-            {/* Transport type */}
-            <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.transport}</Label>
-              <Input placeholder={t.transportTypes[watch('transport_type') || 'flight']} readOnly value={t.transportTypes[watch('transport_type') || 'flight']} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11 cursor-pointer" onClick={() => {
-                const types: Array<'flight' | 'bus' | 'train' | 'self' | 'mixed'> = ['flight', 'bus', 'train', 'self', 'mixed'];
-                const current = watch('transport_type') || 'flight';
-                const idx = types.indexOf(current);
-                setValue('transport_type', types[(idx + 1) % types.length]);
-              }} />
-            </div>
-
-            {/* Airline вЂ” International */}
-            {!isDomestic && (
-              <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.airline}</Label>
-                <div className="relative mt-1.5">
-                  {watch('airline') ? (
-                    <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
-                      <span className="flex-1 text-sm">{watch('airline')}</span>
-                      <button type="button" onClick={() => setValue('airline', '')} className="text-muted-foreground hover:text-foreground">
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <Input placeholder={t.agencyTours.airlinePlaceholder} value={airlineSearch} onChange={(e) => setAirlineSearch(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11" />
-                      {airlineSearch && (
-                        <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
-                          {AIRLINES.filter(a => a.toLowerCase().includes(airlineSearch.toLowerCase())).map((airline) => (
-                            <button key={airline} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('airline', airline); setAirlineSearch(''); }}>
-                              {airline}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Meal type */}
-            <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.mealType}</Label>
-              <Select defaultValue={initialData?.meal_type || 'none'} onValueChange={(v) => setValue('meal_type', v as 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive')}>
-                <SelectTrigger className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11">
-                  <SelectValue>{t.mealTypes[watch('meal_type') || 'none']}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t.mealTypes.none}</SelectItem>
-                  <SelectItem value="breakfast">{t.mealTypes.breakfast}</SelectItem>
-                  <SelectItem value="half_board">{t.mealTypes.half_board}</SelectItem>
-                  <SelectItem value="full_board">{t.mealTypes.full_board}</SelectItem>
-                  <SelectItem value="all_inclusive">{t.mealTypes.all_inclusive}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Visa вЂ” International */}
-            {!isDomestic && (
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input type="checkbox" {...register('visa_required')} className="h-4 w-4 rounded border-muted text-primary focus:ring-primary" />
-                <span className="text-sm text-foreground">{t.agencyTours.visaRequired}</span>
-              </label>
-            )}
           </div>
         </section>
 
@@ -907,6 +845,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             onChange={setCoverUrl}
             label={t.agencyTours.uploadCoverImage}
           />
+          <p className="text-xs text-muted-foreground mt-1.5">{t.agencyTours.coverImageHint}</p>
         </section>
 
         {/* в”Ђв”Ђ PREVIEW / PUBLISH BUTTONS в”Ђв”Ђ */}
@@ -922,7 +861,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             }}
           >
             <Eye className="h-4 w-4 mr-2" />
-            {t.agencyTours.preview}
+            {t.agencyTours.previewAndPublish}
           </Button>
           {!isEditing && (
             <Button

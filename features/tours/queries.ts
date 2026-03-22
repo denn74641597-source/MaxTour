@@ -26,34 +26,10 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   if (filters?.departureFrom) query = query.gte('departure_date', filters.departureFrom);
   if (filters?.departureTo) query = query.lte('departure_date', filters.departureTo);
 
-  // Category filter — keyword-based search across title & descriptions
+  // Category filter — use category column first, fallback to keyword search
   if (filters?.category) {
-    const CATEGORY_KEYWORDS: Record<string, string[]> = {
-      Beach: ['plyaj', 'плаж', 'пляж', 'dengiz', 'море', 'beach', 'ocean', 'okean', 'океан', 'maldiv', 'мальдив', 'bali', 'бали', 'antalya', 'анталья', 'resort', 'курорт', 'qirg\'oq', 'берег', 'orol', 'остров'],
-      Umrah: ['umra', 'умра', 'hajj', 'хадж', 'makka', 'мекка', 'madina', 'медина', 'saudiya', 'саудов', 'ziyorat', 'паломничество', 'haj'],
-      Family: ['oilaviy', 'семейн', 'family', 'bolalar', 'дети', 'детск', 'oila', 'семья', 'kids', 'children'],
-      Honeymoon: ['asal oyi', 'медовый', 'honeymoon', 'romantik', 'романтик', 'romantic', 'yangi turmush', 'свадеб', 'молодожён'],
-      Budget: ['arzon', 'бюджет', 'budget', 'cheap', 'tejamkor', 'эконом', 'aksiya', 'акция', 'chegirma', 'скидк', 'дёшев', 'дешёв'],
-      Premium: ['premium', 'премиум', 'luxury', 'люкс', 'hashamatli', 'роскош', 'vip', 'deluxe', 'делюкс', 'business', 'бизнес'],
-      Adventure: ['sarguzasht', 'приключен', 'adventure', 'extreme', 'ekstrim', 'экстрим', 'trekking', 'треккинг', 'safari', 'сафари', 'hiking', 'поход'],
-      Cultural: ['madaniy', 'культур', 'cultural', 'tarixiy', 'историч', 'muzey', 'музей', 'heritage', 'history', 'история'],
-    };
-
-    if (filters.category === 'Visa-free') {
-      query = query.eq('visa_required', false);
-    } else {
-      const keywords = CATEGORY_KEYWORDS[filters.category];
-      if (keywords?.length) {
-        const conditions = keywords
-          .flatMap((kw) => [
-            `title.ilike.%${kw}%`,
-            `short_description.ilike.%${kw}%`,
-            `full_description.ilike.%${kw}%`,
-          ])
-          .join(',');
-        query = query.or(conditions);
-      }
-    }
+    // Try direct category column match first
+    query = query.eq('category', filters.category);
   }
 
   // Sorting
@@ -155,4 +131,57 @@ export async function getSimilarTours(tour: Tour, limit = 4): Promise<Tour[]> {
     return [];
   }
   return data ?? [];
+}
+
+/** Fetch most popular tours by view_count (for "Mashhur joylar") */
+export async function getPopularTours(limit = 10): Promise<Tour[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('tours')
+    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .eq('status', 'published')
+    .order('view_count', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('getPopularTours error:', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+/** Fetch tours by category */
+export async function getToursByCategory(category: string, limit = 20): Promise<Tour[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('tours')
+    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .eq('status', 'published')
+    .eq('category', category)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('getToursByCategory error:', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+/** Increment tour view count */
+export async function incrementTourViewCount(tourId: string): Promise<void> {
+  const supabase = await createServerSupabaseClient();
+  // Simple increment via raw SQL or direct update
+  const { data } = await supabase
+    .from('tours')
+    .select('view_count')
+    .eq('id', tourId)
+    .single();
+
+  if (data) {
+    await supabase
+      .from('tours')
+      .update({ view_count: (data.view_count ?? 0) + 1 })
+      .eq('id', tourId);
+  }
 }

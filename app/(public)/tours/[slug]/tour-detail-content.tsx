@@ -27,6 +27,7 @@ interface TourDetailContentProps {
 export function TourDetailContent({ tour, similarTours = [] }: TourDetailContentProps) {
   const { t, language } = useTranslation();
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [showContact, setShowContact] = useState(false);
 
   const agency = tour.agency;
   const images = tour.images ?? [];
@@ -57,6 +58,8 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
     : agency?.telegram_username
       ? `https://t.me/${agency.telegram_username.replace('@', '')}`
       : null;
+
+  const operatorPhone = tour.operator_phone || agency?.phone || null;
 
   return (
     <div className="pb-4 bg-background">
@@ -417,24 +420,49 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
 
       {/* CTA Bar — sits above BottomNav */}
       <div className="sticky bottom-16 glass-nav px-6 py-2.5 z-40 mt-4">
-        <div className="max-w-2xl mx-auto flex gap-2">
-          <button
-            onClick={() => setShowLeadForm(true)}
-            className="flex-1 bg-primary text-white font-bold py-3 rounded-xl text-center hover:bg-primary/90 transition-colors text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
-          >
-            <Send className="h-4 w-4" />
-            {t.tours.leaveRequest}
-          </button>
-          {telegramLink && (
-            <a
-              href={telegramLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="bg-muted text-foreground font-bold py-3 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-muted/80 transition-all text-sm shrink-0"
+        <div className="max-w-2xl mx-auto space-y-2">
+          <div className="flex gap-2">
+            <button
+              onClick={() => setShowLeadForm(true)}
+              className="flex-1 bg-primary text-white font-bold py-3 rounded-xl text-center hover:bg-primary/90 transition-colors text-sm flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
             >
               <Send className="h-4 w-4" />
-              Telegram
-            </a>
+              {t.tours.leaveRequest}
+            </button>
+            {telegramLink && (
+              <a
+                href={telegramLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-muted text-foreground font-bold py-3 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-muted/80 transition-all text-sm shrink-0"
+              >
+                <Send className="h-4 w-4" />
+                Telegram
+              </a>
+            )}
+          </div>
+          {/* Aloqa button */}
+          <button
+            onClick={() => setShowContact(!showContact)}
+            className="w-full bg-surface border border-muted text-foreground font-bold py-2.5 rounded-xl text-center hover:bg-muted/50 transition-colors text-sm flex items-center justify-center gap-2"
+          >
+            <Phone className="h-4 w-4" />
+            {t.tours.contact}
+          </button>
+          {/* Operator phone display */}
+          {showContact && operatorPhone && (
+            <div className="bg-surface border border-primary/20 rounded-xl p-3 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">{operatorPhone}</span>
+              </div>
+              <a
+                href={`tel:${operatorPhone}`}
+                className="text-primary text-sm font-bold hover:underline"
+              >
+                {t.tours.contact}
+              </a>
+            </div>
           )}
         </div>
       </div>

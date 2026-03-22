@@ -16,7 +16,7 @@ export function FilterChips({ selected, onSelect }: FilterChipsProps) {
     <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1">
       {TOUR_CATEGORIES.map((cat) => {
         const isActive = selected === cat;
-        const label = t.categories[cat] ?? cat;
+        const label = t.tourCategories[cat as keyof typeof t.tourCategories] ?? t.categories[cat] ?? cat;
         return (
           <button
             key={cat}

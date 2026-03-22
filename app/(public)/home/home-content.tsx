@@ -5,14 +5,14 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
 import { SearchBar } from '@/components/shared/search-bar';
-import { TourCardHorizontal } from '@/components/shared/tour-card-horizontal';
 import { AgencyCard } from '@/components/shared/agency-card';
 import { HeroBanner } from '@/components/shared/hero-banner';
 import { PopularDestinations } from '@/components/shared/popular-destinations';
 import { EmptyState } from '@/components/shared/empty-state';
-import { placeholderImage } from '@/lib/utils';
+import { placeholderImage, formatPrice } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { HomeFilterChipsClient } from '../home-filter-chips';
+import { TOUR_CATEGORIES } from '@/types';
 import type { Tour, Agency } from '@/types';
 
 interface HomeContentProps {
@@ -20,13 +20,16 @@ interface HomeContentProps {
   recentTours: Tour[];
   agencies: Agency[];
   topAgencies?: Agency[];
+  popularTours?: Tour[];
+  hotTours?: Tour[];
 }
 
-export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [] }: HomeContentProps) {
+export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [], popularTours = [], hotTours = [] }: HomeContentProps) {
   const { t } = useTranslation();
 
   const heroTour = featuredTours[0] ?? recentTours[0];
-  const hotDeals = recentTours.slice(0, 6);
+  const hotDeals = recentTours.slice(0, 20);
+  const hotToursDisplay = hotTours.slice(0, 20);
 
   return (
     <div className="px-6 pb-8">
@@ -37,18 +40,29 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
         </Suspense>
       </div>
 
-      {/* Quick Filter Chips */}
+      {/* Categories */}
       <div className="mb-8">
-        <Suspense>
-          <HomeFilterChipsClient />
-        </Suspense>
+        <h3 className="text-lg font-bold text-foreground mb-3">{t.home.categories}</h3>
+        <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 pb-1">
+          {TOUR_CATEGORIES.map((cat) => (
+            <Link
+              key={cat}
+              href={`/tours?category=${cat}`}
+              className="shrink-0 px-4 py-2 rounded-full bg-surface ghost-border text-sm font-medium text-foreground hover:bg-primary/5 hover:border-primary transition-all"
+            >
+              {t.tourCategories[cat]}
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Hero Banner */}
       {heroTour && <div className="mb-10"><HeroBanner tour={heroTour} /></div>}
 
-      {/* Popular Destinations */}
-      <div className="mb-10"><PopularDestinations /></div>
+      {/* Popular Destinations (dynamic - most viewed tours) */}
+      <div className="mb-10">
+        <PopularDestinations tours={popularTours} />
+      </div>
 
       {/* Verified Agencies */}
       {agencies.length > 0 && (
@@ -62,21 +76,43 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
         </section>
       )}
 
-      {/* Hot Deals */}
+      {/* Hot Deals / Yaxshi takliflar — 2x2 grid with swipe */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
-            <span className="flex items-center gap-1 label-meta text-[10px] bg-destructive/10 text-destructive px-2.5 py-1 rounded-full font-bold">
-              <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
-              LIVE
-            </span>
-          </div>
+          <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
         </div>
         {hotDeals.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4">
-            {hotDeals.map((tour) => (
-              <TourCardHorizontal key={tour.id} tour={tour} />
+          <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2 snap-x snap-mandatory">
+            {/* Group tours in pairs of 2 for 2x2 grid pages */}
+            {Array.from({ length: Math.ceil(hotDeals.length / 4) }).map((_, pageIdx) => (
+              <div key={pageIdx} className="grid grid-cols-2 grid-rows-2 gap-3 min-w-[calc(100vw-3rem)] snap-start">
+                {hotDeals.slice(pageIdx * 4, pageIdx * 4 + 4).map((tour) => (
+                  <HotDealCard key={tour.id} tour={tour} />
+                ))}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title={t.tours.noToursFound}
+            description={t.tours.noToursHint}
+          />
+        )}
+      </section>
+
+      {/* Qaynoq turlar — same 2x2 grid with swipe, price focused */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-foreground">{t.home.hotTours}</h3>
+        </div>
+        {hotToursDisplay.length > 0 ? (
+          <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2 snap-x snap-mandatory">
+            {Array.from({ length: Math.ceil(hotToursDisplay.length / 4) }).map((_, pageIdx) => (
+              <div key={pageIdx} className="grid grid-cols-2 grid-rows-2 gap-3 min-w-[calc(100vw-3rem)] snap-start">
+                {hotToursDisplay.slice(pageIdx * 4, pageIdx * 4 + 4).map((tour) => (
+                  <HotTourCard key={tour.id} tour={tour} />
+                ))}
+              </div>
             ))}
           </div>
         ) : (
@@ -99,6 +135,58 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
         </section>
       )}
     </div>
+  );
+}
+
+/** Hot Deal Card — shows image, city name, and price */
+function HotDealCard({ tour }: { tour: Tour }) {
+  return (
+    <Link href={`/tours/${tour.slug}`} className="block">
+      <div className="rounded-2xl overflow-hidden bg-surface shadow-ambient">
+        <div className="relative aspect-[4/3]">
+          <Image
+            src={tour.cover_image_url || placeholderImage(400, 300, tour.title)}
+            alt={tour.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 45vw, 200px"
+          />
+        </div>
+        <div className="p-2.5">
+          <p className="text-xs font-medium text-muted-foreground truncate">{tour.city || tour.country}</p>
+          <p className="text-sm font-bold text-primary">${tour.price.toLocaleString()}</p>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/** Hot Tour Card — price focused */
+function HotTourCard({ tour }: { tour: Tour }) {
+  return (
+    <Link href={`/tours/${tour.slug}`} className="block">
+      <div className="rounded-2xl overflow-hidden bg-surface shadow-ambient">
+        <div className="relative aspect-[4/3]">
+          <Image
+            src={tour.cover_image_url || placeholderImage(400, 300, tour.title)}
+            alt={tour.title}
+            fill
+            className="object-cover"
+            sizes="(max-width: 768px) 45vw, 200px"
+          />
+          {/* Price overlay */}
+          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
+            <p className="text-white text-lg font-bold">${tour.price.toLocaleString()}</p>
+          </div>
+        </div>
+        <div className="p-2.5">
+          <p className="text-xs font-medium text-muted-foreground truncate">{tour.city || tour.country}</p>
+          {tour.old_price && (
+            <p className="text-xs text-muted-foreground line-through">${tour.old_price.toLocaleString()}</p>
+          )}
+        </div>
+      </div>
+    </Link>
   );
 }
 

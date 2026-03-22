@@ -4,60 +4,44 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
-
-export interface Destination {
-  name: string;
-  countryKey: 'uzbekistan' | 'turkey' | 'uae';
-  image: string;
-}
-
-const DEFAULT_DESTINATIONS: Destination[] = [
-  { name: 'Buxoro', countryKey: 'uzbekistan', image: placeholderImage(200, 200, 'Buxoro') },
-  { name: 'Xiva', countryKey: 'uzbekistan', image: placeholderImage(200, 200, 'Xiva') },
-  { name: 'Toshkent', countryKey: 'uzbekistan', image: placeholderImage(200, 200, 'Toshkent') },
-  { name: 'Samarqand', countryKey: 'uzbekistan', image: placeholderImage(200, 200, 'Samarqand') },
-  { name: 'Shahrisabz', countryKey: 'uzbekistan', image: placeholderImage(200, 200, 'Shahrisabz') },
-];
+import type { Tour } from '@/types';
 
 interface PopularDestinationsProps {
-  destinations?: Destination[];
+  tours?: Tour[];
 }
 
-export function PopularDestinations({ destinations }: PopularDestinationsProps) {
+export function PopularDestinations({ tours }: PopularDestinationsProps) {
   const { t } = useTranslation();
 
-  const items = destinations && destinations.length > 0 ? destinations : DEFAULT_DESTINATIONS;
+  if (!tours || tours.length === 0) return null;
 
   return (
     <section>
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-foreground">{t.home.popularDestinations}</h3>
-        <Link href="/tours" className="text-primary text-sm font-semibold">
+        <Link href="/tours?sortBy=popular" className="text-primary text-sm font-semibold">
           {t.home.seeAll}
         </Link>
       </div>
       <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6">
-        {items.map((dest) => {
-          const countryName = t.destinations[dest.countryKey];
-          return (
-            <Link
-              key={dest.name}
-              href={`/tours?country=${encodeURIComponent(countryName)}`}
-              className="shrink-0"
-            >
-              <div className="w-28 h-28 rounded-[1.5rem] overflow-hidden mb-2 bg-surface-container-low shadow-ambient">
-                <Image
-                  src={dest.image}
-                  alt={dest.name}
-                  width={112}
-                  height={112}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <p className="font-semibold text-sm text-foreground text-center">{dest.name}</p>
-            </Link>
-          );
-        })}
+        {tours.map((tour) => (
+          <Link
+            key={tour.id}
+            href={`/tours/${tour.slug}`}
+            className="shrink-0"
+          >
+            <div className="w-28 h-28 rounded-[1.5rem] overflow-hidden mb-2 bg-surface-container-low shadow-ambient">
+              <Image
+                src={tour.cover_image_url || placeholderImage(200, 200, tour.title)}
+                alt={tour.title}
+                width={112}
+                height={112}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <p className="font-semibold text-sm text-foreground text-center truncate w-28">{tour.city || tour.country}</p>
+          </Link>
+        ))}
       </div>
     </section>
   );

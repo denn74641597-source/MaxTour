@@ -9,6 +9,26 @@ export type TransportType = 'flight' | 'bus' | 'train' | 'self' | 'mixed';
 export type TourType = 'international' | 'domestic';
 export type DomesticTourCategory = 'excursion' | 'nature' | 'historical' | 'pilgrimage' | 'recreation' | 'adventure';
 export type Currency = 'USD' | 'UZS' | 'EUR';
+export type TourCategoryTag =
+  | 'family'
+  | 'all_inclusive'
+  | 'passive'
+  | 'active'
+  | 'honeymoon'
+  | 'umrah'
+  | 'shopping'
+  | 'group'
+  | 'vip'
+  | 'sanatorium'
+  | 'medical'
+  | 'aquapark'
+  | 'visa_free'
+  | 'cruise'
+  | 'combo'
+  | 'beach'
+  | 'nature'
+  | 'historical'
+  | 'megapolis';
 export type PlacementType = 'home_featured' | 'category_top' | 'search_boost';
 
 export interface Profile {
@@ -112,6 +132,9 @@ export interface Tour {
   is_featured: boolean;
   cover_image_url: string | null;
   operator_telegram_username: string | null;
+  operator_phone: string | null;
+  category: TourCategoryTag | null;
+  view_count: number;
   tour_type: TourType;
   domestic_category: DomesticTourCategory | null;
   region: string | null;
@@ -234,15 +257,25 @@ export interface TourFilters {
 
 // Tour category tags for filter chips
 export const TOUR_CATEGORIES = [
-  'Beach',
-  'Umrah',
-  'Family',
-  'Honeymoon',
-  'Budget',
-  'Premium',
-  'Visa-free',
-  'Adventure',
-  'Cultural',
+  'family',
+  'all_inclusive',
+  'passive',
+  'active',
+  'honeymoon',
+  'umrah',
+  'shopping',
+  'group',
+  'vip',
+  'sanatorium',
+  'medical',
+  'aquapark',
+  'visa_free',
+  'cruise',
+  'combo',
+  'beach',
+  'nature',
+  'historical',
+  'megapolis',
 ] as const;
 
 export type TourCategory = (typeof TOUR_CATEGORIES)[number];

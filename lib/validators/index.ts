@@ -74,6 +74,9 @@ export const tourSchema = z.object({
   visa_required: z.boolean().default(false),
   included_services: z.array(z.string()).default([]),
   operator_telegram_username: z.string().optional().or(z.literal('')),
+  operator_phone: z.string().optional().or(z.literal('')),
+  category: z.string().optional().or(z.literal('')),
+  additional_info: z.string().max(2000).optional().or(z.literal('')),
   // Domestic fields
   domestic_category: z.enum(['excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure']).optional(),
   region: z.string().optional(),

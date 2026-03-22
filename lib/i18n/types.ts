@@ -64,11 +64,13 @@ export interface Translations {
     searchPlaceholder: string;
     verifiedAgencies: string;
     hotDeals: string;
+    hotTours: string;
     popularDestinations: string;
     seeAll: string;
     priceLabel: string;
     topRated: string;
     viewAgency: string;
+    categories: string;
   };
   search: {
     title: string;
@@ -96,6 +98,8 @@ export interface Translations {
     departure: string;
     leaveRequest: string;
     contactTelegram: string;
+    contact: string;
+    operatorPhone: string;
     noToursFound: string;
     noToursHint: string;
     allDestinations: string;
@@ -162,6 +166,27 @@ export interface Translations {
     submittedHint: string;
   };
   categories: Record<string, string>;
+  tourCategories: {
+    family: string;
+    all_inclusive: string;
+    passive: string;
+    active: string;
+    honeymoon: string;
+    umrah: string;
+    shopping: string;
+    group: string;
+    vip: string;
+    sanatorium: string;
+    medical: string;
+    aquapark: string;
+    visa_free: string;
+    cruise: string;
+    combo: string;
+    beach: string;
+    nature: string;
+    historical: string;
+    megapolis: string;
+  };
   empty: {
     nothingFound: string;
     noItems: string;
@@ -301,6 +326,17 @@ export interface Translations {
     operatorTelegram: string;
     operatorTelegramPlaceholder: string;
     operatorTelegramHint: string;
+    operatorPhone: string;
+    operatorPhonePlaceholder: string;
+    operatorPhoneHint: string;
+    tourCategory: string;
+    tourCategoryHint: string;
+    additionalInfo: string;
+    additionalInfoPlaceholder: string;
+    coverImageHint: string;
+    previewAndPublish: string;
+    accommodation: string;
+    dates: string;
     tourLimitLabel: string;
     tourLimitReached: string;
     tourLimitReachedTitle: string;
@@ -533,5 +569,8 @@ export interface Translations {
     uzbekistan: string;
     turkey: string;
     uae: string;
+  };
+  dateFormat: {
+    placeholder: string;
   };
 }
