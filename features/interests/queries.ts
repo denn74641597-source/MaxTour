@@ -17,7 +17,7 @@ export async function getInterestsByAgency(agencyId: string): Promise<TourIntere
   return data ?? [];
 }
 
-/** Get analytics data: per-tour interest, call, and favorite counts */
+/** Get analytics data: per-tour interest, call, and telegram counts */
 export async function getAgencyAnalytics(agencyId: string) {
   const supabase = await createAdminClient();
 
@@ -33,32 +33,29 @@ export async function getAgencyAnalytics(agencyId: string) {
 
   const tourIds = tours.map((t) => t.id);
 
-  // Count interests per tour
-  const { data: interestCounts } = await supabase
-    .from('tour_interests')
-    .select('tour_id')
-    .eq('agency_id', agencyId);
-
-  // Count calls per tour
-  const { data: callCounts } = await supabase
-    .from('call_tracking')
-    .select('tour_id')
-    .eq('agency_id', agencyId);
-
-  // Count favorites per tour
+  // Count favorites per tour (= qiziqish / interest)
   const { data: favCounts } = await supabase
     .from('favorites')
     .select('tour_id')
     .in('tour_id', tourIds);
 
+  // Count call clicks per tour
+  const { data: callCounts } = await supabase
+    .from('call_tracking')
+    .select('tour_id, type')
+    .eq('agency_id', agencyId);
+
   // Count per tour
   const countByTour = (items: { tour_id: string | null }[] | null, tourId: string) =>
     items?.filter((i) => i.tour_id === tourId).length ?? 0;
 
+  const countByTourAndType = (items: { tour_id: string | null; type?: string }[] | null, tourId: string, type: string) =>
+    items?.filter((i) => i.tour_id === tourId && (i as any).type === type).length ?? 0;
+
   return tours.map((tour) => ({
     tour,
-    interests: countByTour(interestCounts, tour.id),
-    calls: countByTour(callCounts, tour.id),
-    saved: countByTour(favCounts, tour.id),
+    interests: countByTour(favCounts, tour.id),
+    calls: countByTourAndType(callCounts, tour.id, 'call'),
+    telegram: countByTourAndType(callCounts, tour.id, 'telegram'),
   }));
 }

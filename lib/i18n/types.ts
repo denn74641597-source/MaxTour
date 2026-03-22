@@ -59,6 +59,7 @@ export interface Translations {
     subscriptions: string;
     adminPanel: string;
     agencyPanel: string;
+    home: string;
   };
   home: {
     searchPlaceholder: string;
@@ -520,7 +521,7 @@ export interface Translations {
     subtitle: string;
     interests: string;
     calls: string;
-    saved: string;
+    telegram: string;
     tourName: string;
     total: string;
     noData: string;

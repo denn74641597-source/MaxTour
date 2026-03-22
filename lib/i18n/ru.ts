@@ -64,6 +64,7 @@ export const ru: Translations = {
     subscriptions: 'Подписки',
     adminPanel: 'Админ панель',
     agencyPanel: 'Панель агентства',
+    home: 'Главная',
   },
 
   // ─── Home Page ───
@@ -581,11 +582,11 @@ export const ru: Translations = {
 
   // ─── Analytics ───
   analytics: {
-    title: 'Аналитика',
+    title: 'Статистика',
     subtitle: 'Статистика по турам',
     interests: 'Интерес',
     calls: 'Звонки',
-    saved: 'Сохранённые',
+    telegram: 'Telegram',
     tourName: 'Название тура',
     total: 'Всего',
     noData: 'Нет данных',

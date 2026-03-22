@@ -90,7 +90,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   const [newBringItem, setNewBringItem] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<'pending' | 'draft'>('pending');
-  const [selectedCategory, setSelectedCategory] = useState<string>(initialData?.category ?? '');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(
+    initialData?.category ? initialData.category.split(',').filter(Boolean) : []
+  );
   const [additionalInfo, setAdditionalInfo] = useState<string>(initialData?.additional_info ?? '');
 
   const isEditing = !!tourId;
@@ -215,7 +217,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       excluded_services: [],
       operator_telegram_username: data.operator_telegram_username || null,
       operator_phone: data.operator_phone || null,
-      category: selectedCategory || null,
+      category: selectedCategories.length > 0 ? selectedCategories.join(',') : null,
       additional_info: additionalInfo || null,
       // Domestic fields
       domestic_category: tourType === 'domestic' ? (data.domestic_category || null) : null,
@@ -373,21 +375,38 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               <Label className="text-sm font-medium text-foreground">{t.agencyTours.tourCategory}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.tourCategoryHint}</p>
               <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-muted bg-surface-container-low">
-                {TOUR_CATEGORIES.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setSelectedCategory(selectedCategory === cat ? '' : cat)}
-                    className={`w-full text-left px-3 py-2.5 text-sm transition-colors border-b border-muted last:border-b-0 ${
-                      selectedCategory === cat
-                        ? 'bg-primary/10 text-primary font-semibold'
-                        : 'text-foreground hover:bg-primary/5'
-                    }`}
-                  >
-                    {t.tourCategories[cat as keyof typeof t.tourCategories]}
-                  </button>
-                ))}
+                {TOUR_CATEGORIES.map((cat) => {
+                  const isSelected = selectedCategories.includes(cat);
+                  const isDisabled = !isSelected && selectedCategories.length >= 3;
+                  return (
+                    <button
+                      key={cat}
+                      type="button"
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedCategories(prev => prev.filter(c => c !== cat));
+                        } else if (selectedCategories.length < 3) {
+                          setSelectedCategories(prev => [...prev, cat]);
+                        }
+                      }}
+                      disabled={isDisabled}
+                      className={`w-full text-left px-3 py-2.5 text-sm transition-colors border-b border-muted last:border-b-0 ${
+                        isSelected
+                          ? 'bg-primary/10 text-primary font-semibold'
+                          : isDisabled
+                            ? 'text-muted-foreground/50 cursor-not-allowed'
+                            : 'text-foreground hover:bg-primary/5'
+                      }`}
+                    >
+                      {t.tourCategories[cat as keyof typeof t.tourCategories]}
+                      {isSelected && ' ✓'}
+                    </button>
+                  );
+                })}
               </div>
+              {selectedCategories.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">{selectedCategories.length}/3</p>
+              )}
             </div>
 
             {/* Full Description - moved here from included services */}

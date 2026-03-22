@@ -64,6 +64,7 @@ export const uz: Translations = {
     subscriptions: 'Obunalar',
     adminPanel: 'Admin panel',
     agencyPanel: 'Agentlik paneli',
+    home: 'Bosh sahifa',
   },
 
   // ─── Home Page ───
@@ -581,11 +582,11 @@ export const uz: Translations = {
 
   // ─── Analytics ───
   analytics: {
-    title: 'Analitika',
+    title: 'Statistika',
     subtitle: 'Turlar bo\'yicha statistika',
     interests: 'Qiziqish',
     calls: 'Qo\'ng\'iroqlar',
-    saved: 'Saqlanganlar',
+    telegram: 'Telegram',
     tourName: 'Tur nomi',
     total: 'Jami',
     noData: 'Ma\'lumot yo\'q',

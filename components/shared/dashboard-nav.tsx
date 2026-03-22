@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Building2, MapPin, Users, CreditCard, ChevronLeft,
-  Menu, MessageSquareText, UserCheck, BarChart3
+  LayoutDashboard, Building2, MapPin, Users, CreditCard,
+  Menu, MessageSquareText, UserCheck, BarChart3, Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -58,12 +58,11 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
       {/* Desktop sidebar */}
       <aside className="hidden md:block md:border-r md:w-56 md:min-h-screen bg-muted/30">
         <div className="p-4 flex items-center gap-2">
-          <Link href="/" className="text-muted-foreground hover:text-foreground">
-            <ChevronLeft className="h-4 w-4" />
+          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5">
+            <Home className="h-4 w-4" />
+            {t.nav.home}
           </Link>
-          <h2 className="font-semibold text-sm flex-1">
-            {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
-          </h2>
+          <div className="flex-1" />
           <LanguageSwitcher variant="dropdown" />
         </div>
         <nav className="flex flex-col gap-1 px-2 pb-4">
@@ -92,12 +91,10 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
       <div className="md:hidden sticky top-0 z-50 glass-nav">
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
-            <Link href="/" className="text-muted-foreground hover:text-foreground">
-              <ChevronLeft className="h-4 w-4" />
+            <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5">
+              <Home className="h-4 w-4" />
+              {t.nav.home}
             </Link>
-            <h2 className="font-semibold text-sm">
-              {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
-            </h2>
           </div>
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger className="p-2 -mr-2 rounded-xl hover:bg-muted transition-colors">

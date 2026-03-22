@@ -2,13 +2,13 @@
 
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from '@/lib/i18n';
-import { BarChart3, Heart, Phone, Bookmark } from 'lucide-react';
+import { BarChart3, Heart, Phone, Send } from 'lucide-react';
 
 interface TourAnalyticsRow {
   tour: { id: string; title: string; slug: string; country: string; city: string | null };
   interests: number;
   calls: number;
-  saved: number;
+  telegram: number;
 }
 
 interface AnalyticsContentProps {
@@ -22,9 +22,9 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
     (acc, row) => ({
       interests: acc.interests + row.interests,
       calls: acc.calls + row.calls,
-      saved: acc.saved + row.saved,
+      telegram: acc.telegram + row.telegram,
     }),
-    { interests: 0, calls: 0, saved: 0 }
+    { interests: 0, calls: 0, telegram: 0 }
   );
 
   return (
@@ -48,10 +48,10 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
               <p className="text-2xl font-bold text-emerald-600">{totals.calls}</p>
               <p className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider">{t.analytics.calls}</p>
             </div>
-            <div className="bg-violet-50 rounded-2xl p-4 text-center border border-violet-100">
-              <Bookmark className="h-5 w-5 text-violet-500 mx-auto mb-1" />
-              <p className="text-2xl font-bold text-violet-600">{totals.saved}</p>
-              <p className="text-[10px] text-violet-400 font-medium uppercase tracking-wider">{t.analytics.saved}</p>
+            <div className="bg-blue-50 rounded-2xl p-4 text-center border border-blue-100">
+              <Send className="h-5 w-5 text-blue-500 mx-auto mb-1" />
+              <p className="text-2xl font-bold text-blue-600">{totals.telegram}</p>
+              <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wider">{t.analytics.telegram}</p>
             </div>
           </div>
 
@@ -61,7 +61,7 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
               <span>{t.analytics.tourName}</span>
               <span className="text-center w-12">{t.analytics.interests}</span>
               <span className="text-center w-12">{t.analytics.calls}</span>
-              <span className="text-center w-12">{t.analytics.saved}</span>
+              <span className="text-center w-12">{t.analytics.telegram}</span>
             </div>
             {analytics.map((row) => (
               <div
@@ -74,7 +74,7 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
                 </div>
                 <span className="text-center w-12 text-sm font-bold text-pink-500">{row.interests}</span>
                 <span className="text-center w-12 text-sm font-bold text-emerald-500">{row.calls}</span>
-                <span className="text-center w-12 text-sm font-bold text-violet-500">{row.saved}</span>
+                <span className="text-center w-12 text-sm font-bold text-blue-500">{row.telegram}</span>
               </div>
             ))}
           </div>

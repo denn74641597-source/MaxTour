@@ -17,6 +17,7 @@ import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { LeadForm } from '@/components/shared/lead-form';
 import { TourCard } from '@/components/shared/tour-card';
+import { createClient } from '@/lib/supabase/client';
 import type { Tour, TourHotel } from '@/types';
 
 interface TourDetailContentProps {
@@ -60,6 +61,17 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       : null;
 
   const operatorPhone = tour.operator_phone || agency?.phone || null;
+
+  function trackClick(type: 'call' | 'telegram') {
+    try {
+      const supabase = createClient();
+      supabase.from('call_tracking').insert({
+        tour_id: tour.id,
+        agency_id: tour.agency_id,
+        type,
+      }).then();
+    } catch {}
+  }
 
   return (
     <div className="pb-4 bg-background">
@@ -153,19 +165,6 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           </div>
         )}
       </div>
-
-      {/* Airline */}
-      {tour.airline && (
-        <div className="px-3 mt-3">
-          <div className="bg-blue-50 rounded-xl px-3 py-2.5 flex items-center gap-2.5 border border-blue-100">
-            <Plane className="h-5 w-5 text-blue-500" />
-            <div>
-              <span className="text-[10px] uppercase tracking-wider text-blue-400">{t.tours.airline}</span>
-              <p className="text-sm font-bold text-foreground">{tour.airline}</p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Agency Profile Card */}
       {agency && (
@@ -434,6 +433,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                 href={telegramLink}
                 target="_blank"
                 rel="noopener noreferrer"
+                onClick={() => trackClick('telegram')}
                 className="bg-muted text-foreground font-bold py-3 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-muted/80 transition-all text-sm shrink-0"
               >
                 <Send className="h-4 w-4" />
@@ -443,7 +443,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           </div>
           {/* Aloqa button */}
           <button
-            onClick={() => setShowContact(!showContact)}
+            onClick={() => { setShowContact(!showContact); if (!showContact) trackClick('call'); }}
             className="w-full bg-surface border border-muted text-foreground font-bold py-2.5 rounded-xl text-center hover:bg-muted/50 transition-colors text-sm flex items-center justify-center gap-2"
           >
             <Phone className="h-4 w-4" />
