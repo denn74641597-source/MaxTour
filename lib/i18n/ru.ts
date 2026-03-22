@@ -70,8 +70,12 @@ export const ru: Translations = {
   home: {
     searchPlaceholder: 'Куда хотите поехать?',
     verifiedAgencies: 'Проверенные агентства',
-    hotDeals: 'Лучшие предложения',
-    popularDestinations: 'Популярные направления',
+    hotDeals: 'Hot Deals',
+    popularDestinations: 'Популярные места',
+    seeAll: 'Все',
+    priceLabel: 'ЦЕНА',
+    topRated: 'Лучшие по рейтингу',
+    viewAgency: 'СМОТРЕТЬ',
   },
 
   // ─── Search ───

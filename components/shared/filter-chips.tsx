@@ -3,22 +3,6 @@
 import { cn } from '@/lib/utils';
 import { TOUR_CATEGORIES } from '@/types';
 import { useTranslation } from '@/lib/i18n';
-import {
-  Umbrella, HeartHandshake, Users, Heart, Wallet,
-  Crown, ShieldCheck, Mountain, Landmark,
-} from 'lucide-react';
-
-const CATEGORY_ICONS: Record<string, React.ElementType> = {
-  Beach: Umbrella,
-  Umrah: Landmark,
-  Family: Users,
-  Honeymoon: Heart,
-  Budget: Wallet,
-  Premium: Crown,
-  'Visa-free': ShieldCheck,
-  Adventure: Mountain,
-  Cultural: Landmark,
-};
 
 interface FilterChipsProps {
   selected?: string;
@@ -29,9 +13,8 @@ export function FilterChips({ selected, onSelect }: FilterChipsProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="flex gap-3 overflow-x-auto no-scrollbar py-1">
+    <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1">
       {TOUR_CATEGORIES.map((cat) => {
-        const Icon = CATEGORY_ICONS[cat] ?? HeartHandshake;
         const isActive = selected === cat;
         const label = t.categories[cat] ?? cat;
         return (
@@ -39,13 +22,12 @@ export function FilterChips({ selected, onSelect }: FilterChipsProps) {
             key={cat}
             onClick={() => onSelect(isActive ? undefined : cat)}
             className={cn(
-              'flex h-10 shrink-0 items-center justify-center gap-x-2 rounded-full px-5 text-sm font-medium transition-colors',
+              'flex h-10 shrink-0 items-center justify-center rounded-full px-5 text-sm font-medium transition-all',
               isActive
-                ? 'bg-primary text-white font-semibold'
-                : 'bg-white text-slate-700 border border-slate-100 hover:border-primary/30'
+                ? 'bg-primary text-white font-semibold shadow-sm'
+                : 'bg-white text-slate-700 border border-slate-200 hover:border-primary/30 hover:bg-primary/5'
             )}
           >
-            <Icon className="h-4 w-4" />
             {label}
           </button>
         );

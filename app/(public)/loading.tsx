@@ -3,34 +3,61 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function Loading() {
   return (
     <div className="px-4 py-4 space-y-6">
-      {/* Hero skeleton */}
-      <Skeleton className="w-full h-36 rounded-xl" />
+      {/* Search bar skeleton */}
+      <Skeleton className="w-full h-14 rounded-2xl" />
 
-      {/* Section header */}
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-40" />
-        <div className="flex gap-3 overflow-hidden">
+      {/* Filter chips skeleton */}
+      <div className="flex gap-3 overflow-hidden">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-10 w-28 rounded-full shrink-0" />
+        ))}
+      </div>
+
+      {/* Hero banner skeleton */}
+      <Skeleton className="w-full aspect-[16/10] rounded-2xl" />
+
+      {/* Popular destinations skeleton */}
+      <div className="space-y-3">
+        <div className="flex justify-between">
+          <Skeleton className="h-5 w-36" />
+          <Skeleton className="h-5 w-16" />
+        </div>
+        <div className="flex gap-4 overflow-hidden">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="min-w-[140px] h-20 rounded-lg" />
+            <div key={i} className="shrink-0">
+              <Skeleton className="w-28 h-28 rounded-2xl" />
+              <Skeleton className="h-4 w-16 mx-auto mt-2" />
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Tour cards */}
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-32" />
-        <div className="grid grid-cols-2 gap-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="rounded-lg border overflow-hidden">
-              <Skeleton className="aspect-[4/3] w-full" />
-              <div className="p-3 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/2" />
-                <Skeleton className="h-4 w-16" />
-              </div>
+      {/* Agencies skeleton */}
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-48" />
+        <div className="flex gap-5 overflow-hidden">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-1.5 shrink-0">
+              <Skeleton className="w-16 h-16 rounded-full" />
+              <Skeleton className="h-3 w-14" />
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Hot deals skeleton */}
+      <div className="space-y-3">
+        <Skeleton className="h-5 w-32" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-3">
+            <Skeleton className="w-24 h-24 rounded-xl shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+              <Skeleton className="h-5 w-24" />
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -65,6 +65,10 @@ export interface Translations {
     verifiedAgencies: string;
     hotDeals: string;
     popularDestinations: string;
+    seeAll: string;
+    priceLabel: string;
+    topRated: string;
+    viewAgency: string;
   };
   search: {
     title: string;

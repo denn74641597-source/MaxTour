@@ -68,10 +68,14 @@ export const uz: Translations = {
 
   // ─── Home Page ───
   home: {
-    searchPlaceholder: 'Qayerga sayohat qilmoqchisiz?',
+    searchPlaceholder: 'Qayerga bormoqchisiz?',
     verifiedAgencies: 'Tasdiqlangan agentliklar',
-    hotDeals: 'Eng yaxshi takliflar',
-    popularDestinations: 'Mashhur manzillar',
+    hotDeals: 'Hot Deals',
+    popularDestinations: 'Mashhur joylar',
+    seeAll: 'Hammasi',
+    priceLabel: 'NARXI',
+    topRated: 'Eng yaxshi baholanganlar',
+    viewAgency: 'KO\'RISH',
   },
 
   // ─── Search ───

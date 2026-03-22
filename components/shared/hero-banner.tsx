@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowRight } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { formatPrice, placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
@@ -14,12 +14,16 @@ interface HeroBannerProps {
 export function HeroBanner({ tour }: HeroBannerProps) {
   const { t } = useTranslation();
 
+  const locationLabel = tour.tour_type === 'domestic'
+    ? (tour.region || 'O\'zbekiston')
+    : (tour.city || tour.country);
+
   return (
     <Link href={`/tours/${tour.slug}`}>
       <div className="relative overflow-hidden rounded-2xl bg-slate-900 group">
-        <div className="aspect-[16/9] w-full relative">
+        <div className="aspect-[16/10] w-full relative">
           <Image
-            src={tour.cover_image_url || placeholderImage(800, 450, tour.title)}
+            src={tour.cover_image_url || placeholderImage(800, 500, tour.title)}
             alt={tour.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
@@ -27,26 +31,34 @@ export function HeroBanner({ tour }: HeroBannerProps) {
             priority
           />
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+        </div>
+
+        {/* Location badge */}
+        <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/40 backdrop-blur-sm text-white px-3 py-1.5 rounded-full">
+          <MapPin className="h-3.5 w-3.5" />
+          <span className="text-xs font-semibold uppercase tracking-wide">{locationLabel}</span>
         </div>
 
         {/* Content */}
-        <div className="absolute bottom-0 left-0 p-6">
-          <span className="inline-block bg-primary px-3 py-1 rounded-full text-[10px] font-bold text-white uppercase tracking-widest mb-2">
-            {t.common.featured}
-          </span>
-          <h2 className="text-2xl font-bold text-white leading-tight">
+        <div className="absolute bottom-0 left-0 right-0 p-5">
+          <h2 className="text-xl font-bold text-white leading-tight mb-3">
             {tour.title}
           </h2>
-          <p className="text-slate-300 text-sm mt-1">
-            {formatPrice(tour.price, tour.currency)} {t.common.perPerson}
-          </p>
+          <div className="flex items-end justify-between">
+            <div>
+              <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">
+                {t.home.priceLabel}
+              </span>
+              <p className="text-lg font-bold text-white">
+                {formatPrice(tour.price, tour.currency)} <span className="text-sm font-normal text-white/70">{t.common.from}</span>
+              </p>
+            </div>
+            <span className="bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-lg">
+              {t.common.viewDetails}
+            </span>
+          </div>
         </div>
-
-        {/* Arrow button */}
-        <button className="absolute bottom-6 right-6 bg-white text-primary rounded-full p-2 shadow-lg hover:bg-primary hover:text-white transition-colors">
-          <ArrowRight className="h-5 w-5" />
-        </button>
       </div>
     </Link>
   );

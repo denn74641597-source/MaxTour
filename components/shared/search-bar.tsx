@@ -1,6 +1,6 @@
 'use client';
 
-import { Search } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
@@ -34,7 +34,12 @@ export function SearchBar({
 
   return (
     <form onSubmit={handleSubmit} className={className}>
-      <label className="relative group">
+      <div className={cn(
+        'relative group flex items-center',
+        variant === 'hero'
+          ? 'bg-white rounded-2xl shadow-sm border border-slate-100'
+          : 'bg-slate-100 rounded-xl'
+      )}>
         <div className={cn(
           'absolute inset-y-0 left-3 flex items-center pointer-events-none',
           variant === 'hero' && 'left-4'
@@ -49,14 +54,23 @@ export function SearchBar({
           onChange={(e) => setValue(e.target.value)}
           placeholder={displayPlaceholder}
           className={cn(
-            'w-full border-none rounded-xl focus:ring-2 focus:ring-primary/20 placeholder:text-slate-400 text-slate-900 transition-all outline-none',
+            'w-full border-none bg-transparent rounded-xl focus:ring-0 placeholder:text-slate-400 text-slate-900 transition-all outline-none',
             variant === 'hero'
-              ? 'h-14 pl-12 pr-4 bg-white shadow-sm'
-              : 'py-2.5 pl-10 pr-4 bg-slate-100 text-sm'
+              ? 'h-14 pl-12 pr-14 text-[15px]'
+              : 'py-2.5 pl-10 pr-4 text-sm'
           )}
           type="text"
         />
-      </label>
+        {variant === 'hero' && (
+          <button
+            type="button"
+            onClick={() => router.push('/tours')}
+            className="absolute right-3 inset-y-0 flex items-center"
+          >
+            <SlidersHorizontal className="h-5 w-5 text-slate-400 hover:text-primary transition-colors" />
+          </button>
+        )}
+      </div>
     </form>
   );
 }

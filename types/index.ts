@@ -40,6 +40,8 @@ export interface Agency {
   is_verified: boolean;
   is_approved: boolean;
   profile_views: number;
+  avg_rating: number | null;
+  review_count: number;
   created_at: string;
   updated_at: string;
 }
