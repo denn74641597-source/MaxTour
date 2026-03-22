@@ -13,7 +13,7 @@ export async function compressImage(
     quality?: number;
   } = {}
 ): Promise<File> {
-  const { maxWidth = 1600, maxHeight = 1200, quality = 0.82 } = options;
+  const { maxWidth = 2400, maxHeight = 1600, quality = 0.85 } = options;
 
   // Only compress image types
   if (!file.type.startsWith('image/')) return file;

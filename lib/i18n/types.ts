@@ -311,6 +311,7 @@ export interface Translations {
     extraChargeAmount: string;
     extraChargesHint: string;
     includedServices: string;
+    includedServicesHint: string;
     addIncludedService: string;
     excludedServices: string;
     addExcludedService: string;

@@ -647,7 +647,10 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               )}
               <div className="flex gap-2 mt-2">
                 <Input placeholder={t.agencyTours.extraChargeName} value={newChargeName} onChange={(e) => setNewChargeName(e.target.value)} className="flex-1 rounded-xl border-muted bg-surface-container-low h-11" />
-                <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newChargeAmount} onChange={(e) => setNewChargeAmount(e.target.value)} className="w-24 rounded-xl border-muted bg-surface-container-low h-11" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExtraCharge(); } }} />
+                <div className="relative w-28">
+                  <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newChargeAmount} onChange={(e) => setNewChargeAmount(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11 pr-12" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExtraCharge(); } }} />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
+                </div>
                 <Button type="button" variant="outline" size="icon" onClick={addExtraCharge} className="rounded-xl h-11 w-11 shrink-0">
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -665,6 +668,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             {/* Included Services */}
             <div>
               <Label className="text-sm font-medium text-foreground">{t.agencyTours.includedServices}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.includedServicesHint}</p>
               {includedServices.length > 0 && (
                 <div className="space-y-1 mt-2">
                   {includedServices.map((s, i) => (
@@ -684,18 +688,6 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-            </div>
-
-            {/* Additional Info under included services */}
-            <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.additionalInfo}</Label>
-              <Textarea
-                placeholder={t.agencyTours.additionalInfoPlaceholder}
-                rows={3}
-                value={additionalInfo}
-                onChange={(e) => setAdditionalInfo(e.target.value)}
-                className="mt-1.5 rounded-xl border-muted bg-surface-container-low"
-              />
             </div>
 
             {/* Operator Info */}
