@@ -1,27 +1,38 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
-  LayoutDashboard, Building2, MapPin, Users, CreditCard, ChevronLeft
+  LayoutDashboard, Building2, MapPin, Users, CreditCard, ChevronLeft,
+  Menu, MessageSquareText, UserCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageSwitcher } from './language-switcher';
+import {
+  Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose,
+} from '@/components/ui/sheet';
 
 export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' }) {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
 
-  const agencyNav = [
+  const agencyMobileNav = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/leads', label: t.nav.leads, icon: Users },
+    { href: '/agency/leads', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/requests', label: t.nav.requests, icon: MessageSquareText },
+    { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
 
   const agencyNavFull = [
-    ...agencyNav.slice(0, 3),
+    { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
+    { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
+    { href: '/agency/leads', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/requests', label: t.nav.requests, icon: MessageSquareText },
     { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
@@ -35,7 +46,10 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
   ];
 
   const sidebarItems = type === 'admin' ? adminItems : agencyNavFull;
-  const bottomItems = type === 'admin' ? adminItems.slice(0, 4) : agencyNav;
+  const mobileItems = type === 'admin' ? adminItems : agencyMobileNav;
+
+  const isItemActive = (href: string) =>
+    href === pathname || (href !== '/agency' && href !== '/admin' && pathname.startsWith(href));
 
   return (
     <>
@@ -52,7 +66,7 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
         </div>
         <nav className="flex flex-col gap-1 px-2 pb-4">
           {sidebarItems.map(({ href, label, icon: Icon }) => {
-            const isActive = href === pathname || (href !== '/agency' && href !== '/admin' && pathname.startsWith(href));
+            const isActive = isItemActive(href);
             return (
               <Link
                 key={href}
@@ -72,28 +86,55 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
         </nav>
       </aside>
 
-      {/* Mobile bottom tab bar */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-slate-100 safe-area-bottom">
-        <nav className="flex items-center justify-around px-2 py-2">
-          {bottomItems.map(({ href, label, icon: Icon }) => {
-            const isActive = href === pathname || (href !== '/agency' && href !== '/admin' && pathname.startsWith(href));
-            return (
-              <Link
-                key={href}
-                href={href}
-                className={cn(
-                  'flex flex-col items-center gap-0.5 px-3 py-1 rounded-lg text-[10px] font-medium transition-colors',
-                  isActive
-                    ? 'text-indigo-600'
-                    : 'text-slate-400'
-                )}
-              >
-                <Icon className={cn('h-5 w-5', isActive && 'text-indigo-600')} />
-                <span>{label}</span>
-              </Link>
-            );
-          })}
-        </nav>
+      {/* Mobile top header with hamburger menu */}
+      <div className="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
+        <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <Link href="/" className="text-muted-foreground hover:text-foreground">
+              <ChevronLeft className="h-4 w-4" />
+            </Link>
+            <h2 className="font-semibold text-sm">
+              {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
+            </h2>
+          </div>
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger className="p-2 -mr-2 rounded-md hover:bg-slate-100 transition-colors">
+              <Menu className="h-5 w-5 text-slate-700" />
+            </SheetTrigger>
+            <SheetContent side="right" className="w-72 p-0">
+              <SheetHeader className="border-b border-slate-100 px-4 py-4">
+                <SheetTitle className="text-base font-semibold">
+                  {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
+                </SheetTitle>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 p-3">
+                {mobileItems.map(({ href, label, icon: Icon }) => {
+                  const isActive = isItemActive(href);
+                  return (
+                    <SheetClose key={href} render={<span />}>
+                      <Link
+                        href={href}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+                          isActive
+                            ? 'bg-primary/10 text-primary font-medium'
+                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                        )}
+                      >
+                        <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-primary' : 'text-slate-400')} />
+                        <span>{label}</span>
+                      </Link>
+                    </SheetClose>
+                  );
+                })}
+              </nav>
+              <div className="mt-auto border-t border-slate-100 p-4">
+                <LanguageSwitcher variant="dropdown" />
+              </div>
+            </SheetContent>
+          </Sheet>
+        </div>
       </div>
     </>
   );

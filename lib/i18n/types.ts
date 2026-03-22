@@ -50,6 +50,8 @@ export interface Translations {
     dashboard: string;
     tours: string;
     leads: string;
+    interested: string;
+    requests: string;
     subscription: string;
     agencies: string;
     overview: string;

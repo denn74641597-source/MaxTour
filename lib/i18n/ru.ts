@@ -55,6 +55,8 @@ export const ru: Translations = {
     dashboard: 'Панель',
     tours: 'Туры',
     leads: 'Заявки',
+    interested: 'Заинтересованные',
+    requests: 'Запросы',
     subscription: 'Подписка',
     agencies: 'Агентства',
     overview: 'Обзор',

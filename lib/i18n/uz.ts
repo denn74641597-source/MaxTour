@@ -55,6 +55,8 @@ export const uz: Translations = {
     dashboard: 'Boshqaruv',
     tours: 'Turlar',
     leads: 'So\'rovlar',
+    interested: 'Qiziqish bildirganlar',
+    requests: 'So\'rovlar',
     subscription: 'Obuna',
     agencies: 'Agentliklar',
     overview: 'Umumiy',
