@@ -1,12 +1,18 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { Plus_Jakarta_Sans, Manrope } from 'next/font/google';
 import Script from 'next/script';
 import { Toaster } from '@/components/ui/sonner';
 import { LanguageProvider } from '@/lib/i18n';
 import { HapticProvider } from '@/components/shared/haptic-provider';
 import './globals.css';
 
-const inter = Inter({
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-display',
+  subsets: ['latin', 'cyrillic-ext'],
+  weight: ['500', '600', '700', '800'],
+});
+
+const manrope = Manrope({
   variable: '--font-sans',
   subsets: ['latin', 'cyrillic'],
 });
@@ -35,7 +41,7 @@ export default function RootLayout({
   return (
     <html lang="uz">
       <body
-        className={`${inter.variable} font-sans antialiased`}
+        className={`${manrope.variable} ${plusJakartaSans.variable} font-sans antialiased`}
       >
         <LanguageProvider>
           {children}

@@ -81,8 +81,8 @@ export default function FavoritesPage() {
   if (loading) {
     return (
       <div>
-        <div className="sticky top-[56px] z-40 bg-white border-b border-slate-200">
-          <div className="flex px-4">
+        <div className="sticky top-[56px] z-40 glass-nav">
+          <div className="flex px-6">
             {tabs.map((tab) => (
               <button
                 key={tab.key}
@@ -103,8 +103,8 @@ export default function FavoritesPage() {
   return (
     <div>
       {/* Sticky Tabs */}
-      <div className="sticky top-[56px] z-40 bg-white border-b border-slate-200">
-        <div className="flex px-4">
+      <div className="sticky top-[56px] z-40 glass-nav">
+        <div className="flex px-6">
           {tabs.map((tab) => (
             <button
               key={tab.key}
@@ -152,10 +152,10 @@ export default function FavoritesPage() {
                     <h3 className="font-semibold text-sm mb-4">{t.favorites.followAgencies}</h3>
                     <div className="space-y-3">
                       {allAgencies.map((agency) => (
-                        <div key={agency.id} className="flex items-center gap-3 p-3 bg-slate-50 rounded-2xl">
+                        <div key={agency.id} className="flex items-center gap-3 p-3 bg-surface-container-low rounded-[1.5rem]">
                           <Link href={`/agencies/${agency.slug}`} className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="relative shrink-0">
-                              <div className="w-12 h-12 rounded-full overflow-hidden bg-white border border-slate-200">
+                              <div className="w-12 h-12 rounded-full overflow-hidden bg-surface">
                                 <Image
                                   src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
                                   alt={agency.name}
@@ -165,7 +165,7 @@ export default function FavoritesPage() {
                                 />
                               </div>
                               {agency.is_verified && (
-                                <div className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-[1px]">
+                                <div className="absolute -bottom-0.5 -right-0.5 bg-surface rounded-full p-[1px]">
                                   <VerifiedBadge size="sm" />
                                 </div>
                               )}

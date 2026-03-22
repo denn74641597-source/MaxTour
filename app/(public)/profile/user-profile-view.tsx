@@ -106,7 +106,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
           <User className="h-8 w-8 text-primary" />
         </div>
         <div className="flex-1">
-          <h1 className="text-xl font-bold text-slate-900">
+          <h1 className="text-xl font-bold text-foreground">
             {profile.full_name || t.nav.profile}
           </h1>
           <div className="flex items-center gap-2 mt-1">
@@ -195,30 +195,30 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
           ) : (
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm">
-                <User className="h-4 w-4 text-slate-400" />
-                <span className="text-slate-600">{t.auth.fullName}:</span>
-                <span className="font-medium text-slate-900">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">{t.auth.fullName}:</span>
+                <span className="font-medium text-foreground">
                   {profile.full_name || '—'}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <Phone className="h-4 w-4 text-slate-400" />
-                <span className="text-slate-600">{t.auth.phone}:</span>
-                <span className="font-medium text-slate-900">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">{t.auth.phone}:</span>
+                <span className="font-medium text-foreground">
                   {profile.phone || '—'}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <AtSign className="h-4 w-4 text-slate-400" />
-                <span className="text-slate-600">Telegram:</span>
-                <span className="font-medium text-slate-900">
+                <AtSign className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Telegram:</span>
+                <span className="font-medium text-foreground">
                   {profile.telegram_username || '—'}
                 </span>
               </div>
               <div className="flex items-center gap-3 text-sm">
-                <Calendar className="h-4 w-4 text-slate-400" />
-                <span className="text-slate-600">{t.auth.memberSince}:</span>
-                <span className="font-medium text-slate-900">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-muted-foreground">{t.auth.memberSince}:</span>
+                <span className="font-medium text-foreground">
                   {formattedDate}
                 </span>
               </div>
@@ -230,20 +230,20 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
       {/* Role-specific actions */}
       {profile.role === 'agency_manager' && (
         <Link href="/agency">
-          <Card className="cursor-pointer hover:bg-slate-50 transition-colors">
+          <Card className="cursor-pointer hover:bg-muted transition-colors">
             <CardContent className="flex items-center gap-4 p-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
                 <Building2 className="h-5 w-5 text-emerald-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-900">
+                <h3 className="font-semibold text-foreground">
                   {t.auth.goToAgencyDashboard}
                 </h3>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   {t.nav.agencyPanel}
                 </p>
               </div>
-              <ChevronRight className="h-5 w-5 text-slate-400" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </CardContent>
           </Card>
         </Link>
@@ -251,20 +251,20 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
 
       {profile.role === 'admin' && (
         <Link href="/admin">
-          <Card className="cursor-pointer hover:bg-slate-50 transition-colors">
+          <Card className="cursor-pointer hover:bg-muted transition-colors">
             <CardContent className="flex items-center gap-4 p-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
                 <Shield className="h-5 w-5 text-purple-600" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-900">
+                <h3 className="font-semibold text-foreground">
                   {t.auth.goToAdminDashboard}
                 </h3>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-muted-foreground">
                   {t.nav.adminPanel}
                 </p>
               </div>
-              <ChevronRight className="h-5 w-5 text-slate-400" />
+              <ChevronRight className="h-5 w-5 text-muted-foreground" />
             </CardContent>
           </Card>
         </Link>

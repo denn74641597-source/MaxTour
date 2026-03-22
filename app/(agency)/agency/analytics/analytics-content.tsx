@@ -56,8 +56,8 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
           </div>
 
           {/* Per-tour table */}
-          <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
-            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+          <div className="bg-surface rounded-[1.5rem] shadow-ambient overflow-hidden">
+            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 bg-surface-container-low text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               <span>{t.analytics.tourName}</span>
               <span className="text-center w-12">{t.analytics.interests}</span>
               <span className="text-center w-12">{t.analytics.calls}</span>
@@ -66,11 +66,11 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
             {analytics.map((row) => (
               <div
                 key={row.tour.id}
-                className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 border-b border-slate-50 last:border-0 items-center"
+                className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 border-b border-muted last:border-0 items-center"
               >
                 <div className="min-w-0">
-                  <p className="text-sm font-medium text-slate-800 truncate">{row.tour.title}</p>
-                  <p className="text-xs text-slate-400">{row.tour.city ? `${row.tour.city}, ` : ''}{row.tour.country}</p>
+                  <p className="text-sm font-medium text-foreground truncate">{row.tour.title}</p>
+                  <p className="text-xs text-muted-foreground">{row.tour.city ? `${row.tour.city}, ` : ''}{row.tour.country}</p>
                 </div>
                 <span className="text-center w-12 text-sm font-bold text-pink-500">{row.interests}</span>
                 <span className="text-center w-12 text-sm font-bold text-emerald-500">{row.calls}</span>

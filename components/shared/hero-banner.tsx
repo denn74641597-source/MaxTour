@@ -20,7 +20,7 @@ export function HeroBanner({ tour }: HeroBannerProps) {
 
   return (
     <Link href={`/tours/${tour.slug}`}>
-      <div className="relative overflow-hidden rounded-2xl bg-slate-900 group">
+      <div className="relative overflow-hidden rounded-[1.5rem] bg-foreground group">
         <div className="aspect-[16/10] w-full relative">
           <Image
             src={tour.cover_image_url || placeholderImage(800, 500, tour.title)}
@@ -31,30 +31,30 @@ export function HeroBanner({ tour }: HeroBannerProps) {
             priority
           />
           {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/5" />
         </div>
 
         {/* Location badge */}
-        <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/40 backdrop-blur-sm text-white px-3 py-1.5 rounded-full">
+        <div className="absolute top-4 left-4 flex items-center gap-1.5 bg-black/30 backdrop-blur-sm text-white px-3.5 py-1.5 rounded-full">
           <MapPin className="h-3.5 w-3.5" />
-          <span className="text-xs font-semibold uppercase tracking-wide">{locationLabel}</span>
+          <span className="label-meta text-[10px] font-semibold">{locationLabel}</span>
         </div>
 
         {/* Content */}
-        <div className="absolute bottom-0 left-0 right-0 p-5">
-          <h2 className="text-xl font-bold text-white leading-tight mb-3">
+        <div className="absolute bottom-0 left-0 right-0 p-6">
+          <h2 className="text-xl font-bold text-white leading-tight mb-4">
             {tour.title}
           </h2>
           <div className="flex items-end justify-between">
             <div>
-              <span className="text-[10px] font-bold text-white/60 uppercase tracking-widest">
+              <span className="label-meta text-[10px] font-bold text-white/50">
                 {t.home.priceLabel}
               </span>
               <p className="text-lg font-bold text-white">
-                {formatPrice(tour.price, tour.currency)} <span className="text-sm font-normal text-white/70">{t.common.from}</span>
+                {formatPrice(tour.price, tour.currency)} <span className="text-sm font-normal text-white/60">{t.common.from}</span>
               </p>
             </div>
-            <span className="bg-primary text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-lg">
+            <span className="bg-gradient-to-b from-primary to-primary-container text-white text-sm font-semibold px-6 py-2.5 rounded-lg shadow-ambient">
               {t.common.viewDetails}
             </span>
           </div>

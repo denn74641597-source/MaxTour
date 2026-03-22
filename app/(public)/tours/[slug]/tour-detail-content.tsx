@@ -59,23 +59,23 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       : null;
 
   return (
-    <div className="pb-4 bg-[#f6f6f8]">
+    <div className="pb-4 bg-background">
       {/* Top App Bar */}
-      <div className="sticky top-0 z-50 flex items-center bg-white/80 backdrop-blur-md px-3 py-2.5 justify-between border-b border-slate-200">
+      <div className="sticky top-0 z-50 flex items-center glass-nav px-6 py-2.5 justify-between">
         <Link
           href="/tours"
-          className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-100 transition-colors"
+          className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 text-slate-900" />
+          <ArrowLeft className="h-5 w-5 text-foreground" />
         </Link>
-        <h2 className="text-lg font-bold tracking-tight text-slate-900">{t.tours.tourDetails}</h2>
-        <button className="flex size-10 items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
-          <Share2 className="h-5 w-5 text-slate-900" />
+        <h2 className="text-lg font-bold tracking-tight text-foreground">{t.tours.tourDetails}</h2>
+        <button className="flex size-10 items-center justify-center rounded-full hover:bg-muted transition-colors">
+          <Share2 className="h-5 w-5 text-foreground" />
         </button>
       </div>
 
       {/* Hero Image */}
-      <div className="relative min-h-[260px] w-full overflow-hidden bg-slate-200">
+      <div className="relative min-h-[260px] w-full overflow-hidden bg-muted">
         <Image
           src={allImages[0]}
           alt={tour.title}
@@ -97,15 +97,15 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       </div>
 
       {/* Header Info: Title + Price */}
-      <div className="px-3 pt-3 pb-1 bg-white">
+      <div className="px-6 pt-3 pb-1 bg-surface">
         <div className="flex justify-between items-start">
           <div className="flex-1 mr-3">
-            <h1 className="text-xl font-bold leading-tight tracking-tight text-slate-900">
+            <h1 className="text-xl font-bold leading-tight tracking-tight text-foreground">
               {tour.title}
             </h1>
             <div className="flex items-center gap-1 mt-1">
               <MapPin className="h-4 w-4 text-primary" />
-              <p className="text-slate-600 text-sm font-medium">
+              <p className="text-muted-foreground text-sm font-medium">
                 {isDomestic
                   ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
                   : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
@@ -116,35 +116,35 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           </div>
           <div className="text-right shrink-0">
             {tour.old_price && (
-              <p className="text-slate-400 text-xs line-through">${tour.old_price.toLocaleString()}</p>
+              <p className="text-muted-foreground text-xs line-through">${tour.old_price.toLocaleString()}</p>
             )}
             <p className="text-primary text-xl font-bold">${tour.price.toLocaleString()}</p>
-            <p className="text-slate-500 text-xs">{t.common.perPerson}</p>
+            <p className="text-muted-foreground text-xs">{t.common.perPerson}</p>
           </div>
         </div>
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-3 gap-2 px-3 mt-3">
+      <div className="grid grid-cols-3 gap-2 px-6 mt-3">
         {tour.duration_days && (
-          <div className="bg-white p-2 rounded-xl border border-slate-100 flex flex-col items-center">
+          <div className="bg-surface p-2 rounded-xl shadow-ambient flex flex-col items-center">
             <Clock className="h-4 w-4 text-primary mb-0.5" />
-            <span className="text-[10px] uppercase tracking-wider text-slate-500">{t.tours.duration}</span>
-            <span className="text-xs font-bold text-slate-900">{tour.duration_days} {t.common.days}</span>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.tours.duration}</span>
+            <span className="text-xs font-bold text-foreground">{tour.duration_days} {t.common.days}</span>
           </div>
         )}
         {tour.departure_date && (
-          <div className="bg-white p-2 rounded-xl border border-slate-100 flex flex-col items-center">
+          <div className="bg-surface p-2 rounded-xl shadow-ambient flex flex-col items-center">
             <CalendarDays className="h-4 w-4 text-primary mb-0.5" />
-            <span className="text-[10px] uppercase tracking-wider text-slate-500">{t.tours.departure}</span>
-            <span className="text-xs font-bold text-slate-900">{formatDate(tour.departure_date)}</span>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.tours.departure}</span>
+            <span className="text-xs font-bold text-foreground">{formatDate(tour.departure_date)}</span>
           </div>
         )}
         {tour.seats_left !== null && (
-          <div className="bg-white p-2 rounded-xl border border-slate-100 flex flex-col items-center">
+          <div className="bg-surface p-2 rounded-xl shadow-ambient flex flex-col items-center">
             <Users className="h-4 w-4 text-primary mb-0.5" />
-            <span className="text-[10px] uppercase tracking-wider text-slate-500">{t.common.seatsLeft}</span>
-            <span className={`text-xs font-bold ${tour.seats_left <= 5 ? 'text-red-500' : 'text-slate-900'}`}>
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.common.seatsLeft}</span>
+            <span className={`text-xs font-bold ${tour.seats_left <= 5 ? 'text-red-500' : 'text-foreground'}`}>
               {tour.seats_left} {t.common.left}
             </span>
           </div>
@@ -158,7 +158,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
             <Plane className="h-5 w-5 text-blue-500" />
             <div>
               <span className="text-[10px] uppercase tracking-wider text-blue-400">{t.tours.airline}</span>
-              <p className="text-sm font-bold text-slate-900">{tour.airline}</p>
+              <p className="text-sm font-bold text-foreground">{tour.airline}</p>
             </div>
           </div>
         </div>
@@ -169,7 +169,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         <div className="px-3 mt-4">
           <div className="bg-primary/5 rounded-xl p-3 flex items-center justify-between border border-primary/10">
             <div className="flex items-center gap-2.5">
-              <div className="size-10 rounded-full bg-slate-200 overflow-hidden relative shrink-0">
+              <div className="size-10 rounded-full bg-muted overflow-hidden relative shrink-0">
                 <Image
                   src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
                   alt={agency.name}
@@ -180,7 +180,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
               </div>
               <div>
                 <div className="flex items-center gap-1">
-                  <h4 className="font-bold text-slate-900">{agency.name}</h4>
+                  <h4 className="font-bold text-foreground">{agency.name}</h4>
                   {agency.is_verified && (
                     <VerifiedBadge />
                   )}
@@ -204,11 +204,11 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       )}
 
       {/* Content Sections */}
-      <div className="px-3 mt-4 space-y-4">
+      <div className="px-6 mt-4 space-y-4">
         {/* About */}
         {tour.full_description && (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.aboutTour}</h3>
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.aboutTour}</h3>
             {isDomestic && tour.domestic_category && (
               <div className="flex items-center gap-1.5 mb-2">
                 <div className="flex items-center gap-1 bg-emerald-50 text-emerald-700 rounded-full px-2.5 py-1 text-xs font-medium border border-emerald-200">
@@ -217,7 +217,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                 </div>
               </div>
             )}
-            <p className="text-sm text-slate-600 leading-snug whitespace-pre-line">
+            <p className="text-sm text-muted-foreground leading-snug whitespace-pre-line">
               {tour.full_description}
             </p>
           </section>
@@ -226,8 +226,8 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         {/* What's Included */}
         {(includedServices.length > 0 || destinations.length > 0) && (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.whatsIncluded}</h3>
-            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.whatsIncluded}</h3>
+            <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
               {destinations.length > 0 && (
                 <div className="flex items-center gap-2.5 px-3 py-2">
                   <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
@@ -237,7 +237,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                     {destinations.map((dest: string, i: number) => (
                       <span key={i} className="text-xs font-medium">
                         <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{dest}</span>
-                        {i < destinations.length - 1 && <span className="text-slate-400 mx-0.5">→</span>}
+                        {i < destinations.length - 1 && <span className="text-muted-foreground mx-0.5">→</span>}
                       </span>
                     ))}
                   </div>
@@ -248,7 +248,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                   <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
                     <Check className="h-3.5 w-3.5 text-emerald-500" />
                   </div>
-                  <span className="text-sm text-slate-700">{service}</span>
+                  <span className="text-sm text-foreground">{service}</span>
                 </div>
               ))}
             </div>
@@ -260,11 +260,11 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         {/* Meeting Point - Domestic */}
         {isDomestic && tour.meeting_point && (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.domesticTour.meetingPoint}</h3>
-            <div className="bg-white rounded-xl border border-slate-100 px-3 py-2.5">
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.domesticTour.meetingPoint}</h3>
+            <div className="bg-surface rounded-xl shadow-ambient px-3 py-2.5">
               <div className="flex items-start gap-2.5">
                 <MapPin className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
-                <p className="text-sm text-slate-700">{tour.meeting_point}</p>
+                <p className="text-sm text-foreground">{tour.meeting_point}</p>
               </div>
             </div>
           </section>
@@ -273,14 +273,14 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         {/* Guide Info - Domestic */}
         {isDomestic && (tour.guide_name || tour.guide_phone) && (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.domesticTour.guideInfo}</h3>
-            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.domesticTour.guideInfo}</h3>
+            <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
               {tour.guide_name && (
                 <div className="flex items-center gap-2.5 px-3 py-2">
                   <div className="size-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
                     <User className="h-3.5 w-3.5 text-blue-500" />
                   </div>
-                  <span className="text-sm text-slate-700">{tour.guide_name}</span>
+                  <span className="text-sm text-foreground">{tour.guide_name}</span>
                 </div>
               )}
               {tour.guide_phone && (
@@ -288,7 +288,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                   <div className="size-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
                     <Phone className="h-3.5 w-3.5 text-blue-500" />
                   </div>
-                  <span className="text-sm text-slate-700">{tour.guide_phone}</span>
+                  <span className="text-sm text-foreground">{tour.guide_phone}</span>
                 </div>
               )}
             </div>
@@ -298,14 +298,14 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         {/* What to Bring - Domestic */}
         {isDomestic && whatToBring.length > 0 && (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.domesticTour.whatToBring}</h3>
-            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.domesticTour.whatToBring}</h3>
+            <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
               {whatToBring.map((item: string, i: number) => (
                 <div key={i} className="flex items-center gap-2.5 px-3 py-2">
-                  <div className="size-5 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                    <Check className="h-3.5 w-3.5 text-amber-500" />
+                  <div className="size-5 rounded-full bg-tertiary/10 flex items-center justify-center shrink-0">
+                    <Check className="h-3.5 w-3.5 text-tertiary" />
                   </div>
-                  <span className="text-sm text-slate-700">{item}</span>
+                  <span className="text-sm text-foreground">{item}</span>
                 </div>
               ))}
             </div>
@@ -315,17 +315,17 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         {/* Extra Charges */}
         {extraCharges.length > 0 && (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.extraCharges}</h3>
-            <div className="bg-white rounded-xl border border-slate-100 divide-y divide-slate-50">
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.extraCharges}</h3>
+            <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
               {extraCharges.map((charge: { name: string; amount: number }, i: number) => (
                 <div key={i} className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="size-5 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                      <DollarSign className="h-3.5 w-3.5 text-amber-500" />
+                    <div className="size-5 rounded-full bg-tertiary/10 flex items-center justify-center shrink-0">
+                      <DollarSign className="h-3.5 w-3.5 text-tertiary" />
                     </div>
-                    <span className="text-sm text-slate-700">{charge.name}</span>
+                    <span className="text-sm text-foreground">{charge.name}</span>
                   </div>
-                  <span className="text-sm font-bold text-amber-600">${charge.amount}</span>
+                  <span className="text-sm font-bold text-tertiary">${charge.amount}</span>
                 </div>
               ))}
             </div>
@@ -335,21 +335,21 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         {/* Hotels */}
         {hotels.length > 0 ? (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.hotels}</h3>
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.hotels}</h3>
             <div className="space-y-3">
               {hotels.map((hotel: TourHotel, hotelIdx: number) => (
-                <div key={hotelIdx} className="rounded-xl overflow-hidden border border-slate-200 bg-white">
+                <div key={hotelIdx} className="rounded-[1.5rem] overflow-hidden shadow-ambient bg-surface">
                   {hotel.images.length > 0 ? (
                     <HotelImageCarousel images={hotel.images} hotelName={hotel.name} />
                   ) : (
-                    <div className="h-40 w-full bg-slate-200 relative flex items-center justify-center">
-                      <Hotel className="h-10 w-10 text-slate-400" />
+                    <div className="h-40 w-full bg-muted relative flex items-center justify-center">
+                      <Hotel className="h-10 w-10 text-muted-foreground" />
                     </div>
                   )}
                   <div className="p-3">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <h4 className="font-bold text-base text-slate-900">{hotel.name}</h4>
+                        <h4 className="font-bold text-base text-foreground">{hotel.name}</h4>
                         {hotel.stars && (
                           <div className="flex items-center gap-0.5 mt-0.5">
                             {Array.from({ length: hotel.stars }).map((_: unknown, i: number) => (
@@ -360,11 +360,11 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                       </div>
                       <div className="text-right shrink-0">
                         <p className="text-primary text-lg font-bold">${hotel.price.toLocaleString()}</p>
-                        <p className="text-slate-500 text-[10px]">{t.common.perPerson}</p>
+                        <p className="text-muted-foreground text-[10px]">{t.common.perPerson}</p>
                       </div>
                     </div>
                     {hotel.description && (
-                      <p className="text-sm text-slate-600 leading-snug mt-2">
+                      <p className="text-sm text-muted-foreground leading-snug mt-2">
                         {hotel.description}
                       </p>
                     )}
@@ -375,17 +375,17 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           </section>
         ) : tour.hotel_name ? (
           <section>
-            <h3 className="text-base font-bold mb-1.5 text-slate-900">{t.tours.hotelInfo}</h3>
-            <div className="rounded-xl overflow-hidden border border-slate-200 bg-white">
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.hotelInfo}</h3>
+            <div className="rounded-[1.5rem] overflow-hidden shadow-ambient bg-surface">
               {hotelImages.length > 0 ? (
                 <HotelImageCarousel images={hotelImages} hotelName={tour.hotel_name} />
               ) : (
-                <div className="h-40 w-full bg-slate-200 relative flex items-center justify-center">
-                  <Hotel className="h-10 w-10 text-slate-400" />
+                <div className="h-40 w-full bg-muted relative flex items-center justify-center">
+                  <Hotel className="h-10 w-10 text-muted-foreground" />
                 </div>
               )}
               <div className="p-3">
-                <h4 className="font-bold text-base text-slate-900">{tour.hotel_name}</h4>
+                <h4 className="font-bold text-base text-foreground">{tour.hotel_name}</h4>
                 {tour.hotel_stars && (
                   <div className="flex items-center gap-0.5 mb-1">
                     {Array.from({ length: tour.hotel_stars }).map((_: any, i: number) => (
@@ -402,7 +402,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       {/* Similar Tours */}
       {similarTours.length > 0 && (
         <section className="mt-4 px-3">
-          <h2 className="text-lg font-bold text-slate-900 mb-3">
+          <h2 className="text-lg font-bold text-foreground mb-3">
             {t.similarTours?.title ?? "O'xshash turlar"}
           </h2>
           <div className="flex gap-3 overflow-x-auto pb-3 -mx-3 px-3 snap-x snap-mandatory scrollbar-hide">
@@ -416,7 +416,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       )}
 
       {/* CTA Bar — sits above BottomNav */}
-      <div className="sticky bottom-16 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 z-40 mt-4">
+      <div className="sticky bottom-16 glass-nav px-6 py-2.5 z-40 mt-4">
         <div className="max-w-2xl mx-auto flex gap-2">
           <button
             onClick={() => setShowLeadForm(true)}
@@ -430,7 +430,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
               href={telegramLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-slate-100 text-slate-900 font-bold py-3 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-200 transition-all text-sm shrink-0"
+              className="bg-muted text-foreground font-bold py-3 px-5 rounded-xl flex items-center justify-center gap-2 hover:bg-muted/80 transition-all text-sm shrink-0"
             >
               <Send className="h-4 w-4" />
               Telegram

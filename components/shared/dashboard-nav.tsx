@@ -89,8 +89,8 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
       </aside>
 
       {/* Mobile top header with hamburger menu */}
-      <div className="md:hidden sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
-        <div className="flex items-center justify-between px-4 py-3">
+      <div className="md:hidden sticky top-0 z-50 glass-nav">
+        <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
             <Link href="/" className="text-muted-foreground hover:text-foreground">
               <ChevronLeft className="h-4 w-4" />
@@ -100,11 +100,11 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
             </h2>
           </div>
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger className="p-2 -mr-2 rounded-md hover:bg-slate-100 transition-colors">
-              <Menu className="h-5 w-5 text-slate-700" />
+            <SheetTrigger className="p-2 -mr-2 rounded-xl hover:bg-muted transition-colors">
+              <Menu className="h-5 w-5 text-foreground" />
             </SheetTrigger>
             <SheetContent side="right" className="w-72 p-0">
-              <SheetHeader className="border-b border-slate-100 px-4 py-4">
+              <SheetHeader className="px-4 py-4">
                 <SheetTitle className="text-base font-semibold">
                   {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
                 </SheetTitle>
@@ -118,20 +118,20 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
                         href={href}
                         onClick={() => setOpen(false)}
                         className={cn(
-                          'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors',
+                          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors',
                           isActive
                             ? 'bg-primary/10 text-primary font-medium'
-                            : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                         )}
                       >
-                        <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-primary' : 'text-slate-400')} />
+                        <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
                         <span>{label}</span>
                       </Link>
                     </SheetClose>
                   );
                 })}
               </nav>
-              <div className="mt-auto border-t border-slate-100 p-4">
+              <div className="mt-auto p-4">
                 <LanguageSwitcher variant="dropdown" />
               </div>
             </SheetContent>

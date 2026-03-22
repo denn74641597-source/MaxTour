@@ -9,7 +9,7 @@ export default function PublicLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen flex flex-col bg-[#f6f6f8]">
+    <div className="min-h-screen flex flex-col bg-background">
       <AppHeader />
       <main className="flex-1 mx-auto w-full max-w-2xl pb-24">{children}</main>
       <BottomNav />

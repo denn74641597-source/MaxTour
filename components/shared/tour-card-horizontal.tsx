@@ -16,9 +16,9 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
 
   return (
     <Link href={`/tours/${tour.slug}`}>
-      <div className="bg-white rounded-2xl overflow-hidden shadow-sm flex items-center border border-slate-100 p-3 gap-3">
+      <div className="bg-surface rounded-[1.5rem] overflow-hidden shadow-ambient flex items-center p-4 gap-4">
         {/* Image */}
-        <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-slate-200">
+        <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-surface-container-low">
           <Image
             src={tour.cover_image_url || placeholderImage(200, 200, tour.title)}
             alt={tour.title}
@@ -30,18 +30,18 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-sm leading-tight line-clamp-2 text-slate-900">
+          <h4 className="font-bold text-sm leading-tight line-clamp-2 text-foreground">
             {tour.title}
           </h4>
           {tour.departure_date && (
-            <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1">
+            <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
               <CalendarDays className="h-3 w-3 shrink-0" />
               {formatDate(tour.departure_date)}
             </p>
           )}
           <div className="mt-2">
             {tour.old_price && tour.old_price > tour.price && (
-              <p className="text-xs text-red-400 line-through font-medium">
+              <p className="text-xs text-destructive/70 line-through font-medium">
                 {formatPrice(tour.old_price, tour.currency)}
               </p>
             )}
@@ -53,7 +53,7 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
 
         {/* Arrow button */}
         <div className="shrink-0">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-lg bg-primary/8 flex items-center justify-center">
             <ArrowRight className="h-4 w-4 text-primary" />
           </div>
         </div>

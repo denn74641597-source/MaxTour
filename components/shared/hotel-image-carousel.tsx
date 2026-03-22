@@ -45,7 +45,7 @@ export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProp
         {images.map((src, i) => (
           <div
             key={i}
-            className="snap-center shrink-0 w-full aspect-[16/10] relative bg-slate-200"
+            className="snap-center shrink-0 w-full aspect-[16/10] relative bg-muted"
           >
             <Image
               src={src}
@@ -63,17 +63,17 @@ export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProp
         <>
           <button
             onClick={prev}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-surface/90 backdrop-blur-sm shadow-ambient rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label="Previous image"
           >
-            <ChevronLeft className="h-4 w-4 text-slate-700" />
+            <ChevronLeft className="h-4 w-4 text-foreground" />
           </button>
           <button
             onClick={next}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm shadow-lg rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-surface/90 backdrop-blur-sm shadow-ambient rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
             aria-label="Next image"
           >
-            <ChevronRight className="h-4 w-4 text-slate-700" />
+            <ChevronRight className="h-4 w-4 text-foreground" />
           </button>
         </>
       )}

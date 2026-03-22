@@ -15,7 +15,7 @@ export function LanguageSwitcher({ className, variant = 'toggle' }: LanguageSwit
 
   if (variant === 'toggle') {
     return (
-      <div className={cn('flex items-center bg-slate-100 rounded-full p-0.5', className)}>
+      <div className={cn('flex items-center bg-surface-container-low rounded-full p-0.5', className)}>
         {LANGUAGES.map((lang) => (
           <button
             key={lang}
@@ -23,8 +23,8 @@ export function LanguageSwitcher({ className, variant = 'toggle' }: LanguageSwit
             className={cn(
               'flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all',
               language === lang
-                ? 'bg-white text-slate-900 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-surface text-foreground shadow-ambient'
+                : 'text-muted-foreground hover:text-foreground'
             )}
           >
             <span className="text-sm">{LANGUAGE_FLAGS[lang as Language]}</span>
@@ -41,12 +41,12 @@ export function LanguageSwitcher({ className, variant = 'toggle' }: LanguageSwit
     <button
       onClick={() => setLanguage(nextLang)}
       className={cn(
-        'flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-slate-100 hover:bg-slate-200 transition-colors',
+        'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-surface-container-low hover:bg-surface-container-high transition-colors',
         className
       )}
     >
       <span className="text-sm">{LANGUAGE_FLAGS[nextLang]}</span>
-      <span>{LANGUAGE_LABELS[nextLang]}</span>
+      <span className="text-muted-foreground">{LANGUAGE_LABELS[nextLang]}</span>
     </button>
   );
 }

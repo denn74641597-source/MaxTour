@@ -138,7 +138,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
     }
   }
 
-  /* ─── Profile View ─── */
+  /* в”Ђв”Ђв”Ђ Profile View в”Ђв”Ђв”Ђ */
   if (mode === 'view' && agency) {
     const telegramLink = agency.telegram_username
       ? `https://t.me/${agency.telegram_username.replace('@', '')}`
@@ -201,7 +201,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
                   {t.agencyView.approved}
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-100 text-amber-700 text-xs font-medium rounded-full">
+                <span className="inline-flex items-center gap-1 px-3 py-1 bg-tertiary/15 text-tertiary text-xs font-medium rounded-full">
                   <Clock className="h-3.5 w-3.5" />
                   {t.agencyView.pendingApproval}
                 </span>
@@ -242,7 +242,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
               {agency.phone && (
                 <a
                   href={`tel:${agency.phone}`}
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-surface-container-low hover:bg-muted transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                     <Phone className="h-3.5 w-3.5 text-green-600" />
@@ -258,7 +258,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
                   href={telegramLink!}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-surface-container-low hover:bg-muted transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
                     <MessageCircle className="h-3.5 w-3.5 text-blue-600" />
@@ -274,7 +274,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
                   href={agency.instagram_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-surface-container-low hover:bg-muted transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center shrink-0">
                     <Instagram className="h-3.5 w-3.5 text-pink-600" />
@@ -290,7 +290,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
                   href={agency.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                  className="flex items-center gap-2.5 p-3 rounded-xl bg-surface-container-low hover:bg-muted transition-colors"
                 >
                   <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center shrink-0">
                     <Globe className="h-3.5 w-3.5 text-purple-600" />
@@ -316,7 +316,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
                 <MapPin className="h-4 w-4 text-primary" />
                 {t.agencyProfileForm.location}
               </h3>
-              <div className="flex items-start gap-3 p-2.5 rounded-xl bg-slate-50">
+              <div className="flex items-start gap-3 p-2.5 rounded-xl bg-surface-container-low">
                 <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center shrink-0">
                   <MapPin className="h-4 w-4 text-orange-600" />
                 </div>
@@ -360,7 +360,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
     );
   }
 
-  /* ─── Form Mode ─── */
+  /* в”Ђв”Ђв”Ђ Form Mode в”Ђв”Ђв”Ђ */
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

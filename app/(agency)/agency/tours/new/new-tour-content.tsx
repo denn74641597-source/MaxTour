@@ -21,12 +21,12 @@ export function NewTourContent({ tourLimit }: NewTourContentProps) {
         <button
           type="button"
           onClick={() => router.back()}
-          className="p-2 -ml-2 rounded-xl hover:bg-slate-100 transition-colors"
+          className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors"
         >
-          <ArrowLeft className="h-5 w-5 text-slate-600" />
+          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-slate-800">{t.agencyTours.createNewTour}</h1>
+          <h1 className="text-lg font-bold text-foreground">{t.agencyTours.createNewTour}</h1>
           <p className="text-xs text-muted-foreground">
             {t.agencyTours.createNewTourHint}
           </p>
@@ -34,9 +34,9 @@ export function NewTourContent({ tourLimit }: NewTourContentProps) {
       </div>
 
       {/* Tour Limit Info */}
-      <div className={`mb-5 p-3 rounded-xl border text-sm ${tourLimit.canCreate ? 'bg-slate-50 border-slate-200' : 'bg-red-50 border-red-200'}`}>
+      <div className={`mb-5 p-3 rounded-xl border text-sm ${tourLimit.canCreate ? 'bg-surface-container-low border-muted' : 'bg-red-50 border-red-200'}`}>
         <div className="flex items-center justify-between">
-          <span className="text-slate-600">
+          <span className="text-muted-foreground">
             {t.agencyTours.tourLimitLabel}: <strong>{tourLimit.currentTours}/{tourLimit.maxTours}</strong>
           </span>
           <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
@@ -55,8 +55,8 @@ export function NewTourContent({ tourLimit }: NewTourContentProps) {
         <TourForm tourLimit={tourLimit} />
       ) : (
         <div className="text-center py-12">
-          <AlertTriangle className="h-12 w-12 text-amber-400 mx-auto mb-3" />
-          <h2 className="text-lg font-bold text-slate-800 mb-2">{t.agencyTours.tourLimitReachedTitle}</h2>
+          <AlertTriangle className="h-12 w-12 text-tertiary mx-auto mb-3" />
+          <h2 className="text-lg font-bold text-foreground mb-2">{t.agencyTours.tourLimitReachedTitle}</h2>
           <p className="text-sm text-muted-foreground">{t.agencyTours.tourLimitReachedHint}</p>
         </div>
       )}

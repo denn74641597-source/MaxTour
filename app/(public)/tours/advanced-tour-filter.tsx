@@ -68,17 +68,17 @@ export function AdvancedTourFilter() {
     <div className="mb-4">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-lg transition-all"
+        className="w-full flex items-center justify-center gap-2 py-2.5 px-4 bg-gradient-to-r from-primary to-primary-container text-white rounded-xl font-bold text-sm shadow-ambient hover:shadow-ambient-lg transition-all"
       >
         <Sparkles className="h-4 w-4" />
         {t.tourFilter.findPerfectTour}
       </button>
 
       {expanded && (
-        <div className="mt-3 bg-white rounded-2xl border border-slate-200 p-4 space-y-4 shadow-lg">
+        <div className="mt-3 bg-surface rounded-[1.5rem] shadow-ambient-lg p-4 space-y-4">
           {/* Destination */}
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">
               {t.tourFilter.destination}
             </label>
             <Input
@@ -90,7 +90,7 @@ export function AdvancedTourFilter() {
 
           {/* Budget Range */}
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">
               {t.tourFilter.budget} ($)
             </label>
             <div className="flex gap-2">
@@ -113,7 +113,7 @@ export function AdvancedTourFilter() {
 
           {/* Month */}
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">
               {t.tourFilter.month}
             </label>
             <div className="flex gap-1.5 flex-wrap">
@@ -125,7 +125,7 @@ export function AdvancedTourFilter() {
                     'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
                     month === m.value
                       ? 'bg-primary text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-secondary text-muted-foreground hover:bg-muted'
                   )}
                 >
                   {m.labelKey}
@@ -136,7 +136,7 @@ export function AdvancedTourFilter() {
 
           {/* Meal Type */}
           <div>
-            <label className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1 block">
+            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">
               {t.tourFilter.boardType}
             </label>
             <div className="flex gap-1.5 flex-wrap">
@@ -148,7 +148,7 @@ export function AdvancedTourFilter() {
                     'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
                     meal === opt.value
                       ? 'bg-primary text-white'
-                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      : 'bg-secondary text-muted-foreground hover:bg-muted'
                   )}
                 >
                   {t.mealTypes[opt.value as keyof typeof t.mealTypes]}

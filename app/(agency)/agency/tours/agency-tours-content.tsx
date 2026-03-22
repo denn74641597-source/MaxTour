@@ -78,7 +78,7 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
                         {formatPrice(tour.price, tour.currency)}
                       </span>
                       {tour.is_featured && (
-                        <span className="text-[10px] text-amber-600 font-medium">★ {t.common.featured}</span>
+                        <span className="text-[10px] text-tertiary font-medium">★ {t.common.featured}</span>
                       )}
                     </div>
                   </div>

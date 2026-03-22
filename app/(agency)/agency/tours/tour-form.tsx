@@ -276,7 +276,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               setValue('transport_type', 'flight');
               setTourTypeSelected(true);
             }}
-            className="flex items-start gap-4 p-5 bg-white border-2 border-slate-200 rounded-2xl hover:border-primary hover:bg-primary/5 transition-all text-left"
+            className="flex items-start gap-4 p-5 bg-surface ghost-border rounded-2xl hover:border-primary hover:bg-primary/5 transition-all text-left"
           >
             <div className="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center shrink-0">
               <Globe className="h-7 w-7 text-blue-600" />
@@ -297,7 +297,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               setValue('visa_required', false);
               setTourTypeSelected(true);
             }}
-            className="flex items-start gap-4 p-5 bg-white border-2 border-slate-200 rounded-2xl hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left"
+            className="flex items-start gap-4 p-5 bg-surface ghost-border rounded-2xl hover:border-emerald-500 hover:bg-emerald-50 transition-all text-left"
           >
             <div className="w-14 h-14 rounded-xl bg-emerald-100 flex items-center justify-center shrink-0">
               <Map className="h-7 w-7 text-emerald-600" />
@@ -349,26 +349,26 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       </div>
 
       <div className="space-y-6">
-        {/* ── TOUR BASICS ── */}
+        {/* в”Ђв”Ђ TOUR BASICS в”Ђв”Ђ */}
         <section>
           <SectionHeader icon={<FileText className="h-4 w-4" />} label={t.agencyTours.basicInfo} />
           <div className="space-y-4">
             <div>
-              <Label htmlFor="title" className="text-sm font-medium text-slate-700">{t.agencyTours.titleLabel}</Label>
-              <Input id="title" placeholder={t.agencyTours.titlePlaceholder} {...register('title')} onBlur={autoSlug} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              <Label htmlFor="title" className="text-sm font-medium text-foreground">{t.agencyTours.titleLabel}</Label>
+              <Input id="title" placeholder={t.agencyTours.titlePlaceholder} {...register('title')} onBlur={autoSlug} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
             </div>
 
-            {/* Country & City — International */}
+            {/* Country & City вЂ” International */}
             {!isDomestic && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{t.agencyTours.country}</Label>
+                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.country}</Label>
                   <div className="relative mt-1.5">
                     {watch('country') ? (
-                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                      <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
                         <span className="flex-1 text-sm truncate">{watch('country')}</span>
-                        <button type="button" onClick={() => { setValue('country', ''); setValue('city', ''); }} className="text-slate-400 hover:text-slate-600">
+                        <button type="button" onClick={() => { setValue('country', ''); setValue('city', ''); }} className="text-muted-foreground hover:text-foreground">
                           <X className="h-4 w-4" />
                         </button>
                       </div>
@@ -378,10 +378,10 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                           placeholder={t.agencyTours.countryPlaceholder}
                           value={countrySearch}
                           onChange={(e) => setCountrySearch(e.target.value)}
-                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                          className="rounded-xl border-muted bg-surface-container-low h-11"
                         />
                         {countrySearch && (
-                          <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                          <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
                             {COUNTRIES[language].filter(c => c.toLowerCase().includes(countrySearch.toLowerCase())).map((country) => (
                               <button key={country} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('country', country); setCountrySearch(''); setValue('city', ''); setCitySearch(''); }}>
                                 {country}
@@ -394,12 +394,12 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{t.agencyTours.city}</Label>
+                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.city}</Label>
                   <div className="relative mt-1.5">
                     {watch('city') ? (
-                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                      <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
                         <span className="flex-1 text-sm truncate">{watch('city')}</span>
-                        <button type="button" onClick={() => setValue('city', '')} className="text-slate-400 hover:text-slate-600">
+                        <button type="button" onClick={() => setValue('city', '')} className="text-muted-foreground hover:text-foreground">
                           <X className="h-4 w-4" />
                         </button>
                       </div>
@@ -409,14 +409,14 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                           placeholder={watch('country') ? t.agencyTours.cityPlaceholder : t.agencyTours.selectCountryFirst}
                           value={citySearch}
                           onChange={(e) => setCitySearch(e.target.value)}
-                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                          className="rounded-xl border-muted bg-surface-container-low h-11"
                           disabled={!watch('country')}
                         />
                         {citySearch && (() => {
                           const cities = CITIES_BY_COUNTRY[language][watch('country') ?? ''] ?? [];
                           const filtered = cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase()));
                           return filtered.length > 0 ? (
-                            <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                            <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
                               {filtered.map((city) => (
                                 <button key={city} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('city', city); setCitySearch(''); }}>
                                   {city}
@@ -432,16 +432,16 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               </div>
             )}
 
-            {/* Region & District — Domestic */}
+            {/* Region & District вЂ” Domestic */}
             {isDomestic && (
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.region}</Label>
+                  <Label className="text-sm font-medium text-foreground">{t.domesticTour.region}</Label>
                   <div className="relative mt-1.5">
                     {watch('region') ? (
-                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                      <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
                         <span className="flex-1 text-sm truncate">{watch('region')}</span>
-                        <button type="button" onClick={() => { setValue('region', ''); setValue('district', ''); }} className="text-slate-400 hover:text-slate-600">
+                        <button type="button" onClick={() => { setValue('region', ''); setValue('district', ''); }} className="text-muted-foreground hover:text-foreground">
                           <X className="h-4 w-4" />
                         </button>
                       </div>
@@ -451,10 +451,10 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                           placeholder={t.domesticTour.selectRegion}
                           value={regionSearch}
                           onChange={(e) => setRegionSearch(e.target.value)}
-                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                          className="rounded-xl border-muted bg-surface-container-low h-11"
                         />
                         {regionSearch && (
-                          <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                          <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
                             {(UZ_REGIONS[language] || UZ_REGIONS['uz']).filter(r => r.toLowerCase().includes(regionSearch.toLowerCase())).map((region) => (
                               <button key={region} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('region', region); setRegionSearch(''); setValue('district', ''); setDistrictSearch(''); }}>
                                 {region}
@@ -467,12 +467,12 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.district}</Label>
+                  <Label className="text-sm font-medium text-foreground">{t.domesticTour.district}</Label>
                   <div className="relative mt-1.5">
                     {watch('district') ? (
-                      <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                      <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
                         <span className="flex-1 text-sm truncate">{watch('district')}</span>
-                        <button type="button" onClick={() => setValue('district', '')} className="text-slate-400 hover:text-slate-600">
+                        <button type="button" onClick={() => setValue('district', '')} className="text-muted-foreground hover:text-foreground">
                           <X className="h-4 w-4" />
                         </button>
                       </div>
@@ -482,7 +482,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                           placeholder={watch('region') ? t.domesticTour.selectDistrict : t.domesticTour.selectRegionFirst}
                           value={districtSearch}
                           onChange={(e) => setDistrictSearch(e.target.value)}
-                          className="rounded-xl border-slate-200 bg-slate-50/50 h-11"
+                          className="rounded-xl border-muted bg-surface-container-low h-11"
                           disabled={!watch('region')}
                         />
                         {districtSearch && (() => {
@@ -490,7 +490,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                           const districts = regionData[watch('region') ?? ''] ?? [];
                           const filtered = districts.filter(d => d.toLowerCase().includes(districtSearch.toLowerCase()));
                           return filtered.length > 0 ? (
-                            <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                            <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
                               {filtered.map((district) => (
                                 <button key={district} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('district', district); setDistrictSearch(''); }}>
                                   {district}
@@ -509,7 +509,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             {/* Domestic Category */}
             {isDomestic && (
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.domesticTour.category}</Label>
+                <Label className="text-sm font-medium text-foreground">{t.domesticTour.category}</Label>
                 <div className="grid grid-cols-3 gap-2 mt-1.5">
                   {(['excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure'] as const).map((cat) => (
                     <button
@@ -519,7 +519,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                       className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-medium transition-all ${
                         watch('domestic_category') === cat
                           ? 'border-primary bg-primary/5 text-primary'
-                          : 'border-slate-200 hover:border-slate-300 text-slate-500'
+                          : 'border-muted hover:border-foreground/20 text-muted-foreground'
                       }`}
                     >
                       {categoryIcons[cat]}
@@ -532,32 +532,32 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
           </div>
         </section>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-muted" />
 
-        {/* ── LOGISTICS ── */}
+        {/* в”Ђв”Ђ LOGISTICS в”Ђв”Ђ */}
         <section>
           <SectionHeader icon={<CalendarDays className="h-4 w-4" />} label={t.agencyTours.destinationDates} />
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.departureDate}</Label>
-                <Input type="date" {...register('departure_date')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureDate}</Label>
+                <Input type="date" {...register('departure_date')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.durationDays}</Label>
-                <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationDays}</Label>
+                <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
             </div>
 
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.returnDate}</Label>
-              <Input type="date" {...register('return_date')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
+              <Input type="date" {...register('return_date')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
             </div>
 
-            {/* Multi-city destinations — International */}
+            {/* Multi-city destinations вЂ” International */}
             {!isDomestic && (
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.destinations}</Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.destinations}</Label>
                 <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.destinationsHint}</p>
                 {destinations.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
@@ -573,7 +573,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 )}
                 {destinations.length < 3 && (
                   <div className="flex gap-2 mt-2">
-                    <Input placeholder={t.agencyTours.destinationPlaceholder} value={newDestination} onChange={(e) => setNewDestination(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDestination(); } }} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                    <Input placeholder={t.agencyTours.destinationPlaceholder} value={newDestination} onChange={(e) => setNewDestination(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addDestination(); } }} className="rounded-xl border-muted bg-surface-container-low h-11" />
                     <Button type="button" variant="outline" size="icon" onClick={addDestination} className="rounded-xl h-11 w-11 shrink-0">
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -584,35 +584,35 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
           </div>
         </section>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-muted" />
 
-        {/* ── PRICING ── */}
+        {/* в”Ђв”Ђ PRICING в”Ђв”Ђ */}
         <section>
           <SectionHeader icon={<DollarSign className="h-4 w-4" />} label={t.agencyTours.pricingAvailability} />
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.price}</Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.price}</Label>
                 <div className="relative mt-1.5">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{isDomestic ? 'UZS' : '$'}</span>
-                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('price')} className="pl-11 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{isDomestic ? 'UZS' : '$'}</span>
+                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('price')} className="pl-11 rounded-xl border-muted bg-surface-container-low h-11" />
                 </div>
                 {errors.price && <p className="text-xs text-destructive mt-1">{errors.price.message}</p>}
               </div>
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.oldPrice}</Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.oldPrice}</Label>
                 <div className="relative mt-1.5">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400">{isDomestic ? 'UZS' : '$'}</span>
-                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('old_price')} className="pl-11 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground">{isDomestic ? 'UZS' : '$'}</span>
+                  <Input type="number" min={0} step="0.01" placeholder="0.00" {...register('old_price')} className="pl-11 rounded-xl border-muted bg-surface-container-low h-11" />
                 </div>
               </div>
             </div>
 
             {!isDomestic && (
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.currency}</Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.currency}</Label>
                 <Select defaultValue={initialData?.currency || 'USD'} onValueChange={(v) => setValue('currency', v as 'USD' | 'UZS' | 'EUR')}>
-                  <SelectTrigger className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="USD">USD</SelectItem>
                     <SelectItem value="UZS">UZS</SelectItem>
@@ -624,26 +624,26 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.totalSeats}</Label>
-                <Input type="number" min={1} {...register('seats_total')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.totalSeats}</Label>
+                <Input type="number" min={1} {...register('seats_total')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.seatsLeft}</Label>
-                <Input type="number" min={0} {...register('seats_left')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.seatsLeft}</Label>
+                <Input type="number" min={0} {...register('seats_left')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
             </div>
 
             {/* Extra Charges */}
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.extraCharges}</Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.extraCharges}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.extraChargesHint}</p>
               {extraCharges.length > 0 && (
                 <div className="space-y-1.5 mt-2">
                   {extraCharges.map((charge, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-amber-50/80 rounded-xl px-3 py-2 text-sm">
-                      <span className="flex-1 font-medium text-slate-700">{charge.name}</span>
-                      <span className="text-amber-600 font-bold text-xs">${charge.amount}</span>
-                      <button type="button" onClick={() => removeExtraCharge(i)} className="text-slate-400 hover:text-red-500">
+                    <div key={i} className="flex items-center gap-2 bg-tertiary/10 rounded-xl px-3 py-2 text-sm">
+                      <span className="flex-1 font-medium text-foreground">{charge.name}</span>
+                      <span className="text-tertiary font-bold text-xs">${charge.amount}</span>
+                      <button type="button" onClick={() => removeExtraCharge(i)} className="text-muted-foreground hover:text-red-500">
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -651,8 +651,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
               )}
               <div className="flex gap-2 mt-2">
-                <Input placeholder={t.agencyTours.extraChargeName} value={newChargeName} onChange={(e) => setNewChargeName(e.target.value)} className="flex-1 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
-                <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newChargeAmount} onChange={(e) => setNewChargeAmount(e.target.value)} className="w-24 rounded-xl border-slate-200 bg-slate-50/50 h-11" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExtraCharge(); } }} />
+                <Input placeholder={t.agencyTours.extraChargeName} value={newChargeName} onChange={(e) => setNewChargeName(e.target.value)} className="flex-1 rounded-xl border-muted bg-surface-container-low h-11" />
+                <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newChargeAmount} onChange={(e) => setNewChargeAmount(e.target.value)} className="w-24 rounded-xl border-muted bg-surface-container-low h-11" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExtraCharge(); } }} />
                 <Button type="button" variant="outline" size="icon" onClick={addExtraCharge} className="rounded-xl h-11 w-11 shrink-0">
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -661,27 +661,27 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
           </div>
         </section>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-muted" />
 
-        {/* ── DETAILS ── */}
+        {/* в”Ђв”Ђ DETAILS в”Ђв”Ђ */}
         <section>
           <SectionHeader icon={<CheckCircle2 className="h-4 w-4" />} label={t.agencyTours.includedServices} />
           <div className="space-y-4">
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.fullDescription}</Label>
-              <Textarea placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50" />
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.fullDescription}</Label>
+              <Textarea placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low" />
             </div>
 
             {/* Included Services */}
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.includedServices}</Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.includedServices}</Label>
               {includedServices.length > 0 && (
                 <div className="space-y-1 mt-2">
                   {includedServices.map((s, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm bg-emerald-50/50 rounded-lg px-3 py-1.5">
-                      <span className="text-emerald-500 text-xs">✓</span>
-                      <span className="flex-1 text-slate-700">{s}</span>
-                      <button type="button" onClick={() => removeService(i)} className="text-slate-400 hover:text-red-500">
+                      <span className="text-emerald-500 text-xs">вњ“</span>
+                      <span className="flex-1 text-foreground">{s}</span>
+                      <button type="button" onClick={() => removeService(i)} className="text-muted-foreground hover:text-red-500">
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -689,7 +689,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
               )}
               <div className="flex gap-2 mt-2">
-                <Input placeholder={t.agencyTours.addIncludedService} value={newIncluded} onChange={(e) => setNewIncluded(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                <Input placeholder={t.agencyTours.addIncludedService} value={newIncluded} onChange={(e) => setNewIncluded(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }} className="rounded-xl border-muted bg-surface-container-low h-11" />
                 <Button type="button" variant="outline" size="icon" onClick={() => addService()} className="rounded-xl h-11 w-11 shrink-0">
                   <Plus className="h-4 w-4" />
                 </Button>
@@ -698,22 +698,22 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
             {/* Operator Telegram */}
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.operatorTelegram}</Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.operatorTelegram}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.operatorTelegramHint}</p>
-              <Input placeholder={t.agencyTours.operatorTelegramPlaceholder} {...register('operator_telegram_username')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+              <Input placeholder={t.agencyTours.operatorTelegramPlaceholder} {...register('operator_telegram_username')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
             </div>
           </div>
         </section>
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-muted" />
 
-        {/* ── STAY & TRAVEL ── */}
+        {/* в”Ђв”Ђ STAY & TRAVEL в”Ђв”Ђ */}
         <section>
           <SectionHeader icon={<Hotel className="h-4 w-4" />} label={t.agencyTours.accommodationTransport} />
           <div className="space-y-4">
             {/* Hotels */}
             <div className="flex items-center justify-between">
-              <Label className="text-sm font-medium text-slate-700">{t.tours.hotels}</Label>
+              <Label className="text-sm font-medium text-foreground">{t.tours.hotels}</Label>
               <button
                 type="button"
                 onClick={() => setHotels((prev) => [...prev, { name: '', stars: null, price: 0, description: null, booking_url: null, images: [] }])}
@@ -724,11 +724,11 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             </div>
 
             {hotels.map((hotel, hotelIndex) => (
-              <div key={hotelIndex} className="rounded-xl border border-slate-200 bg-slate-50/30 p-3.5 space-y-3">
+              <div key={hotelIndex} className="rounded-xl border border-muted bg-surface-container-low p-3.5 space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Hotel className="h-4 w-4 text-primary" />
-                    <span className="text-sm font-semibold text-slate-700">#{hotelIndex + 1}</span>
+                    <span className="text-sm font-semibold text-foreground">#{hotelIndex + 1}</span>
                     {hotelIndex === 0 && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Asosiy</span>}
                   </div>
                   <button type="button" onClick={() => setHotels((prev) => prev.filter((_, i) => i !== hotelIndex))} className="text-red-400 hover:text-red-500 text-xs font-medium">
@@ -738,15 +738,15 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-xs text-slate-500">{t.agencyTours.hotelName}</Label>
-                    <Input placeholder={t.agencyTours.hotelNamePlaceholder} value={hotel.name} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, name: e.target.value }; setHotels(u); }} className="mt-1 rounded-xl border-slate-200 bg-white h-10 text-sm" />
+                    <Label className="text-xs text-muted-foreground">{t.agencyTours.hotelName}</Label>
+                    <Input placeholder={t.agencyTours.hotelNamePlaceholder} value={hotel.name} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, name: e.target.value }; setHotels(u); }} className="mt-1 rounded-xl border-muted bg-surface h-10 text-sm" />
                   </div>
                   <div>
-                    <Label className="text-xs text-slate-500">{t.agencyTours.stars}</Label>
+                    <Label className="text-xs text-muted-foreground">{t.agencyTours.stars}</Label>
                     <div className="flex items-center gap-0.5 mt-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button key={star} type="button" onClick={() => { const u = [...hotels]; u[hotelIndex] = { ...hotel, stars: star }; setHotels(u); }} className="p-0.5">
-                          <Star className={`h-5 w-5 ${hotel.stars && star <= hotel.stars ? 'text-yellow-500 fill-yellow-500' : 'text-slate-200'}`} />
+                          <Star className={`h-5 w-5 ${hotel.stars && star <= hotel.stars ? 'text-yellow-500 fill-yellow-500' : 'text-muted'}`} />
                         </button>
                       ))}
                     </div>
@@ -754,22 +754,22 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
 
                 <div>
-                  <Label className="text-xs text-slate-500">{t.tours.hotelPrice}</Label>
-                  <Input type="number" min={0} step="0.01" placeholder="850" value={hotel.price || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, price: Number(e.target.value) }; setHotels(u); if (hotelIndex === 0) setValue('price', Number(e.target.value)); }} className="mt-1 rounded-xl border-slate-200 bg-white h-10 text-sm" />
+                  <Label className="text-xs text-muted-foreground">{t.tours.hotelPrice}</Label>
+                  <Input type="number" min={0} step="0.01" placeholder="850" value={hotel.price || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, price: Number(e.target.value) }; setHotels(u); if (hotelIndex === 0) setValue('price', Number(e.target.value)); }} className="mt-1 rounded-xl border-muted bg-surface h-10 text-sm" />
                 </div>
 
                 <div>
-                  <Label className="text-xs text-slate-500">{t.tours.hotelDescription}</Label>
-                  <Textarea placeholder={t.tours.hotelDescriptionPlaceholder} rows={2} value={hotel.description || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, description: e.target.value || null }; setHotels(u); }} className="mt-1 rounded-xl border-slate-200 bg-white text-sm" />
+                  <Label className="text-xs text-muted-foreground">{t.tours.hotelDescription}</Label>
+                  <Textarea placeholder={t.tours.hotelDescriptionPlaceholder} rows={2} value={hotel.description || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, description: e.target.value || null }; setHotels(u); }} className="mt-1 rounded-xl border-muted bg-surface text-sm" />
                 </div>
 
                 <div>
-                  <Label className="text-xs text-slate-500">{t.agencyTours.hotelBookingUrl}</Label>
-                  <Input placeholder={t.agencyTours.hotelBookingUrlPlaceholder} value={hotel.booking_url || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, booking_url: e.target.value || null }; setHotels(u); }} className="mt-1 rounded-xl border-slate-200 bg-white h-10 text-sm" />
+                  <Label className="text-xs text-muted-foreground">{t.agencyTours.hotelBookingUrl}</Label>
+                  <Input placeholder={t.agencyTours.hotelBookingUrlPlaceholder} value={hotel.booking_url || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, booking_url: e.target.value || null }; setHotels(u); }} className="mt-1 rounded-xl border-muted bg-surface h-10 text-sm" />
                 </div>
 
                 <div>
-                  <Label className="text-xs text-slate-500">{t.agencyTours.hotelImages}</Label>
+                  <Label className="text-xs text-muted-foreground">{t.agencyTours.hotelImages}</Label>
                   <div className="mt-1">
                     <MultiImageUploader values={hotel.images} onChange={(imgs) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, images: imgs }; setHotels(u); }} maxImages={4} label={t.agencyTours.uploadHotelImage} folder="hotels" />
                   </div>
@@ -779,8 +779,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
             {/* Transport type */}
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.transport}</Label>
-              <Input placeholder={t.transportTypes[watch('transport_type') || 'flight']} readOnly value={t.transportTypes[watch('transport_type') || 'flight']} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11 cursor-pointer" onClick={() => {
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.transport}</Label>
+              <Input placeholder={t.transportTypes[watch('transport_type') || 'flight']} readOnly value={t.transportTypes[watch('transport_type') || 'flight']} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11 cursor-pointer" onClick={() => {
                 const types: Array<'flight' | 'bus' | 'train' | 'self' | 'mixed'> = ['flight', 'bus', 'train', 'self', 'mixed'];
                 const current = watch('transport_type') || 'flight';
                 const idx = types.indexOf(current);
@@ -788,23 +788,23 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               }} />
             </div>
 
-            {/* Airline — International */}
+            {/* Airline вЂ” International */}
             {!isDomestic && (
               <div>
-                <Label className="text-sm font-medium text-slate-700">{t.agencyTours.airline}</Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.airline}</Label>
                 <div className="relative mt-1.5">
                   {watch('airline') ? (
-                    <div className="flex items-center h-11 rounded-xl border border-slate-200 bg-slate-50/50 px-3">
+                    <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
                       <span className="flex-1 text-sm">{watch('airline')}</span>
-                      <button type="button" onClick={() => setValue('airline', '')} className="text-slate-400 hover:text-slate-600">
+                      <button type="button" onClick={() => setValue('airline', '')} className="text-muted-foreground hover:text-foreground">
                         <X className="h-4 w-4" />
                       </button>
                     </div>
                   ) : (
                     <>
-                      <Input placeholder={t.agencyTours.airlinePlaceholder} value={airlineSearch} onChange={(e) => setAirlineSearch(e.target.value)} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                      <Input placeholder={t.agencyTours.airlinePlaceholder} value={airlineSearch} onChange={(e) => setAirlineSearch(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11" />
                       {airlineSearch && (
-                        <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-white shadow-lg">
+                        <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
                           {AIRLINES.filter(a => a.toLowerCase().includes(airlineSearch.toLowerCase())).map((airline) => (
                             <button key={airline} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('airline', airline); setAirlineSearch(''); }}>
                               {airline}
@@ -820,9 +820,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
             {/* Meal type */}
             <div>
-              <Label className="text-sm font-medium text-slate-700">{t.agencyTours.mealType}</Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.mealType}</Label>
               <Select defaultValue={initialData?.meal_type || 'none'} onValueChange={(v) => setValue('meal_type', v as 'none' | 'breakfast' | 'half_board' | 'full_board' | 'all_inclusive')}>
-                <SelectTrigger className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11">
+                <SelectTrigger className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11">
                   <SelectValue>{t.mealTypes[watch('meal_type') || 'none']}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
@@ -835,50 +835,50 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               </Select>
             </div>
 
-            {/* Visa — International */}
+            {/* Visa вЂ” International */}
             {!isDomestic && (
               <label className="flex items-center gap-2.5 cursor-pointer">
-                <input type="checkbox" {...register('visa_required')} className="h-4 w-4 rounded border-slate-300 text-primary focus:ring-primary" />
-                <span className="text-sm text-slate-700">{t.agencyTours.visaRequired}</span>
+                <input type="checkbox" {...register('visa_required')} className="h-4 w-4 rounded border-muted text-primary focus:ring-primary" />
+                <span className="text-sm text-foreground">{t.agencyTours.visaRequired}</span>
               </label>
             )}
           </div>
         </section>
 
-        {/* ── DOMESTIC EXTRAS ── */}
+        {/* в”Ђв”Ђ DOMESTIC EXTRAS в”Ђв”Ђ */}
         {isDomestic && (
           <>
-            <div className="border-t border-slate-100" />
+            <div className="border-t border-muted" />
             <section>
               <SectionHeader icon={<MapPin className="h-4 w-4" />} label={t.domesticTour.guideInfo} color="text-emerald-600" />
               <div className="space-y-4">
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.meetingPoint}</Label>
+                  <Label className="text-sm font-medium text-foreground">{t.domesticTour.meetingPoint}</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">{t.domesticTour.meetingPointHint}</p>
-                  <Textarea placeholder={t.domesticTour.meetingPointPlaceholder} rows={2} {...register('meeting_point')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50" />
+                  <Textarea placeholder={t.domesticTour.meetingPointPlaceholder} rows={2} {...register('meeting_point')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low" />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label className="text-sm font-medium text-slate-700">{t.domesticTour.guideName}</Label>
-                    <Input placeholder={t.domesticTour.guideNamePlaceholder} {...register('guide_name')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                    <Label className="text-sm font-medium text-foreground">{t.domesticTour.guideName}</Label>
+                    <Input placeholder={t.domesticTour.guideNamePlaceholder} {...register('guide_name')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
                   </div>
                   <div>
-                    <Label className="text-sm font-medium text-slate-700">{t.domesticTour.guidePhone}</Label>
-                    <Input placeholder={t.domesticTour.guidePhonePlaceholder} {...register('guide_phone')} className="mt-1.5 rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                    <Label className="text-sm font-medium text-foreground">{t.domesticTour.guidePhone}</Label>
+                    <Input placeholder={t.domesticTour.guidePhonePlaceholder} {...register('guide_phone')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
                   </div>
                 </div>
 
                 {/* What to Bring */}
                 <div>
-                  <Label className="text-sm font-medium text-slate-700">{t.domesticTour.whatToBring}</Label>
+                  <Label className="text-sm font-medium text-foreground">{t.domesticTour.whatToBring}</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">{t.domesticTour.whatToBringHint}</p>
                   {whatToBring.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {whatToBring.map((item, i) => (
-                        <div key={i} className="flex items-center gap-1 bg-amber-50 text-amber-700 rounded-full px-2.5 py-1 text-xs font-medium">
+                        <div key={i} className="flex items-center gap-1 bg-tertiary/10 text-tertiary rounded-full px-2.5 py-1 text-xs font-medium">
                           <span>{item}</span>
-                          <button type="button" onClick={() => removeBringItem(i)} className="hover:bg-amber-100 rounded-full p-0.5">
+                          <button type="button" onClick={() => removeBringItem(i)} className="hover:bg-tertiary/20 rounded-full p-0.5">
                             <X className="h-3 w-3" />
                           </button>
                         </div>
@@ -886,7 +886,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                     </div>
                   )}
                   <div className="flex gap-2 mt-2">
-                    <Input placeholder={t.domesticTour.addItem} value={newBringItem} onChange={(e) => setNewBringItem(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addBringItem(); } }} className="rounded-xl border-slate-200 bg-slate-50/50 h-11" />
+                    <Input placeholder={t.domesticTour.addItem} value={newBringItem} onChange={(e) => setNewBringItem(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addBringItem(); } }} className="rounded-xl border-muted bg-surface-container-low h-11" />
                     <Button type="button" variant="outline" size="icon" onClick={addBringItem} className="rounded-xl h-11 w-11 shrink-0">
                       <Plus className="h-4 w-4" />
                     </Button>
@@ -897,9 +897,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
           </>
         )}
 
-        <div className="border-t border-slate-100" />
+        <div className="border-t border-muted" />
 
-        {/* ── MEDIA ── */}
+        {/* в”Ђв”Ђ MEDIA в”Ђв”Ђ */}
         <section>
           <SectionHeader icon={<ImageIcon className="h-4 w-4" />} label={t.agencyTours.coverImage} />
           <ImageUploader
@@ -909,7 +909,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
           />
         </section>
 
-        {/* ── PREVIEW / PUBLISH BUTTONS ── */}
+        {/* в”Ђв”Ђ PREVIEW / PUBLISH BUTTONS в”Ђв”Ђ */}
         <div className="pt-4 space-y-3">
           {/* Preview Button */}
           <Button
@@ -941,13 +941,13 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
         </div>
       </div>
 
-      {/* ── PREVIEW MODAL ── */}
+      {/* в”Ђв”Ђ PREVIEW MODAL в”Ђв”Ђ */}
       {showPreview && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center sm:items-center">
-          <div className="bg-white w-full max-w-lg max-h-[85vh] rounded-t-3xl sm:rounded-3xl overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b border-slate-100 p-4 flex items-center justify-between rounded-t-3xl z-10">
+          <div className="bg-surface w-full max-w-lg max-h-[85vh] rounded-t-3xl sm:rounded-3xl overflow-y-auto">
+            <div className="sticky top-0 bg-surface border-b border-muted p-4 flex items-center justify-between rounded-t-3xl z-10">
               <h2 className="text-lg font-bold">{t.agencyTours.previewTitle}</h2>
-              <button type="button" onClick={() => setShowPreview(false)} className="p-1.5 rounded-full hover:bg-slate-100">
+              <button type="button" onClick={() => setShowPreview(false)} className="p-1.5 rounded-full hover:bg-surface-container-low">
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -955,14 +955,14 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             <div className="p-4 space-y-4">
               {/* Cover image preview */}
               {coverUrl && (
-                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-slate-100">
+                <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-surface-container-low">
                   <img src={coverUrl} alt="Cover" className="w-full h-full object-cover" />
                 </div>
               )}
 
               {/* Title */}
               <div>
-                <h3 className="text-xl font-bold">{watch('title') || '—'}</h3>
+                <h3 className="text-xl font-bold">{watch('title') || 'вЂ”'}</h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {isDomestic ? `${watch('region') || ''}${watch('district') ? `, ${watch('district')}` : ''}` : `${watch('country') || ''}${watch('city') ? `, ${watch('city')}` : ''}`}
                 </p>
@@ -970,24 +970,24 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
               {/* Key info grid */}
               <div className="grid grid-cols-2 gap-3">
-                <div className="bg-slate-50 rounded-xl p-3">
+                <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.price}</p>
                   <p className="text-lg font-bold">
                     {hotels.length > 0 ? hotels[0].price : watch('price') || '0'}
                     <span className="text-xs font-normal ml-1">{isDomestic ? 'UZS' : (watch('currency') || 'USD')}</span>
                   </p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3">
+                <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.durationDays}</p>
-                  <p className="text-lg font-bold">{watch('duration_days') || '—'} {t.common.days || 'kun'}</p>
+                  <p className="text-lg font-bold">{watch('duration_days') || 'вЂ”'} {t.common.days || 'kun'}</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3">
+                <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.departureDate}</p>
-                  <p className="text-sm font-semibold">{watch('departure_date') || '—'}</p>
+                  <p className="text-sm font-semibold">{watch('departure_date') || 'вЂ”'}</p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3">
+                <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.totalSeats}</p>
-                  <p className="text-lg font-bold">{watch('seats_total') || '—'}</p>
+                  <p className="text-lg font-bold">{watch('seats_total') || 'вЂ”'}</p>
                 </div>
               </div>
 
@@ -996,8 +996,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 <div>
                   <p className="text-xs font-bold uppercase text-muted-foreground mb-2">{t.agencyTours.accommodationTransport}</p>
                   {hotels.map((h, i) => (
-                    <div key={i} className="bg-slate-50 rounded-xl p-3 mb-2">
-                      <p className="font-semibold text-sm">{h.name} {'⭐'.repeat(h.stars || 0)}</p>
+                    <div key={i} className="bg-surface-container-low rounded-xl p-3 mb-2">
+                      <p className="font-semibold text-sm">{h.name} {'в­ђ'.repeat(h.stars || 0)}</p>
                       {h.price > 0 && <p className="text-xs text-muted-foreground">{h.price} {isDomestic ? 'UZS' : (watch('currency') || 'USD')}</p>}
                     </div>
                   ))}
@@ -1023,7 +1023,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               {watch('full_description') && (
                 <div>
                   <p className="text-xs font-bold uppercase text-muted-foreground mb-2">{t.agencyTours.fullDescription}</p>
-                  <p className="text-sm text-slate-600 whitespace-pre-wrap">{watch('full_description')}</p>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">{watch('full_description')}</p>
                 </div>
               )}
 
@@ -1037,7 +1037,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             </div>
 
             {/* Confirm buttons */}
-            <div className="sticky bottom-0 bg-white border-t border-slate-100 p-4 space-y-2">
+            <div className="sticky bottom-0 bg-surface border-t border-muted p-4 space-y-2">
               <Button
                 type="button"
                 className="w-full h-12 rounded-2xl text-base font-bold"

@@ -45,8 +45,8 @@ export function ToursSortBar() {
           className={cn(
             'px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0',
             activeSort === opt.key
-              ? 'bg-slate-800 text-white'
-              : 'bg-slate-50 text-slate-500 border border-slate-200 hover:bg-slate-100'
+              ? 'bg-foreground text-background'
+              : 'bg-surface-container-low text-muted-foreground hover:bg-muted'
           )}
         >
           {opt.key === 'newest' ? t.common.sortBy : (t.tourFilter as any)[opt.labelKey]}

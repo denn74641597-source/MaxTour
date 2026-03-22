@@ -18,7 +18,7 @@ export default function AgencyLayout({
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       <DashboardNav type="agency" />
-      <main className="flex-1 p-4 md:p-6 max-w-4xl bg-slate-50/50 md:pb-6">
+      <main className="flex-1 p-4 md:p-6 max-w-4xl bg-background md:pb-6">
         <Suspense fallback={<AgencyLoadingFallback />}>
           {children}
         </Suspense>

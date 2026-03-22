@@ -39,7 +39,7 @@ export function TourCard({ tour, compact }: TourCardProps) {
             sizes="(max-width: 768px) 100vw, 300px"
           />
           {tour.is_featured && (
-            <Badge className="absolute top-2 left-2 bg-amber-500 text-white text-[10px]">
+            <Badge className="absolute top-2 left-2 bg-tertiary text-white text-[10px]">
               {t.common.featured}
             </Badge>
           )}

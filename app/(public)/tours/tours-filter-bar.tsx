@@ -57,7 +57,7 @@ export function ToursFilterBar() {
               'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0',
               isActive
                 ? 'bg-primary text-white font-semibold'
-                : 'bg-slate-100 text-slate-600 border border-transparent hover:border-slate-200'
+                : 'bg-secondary text-muted-foreground hover:bg-muted'
             )}
           >
             {chip.label}

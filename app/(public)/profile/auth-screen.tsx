@@ -286,10 +286,10 @@ export function AuthScreen() {
       {step === 'role-select' && (
         <div className="space-y-6">
           <div className="text-center space-y-2">
-            <h1 className="text-2xl font-bold text-slate-900">
+            <h1 className="text-2xl font-bold text-foreground">
               {t.auth.welcome}
             </h1>
-            <p className="text-sm text-slate-500">{t.auth.registerOrLogin}</p>
+            <p className="text-sm text-muted-foreground">{t.auth.registerOrLogin}</p>
           </div>
 
           <div className="space-y-3">
@@ -302,14 +302,14 @@ export function AuthScreen() {
                   <User className="h-6 w-6 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-slate-900">
+                  <h3 className="font-semibold text-foreground">
                     {t.auth.registerAsUser}
                   </h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted-foreground">
                     {t.auth.registerAsUserHint}
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-slate-400" />
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
               </CardContent>
             </Card>
 
@@ -322,23 +322,23 @@ export function AuthScreen() {
                   <Building2 className="h-6 w-6 text-emerald-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-slate-900">
+                  <h3 className="font-semibold text-foreground">
                     {t.auth.registerAsAgency}
                   </h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted-foreground">
                     {t.auth.registerAsAgencyHint}
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-slate-400" />
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
               </CardContent>
             </Card>
 
             <div className="relative py-2">
               <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200" />
+                <div className="w-full border-t border-muted" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-white px-3 text-xs text-slate-400">{t.auth.alreadyHaveAccount}</span>
+                <span className="bg-background px-3 text-xs text-muted-foreground">{t.auth.alreadyHaveAccount}</span>
               </div>
             </div>
 
@@ -347,18 +347,18 @@ export function AuthScreen() {
               onClick={() => handleAgencyLoginSelect()}
             >
               <CardContent className="flex items-center gap-4 p-5">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-                  <Lock className="h-6 w-6 text-amber-600" />
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-tertiary/15">
+                  <Lock className="h-6 w-6 text-tertiary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-slate-900">
+                  <h3 className="font-semibold text-foreground">
                     {t.auth.loginAsAgency}
                   </h3>
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-muted-foreground">
                     {t.auth.loginAsAgencyHint}
                   </p>
                 </div>
-                <ArrowRight className="h-5 w-5 text-slate-400" />
+                <ArrowRight className="h-5 w-5 text-muted-foreground" />
               </CardContent>
             </Card>
           </div>
@@ -376,12 +376,12 @@ export function AuthScreen() {
                 <Building2 className="h-8 w-8 text-primary" />
               )}
             </div>
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-foreground">
               {selectedRole === 'user'
                 ? t.auth.registerAsUser
                 : t.auth.registerAsAgency}
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               {t.auth.fillInfo}
             </p>
           </div>
@@ -391,7 +391,7 @@ export function AuthScreen() {
             <div className="space-y-2">
               <Label htmlFor="phone">{t.auth.phone}</Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="phone"
                   type="tel"
@@ -422,7 +422,7 @@ export function AuthScreen() {
               <div className="space-y-2">
                 <Label htmlFor="password">{t.auth.password}</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type={showPassword ? 'text' : 'password'}
@@ -434,7 +434,7 @@ export function AuthScreen() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -443,7 +443,7 @@ export function AuthScreen() {
                     )}
                   </button>
                 </div>
-                <p className="text-xs text-slate-400">{t.auth.passwordHint}</p>
+                <p className="text-xs text-muted-foreground">{t.auth.passwordHint}</p>
               </div>
             )}
 
@@ -471,7 +471,7 @@ export function AuthScreen() {
                 setStep('role-select');
                 resetForm();
               }}
-              className="w-full text-sm text-slate-500 hover:text-slate-700"
+              className="w-full text-sm text-muted-foreground hover:text-foreground"
             >
               {t.common.back}
             </button>
@@ -483,13 +483,13 @@ export function AuthScreen() {
       {step === 'agency-login' && (
         <div className="space-y-6">
           <div className="text-center space-y-2">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 mx-auto">
-              <Building2 className="h-8 w-8 text-amber-600" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-tertiary/15 mx-auto">
+              <Building2 className="h-8 w-8 text-tertiary" />
             </div>
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-foreground">
               {t.auth.agencyLoginTitle}
             </h1>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-muted-foreground">
               {t.auth.loginAsAgencyHint}
             </p>
           </div>
@@ -498,7 +498,7 @@ export function AuthScreen() {
             <div className="space-y-2">
               <Label htmlFor="loginPhone">{t.auth.phone}</Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="loginPhone"
                   type="tel"
@@ -513,7 +513,7 @@ export function AuthScreen() {
             <div className="space-y-2">
               <Label htmlFor="loginPassword">{t.auth.password}</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   id="loginPassword"
                   type={showPassword ? 'text' : 'password'}
@@ -526,7 +526,7 @@ export function AuthScreen() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                 </button>
@@ -557,12 +557,12 @@ export function AuthScreen() {
                 setStep('role-select');
                 resetForm();
               }}
-              className="w-full text-sm text-slate-500 hover:text-slate-700"
+              className="w-full text-sm text-muted-foreground hover:text-foreground"
             >
               {t.common.back}
             </button>
 
-            <p className="text-center text-xs text-slate-400">
+            <p className="text-center text-xs text-muted-foreground">
               {t.auth.noAccount}{' '}
               <button
                 onClick={() => {

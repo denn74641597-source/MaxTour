@@ -24,8 +24,8 @@ export function FilterChips({ selected, onSelect }: FilterChipsProps) {
             className={cn(
               'flex h-10 shrink-0 items-center justify-center rounded-full px-5 text-sm font-medium transition-all',
               isActive
-                ? 'bg-primary text-white font-semibold shadow-sm'
-                : 'bg-white text-slate-700 border border-slate-200 hover:border-primary/30 hover:bg-primary/5'
+                ? 'bg-primary text-primary-foreground font-semibold shadow-ambient'
+                : 'bg-secondary text-foreground hover:bg-surface-container-high'
             )}
           >
             {label}

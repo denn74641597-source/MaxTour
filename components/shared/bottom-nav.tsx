@@ -19,8 +19,8 @@ export const BottomNav = memo(function BottomNav() {
   ], [t.nav]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200 safe-area-pb">
-      <div className="mx-auto flex items-center justify-around max-w-2xl py-2 px-4">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav safe-area-pb">
+      <div className="mx-auto flex items-center justify-around max-w-2xl py-2 px-6">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
           return (
@@ -28,14 +28,14 @@ export const BottomNav = memo(function BottomNav() {
               key={href}
               href={href}
               className={cn(
-                'flex flex-col items-center gap-1 px-3 py-1 transition-colors',
+                'flex flex-col items-center gap-1 px-3 py-1 transition-colors min-w-[48px] min-h-[48px] justify-center',
                 isActive
                   ? 'text-primary'
-                  : 'text-slate-400 hover:text-slate-600'
+                  : 'text-muted-foreground hover:text-foreground'
               )}
             >
               <Icon className={cn('h-5 w-5', isActive && 'fill-current')} />
-              <span className={cn('text-[10px]', isActive ? 'font-semibold' : 'font-medium')}>{label}</span>
+              <span className={cn('text-[10px] uppercase tracking-wider', isActive ? 'font-bold' : 'font-medium')}>{label}</span>
             </Link>
           );
         })}

@@ -20,8 +20,8 @@ export function ToursContent({ tours }: ToursContentProps) {
   return (
     <div>
       {/* Sticky search + filters header area */}
-      <div className="sticky top-[56px] z-40 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="px-4 py-3">
+      <div className="sticky top-[56px] z-40 glass-nav">
+        <div className="px-6 py-3">
           <Suspense>
             <SearchBar
               placeholder={t.search.placeholder}

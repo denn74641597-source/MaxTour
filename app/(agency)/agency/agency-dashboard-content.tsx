@@ -76,7 +76,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
     <div className="space-y-6 pb-6">
       {/* Mobile home button */}
       <div className="md:hidden flex items-center justify-between mb-2">
-        <Link href="/" className="flex items-center gap-1.5 text-xs text-slate-500 hover:text-slate-700 transition-colors">
+        <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
           <Home className="h-4 w-4" />
           <span>{t.errors.goHome}</span>
         </Link>
@@ -93,27 +93,27 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
             )}
           </div>
           <div>
-            <h1 className="text-base font-bold text-slate-800">{data.agency.name}</h1>
-            <p className="text-xs text-slate-500">{t.agency.welcomeBack}</p>
+            <h1 className="text-base font-bold text-foreground">{data.agency.name}</h1>
+            <p className="text-xs text-muted-foreground">{t.agency.welcomeBack}</p>
           </div>
         </div>
-        <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center">
-          <Bell className="h-4 w-4 text-slate-500" />
+        <div className="h-9 w-9 rounded-full bg-muted flex items-center justify-center">
+          <Bell className="h-4 w-4 text-muted-foreground" />
         </div>
       </div>
 
       {/* Stat Cards — stacked */}
       <div className="space-y-3">
         {statCards.map((stat, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+          <div key={i} className="bg-surface rounded-[1.5rem] shadow-ambient p-4">
             <div className="flex items-center justify-between mb-1">
               {stat.icon}
               <span className={`text-xs font-semibold ${stat.color}`}>
                 {stat.color.includes('emerald') ? '+' : '-'}{Math.floor(Math.random() * 15 + 1)}%
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-2">{stat.label}</p>
-            <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
+            <p className="text-xs text-muted-foreground mt-2">{stat.label}</p>
+            <p className="text-2xl font-bold text-foreground">{stat.value}</p>
           </div>
         ))}
       </div>
@@ -138,7 +138,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
             }
           </p>
           <Link href="/agency/subscription">
-            <button className="mt-3 w-full bg-white text-indigo-700 font-bold text-sm py-2.5 rounded-xl hover:bg-white/90 transition-colors">
+            <button className="mt-3 w-full bg-white text-indigo-700 font-bold text-sm py-2.5 rounded-xl hover:bg-surface transition-colors">
               {t.agency.upgrade}
             </button>
           </Link>
@@ -147,25 +147,25 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
 
       {/* Quick Actions */}
       <section>
-        <h2 className="text-base font-bold text-slate-800 mb-4">{t.agency.quickActions}</h2>
+        <h2 className="text-base font-bold text-foreground mb-4">{t.agency.quickActions}</h2>
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/agency/tours/new" className="flex flex-col items-center gap-2 py-5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+          <Link href="/agency/tours/new" className="flex flex-col items-center gap-2 py-5 bg-surface rounded-[1.5rem] shadow-ambient hover:shadow-ambient-lg transition-all">
             <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center">
               <Plus className="h-5 w-5 text-indigo-600" />
             </div>
-            <span className="text-xs font-semibold text-slate-700">{t.agency.addTour}</span>
+            <span className="text-xs font-semibold text-foreground">{t.agency.addTour}</span>
           </Link>
-          <Link href="/agency/tours" className="flex flex-col items-center gap-2 py-5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+          <Link href="/agency/tours" className="flex flex-col items-center gap-2 py-5 bg-surface rounded-[1.5rem] shadow-ambient hover:shadow-ambient-lg transition-all">
             <div className="h-12 w-12 rounded-full bg-violet-50 flex items-center justify-center">
               <Settings className="h-5 w-5 text-violet-600" />
             </div>
-            <span className="text-xs font-semibold text-slate-700">{t.agency.manageTours}</span>
+            <span className="text-xs font-semibold text-foreground">{t.agency.manageTours}</span>
           </Link>
-          <Link href="/agency/leads" className="flex flex-col items-center gap-2 py-5 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
+          <Link href="/agency/leads" className="flex flex-col items-center gap-2 py-5 bg-surface rounded-[1.5rem] shadow-ambient hover:shadow-ambient-lg transition-all">
             <div className="h-12 w-12 rounded-full bg-sky-50 flex items-center justify-center">
               <Users className="h-5 w-5 text-sky-600" />
             </div>
-            <span className="text-xs font-semibold text-slate-700">{t.agency.viewLeads}</span>
+            <span className="text-xs font-semibold text-foreground">{t.agency.viewLeads}</span>
           </Link>
         </div>
       </section>
@@ -173,7 +173,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
       {/* Recent Leads */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-bold text-slate-800">{t.agency.recentLeads}</h2>
+          <h2 className="text-base font-bold text-foreground">{t.agency.recentLeads}</h2>
           {data.recentLeads.length > 0 && (
             <Link href="/agency/leads" className="text-xs font-semibold text-indigo-600 hover:underline">
               {t.agency.seeAll}
@@ -183,24 +183,24 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
         {data.recentLeads.length > 0 ? (
           <div className="space-y-2.5">
             {data.recentLeads.map((lead: any) => (
-              <div key={lead.id} className="flex items-center gap-3 bg-white rounded-2xl border border-slate-100 shadow-sm p-3.5">
-                <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                  <Users className="h-4 w-4 text-slate-400" />
+              <div key={lead.id} className="flex items-center gap-3 bg-surface rounded-[1.5rem] shadow-ambient p-3.5">
+                <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
+                  <Users className="h-4 w-4 text-muted-foreground" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-800 truncate">{lead.full_name}</p>
-                  <p className="text-xs text-slate-500 truncate">{lead.tour?.title ?? 'Tour'}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{lead.full_name}</p>
+                  <p className="text-xs text-muted-foreground truncate">{lead.tour?.title ?? 'Tour'}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <StatusBadge status={lead.status} />
-                  <p className="text-[10px] text-slate-400 mt-0.5">{timeAgo(lead.created_at)}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{timeAgo(lead.created_at)}</p>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 text-center">
-            <p className="text-sm text-slate-500">{t.agency.noLeadsYet}</p>
+          <div className="bg-surface rounded-[1.5rem] shadow-ambient p-6 text-center">
+            <p className="text-sm text-muted-foreground">{t.agency.noLeadsYet}</p>
           </div>
         )}
       </section>

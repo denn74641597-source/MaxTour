@@ -43,14 +43,14 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
   const liked = isFavorite(tour.id);
 
   return (
-    <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm border border-slate-100">
+    <div className="group relative bg-surface rounded-[1.5rem] overflow-hidden shadow-ambient">
       {/* Agency Header */}
       <div className="flex items-center gap-2.5 px-4 py-2.5">
         <Link
           href={agencySlug ? `/agencies/${agencySlug}` : '#'}
           className="flex items-center gap-2.5 flex-1 min-w-0"
         >
-          <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
+          <div className="w-8 h-8 rounded-full overflow-hidden bg-muted shrink-0">
             <Image
               src={agencyLogo || placeholderImage(64, 64, agencyName[0])}
               alt={agencyName}
@@ -67,7 +67,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFollow(agencyId); }}
             className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
               isFollowing(agencyId)
-                ? 'text-slate-500 bg-slate-100'
+                ? 'text-muted-foreground bg-muted'
                 : 'text-primary bg-primary/10'
             }`}
           >
@@ -90,7 +90,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         <div className="absolute top-3 right-3">
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
-            className="p-2 bg-white/90 backdrop-blur rounded-full text-slate-900 shadow-lg hover:bg-white transition-colors"
+            className="p-2 bg-surface/90 backdrop-blur rounded-full text-foreground shadow-ambient hover:bg-surface transition-colors"
           >
             <Heart className={`h-5 w-5 ${liked ? 'text-red-500 fill-red-500' : ''}`} />
           </button>
@@ -107,7 +107,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         )}
         {!isVerified && isApproved && (
           <div className="absolute top-3 left-3">
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-amber-500/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-tertiary/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
               <ShieldAlert className="h-3 w-3" />
             </span>
           </div>
@@ -127,7 +127,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
       <Link href={`/tours/${tour.slug}`} className="block p-4">
         {/* Title + Rating */}
         <div className="flex justify-between items-start mb-1">
-          <h3 className="text-lg font-bold text-slate-900 leading-tight line-clamp-2 flex-1 mr-2">
+          <h3 className="text-lg font-bold text-foreground leading-tight line-clamp-2 flex-1 mr-2">
             {tour.title}
           </h3>
           {maxStars && (
@@ -139,17 +139,17 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         </div>
 
         {/* Location + Duration */}
-        <p className="text-slate-500 text-sm mb-3">
+        <p className="text-muted-foreground text-sm mb-3">
           {location}
           {nightsText ? ` • ${nightsText}` : ''}
         </p>
 
         {/* Price + CTA */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+        <div className="flex items-center justify-between pt-3">
           <div>
-            <span className="text-xs text-slate-400 block">{t.common.from}</span>
+            <span className="text-xs text-muted-foreground block">{t.common.from}</span>
             {tour.old_price && tour.old_price > tour.price && (
-              <span className="text-xs text-slate-400 line-through mr-1">
+              <span className="text-xs text-muted-foreground line-through mr-1">
                 ${tour.old_price.toLocaleString()}
               </span>
             )}

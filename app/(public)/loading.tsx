@@ -2,9 +2,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
   return (
-    <div className="px-4 py-4 space-y-6">
+    <div className="px-6 py-4 space-y-8">
       {/* Search bar skeleton */}
-      <Skeleton className="w-full h-14 rounded-2xl" />
+      <Skeleton className="w-full h-14 rounded-[1.5rem]" />
 
       {/* Filter chips skeleton */}
       <div className="flex gap-3 overflow-hidden">
@@ -14,7 +14,7 @@ export default function Loading() {
       </div>
 
       {/* Hero banner skeleton */}
-      <Skeleton className="w-full aspect-[16/10] rounded-2xl" />
+      <Skeleton className="w-full aspect-[16/10] rounded-[1.5rem]" />
 
       {/* Popular destinations skeleton */}
       <div className="space-y-3">
@@ -25,7 +25,7 @@ export default function Loading() {
         <div className="flex gap-4 overflow-hidden">
           {Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="shrink-0">
-              <Skeleton className="w-28 h-28 rounded-2xl" />
+              <Skeleton className="w-28 h-28 rounded-[1.5rem]" />
               <Skeleton className="h-4 w-16 mx-auto mt-2" />
             </div>
           ))}
@@ -49,7 +49,7 @@ export default function Loading() {
       <div className="space-y-3">
         <Skeleton className="h-5 w-32" />
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="flex items-center gap-3 rounded-2xl border border-slate-100 p-3">
+          <div key={i} className="flex items-center gap-4 rounded-[1.5rem] shadow-ambient bg-surface p-4">
             <Skeleton className="w-24 h-24 rounded-xl shrink-0" />
             <div className="flex-1 space-y-2">
               <Skeleton className="h-4 w-3/4" />
