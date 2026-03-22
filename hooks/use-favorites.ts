@@ -54,31 +54,36 @@ export function useFavorites() {
       }
 
       // Record interest for the agency (best-effort, don't block UI)
-      supabase
-        .from('tours')
-        .select('agency_id')
-        .eq('id', tourId)
-        .single()
-        .then(({ data: tour }) => {
+      (async () => {
+        try {
+          const { data: tour } = await supabase
+            .from('tours')
+            .select('agency_id')
+            .eq('id', tourId)
+            .single();
           if (!tour?.agency_id) return;
-          // Fetch user profile for contact info
-          supabase
+
+          const { data: profile } = await supabase
             .from('profiles')
             .select('full_name, phone, telegram_username')
             .eq('id', user.id)
-            .single()
-            .then(({ data: profile }) => {
-              supabase.from('tour_interests').upsert({
-                tour_id: tourId,
-                agency_id: tour.agency_id,
-                user_id: user.id,
-                full_name: profile?.full_name ?? null,
-                phone: profile?.phone ?? null,
-                telegram_username: profile?.telegram_username ?? null,
-                source: 'favorite',
-              }, { onConflict: 'user_id,tour_id' });
-            });
-        });
+            .single();
+
+          const { error } = await supabase.from('tour_interests').upsert({
+            tour_id: tourId,
+            agency_id: tour.agency_id,
+            user_id: user.id,
+            full_name: profile?.full_name ?? null,
+            phone: profile?.phone ?? null,
+            telegram_username: profile?.telegram_username ?? null,
+            source: 'favorite',
+          }, { onConflict: 'user_id,tour_id' });
+
+          if (error) console.error('tour_interests upsert failed:', error);
+        } catch (e) {
+          console.error('tour_interests recording error:', e);
+        }
+      })();
     }
   }, [favorites]);
 

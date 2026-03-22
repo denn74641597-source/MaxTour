@@ -563,7 +563,7 @@ export const uz: Translations = {
 
   // ─── Tour Filter ───
   tourFilter: {
-    findPerfectTour: 'Mega mos turni top',
+    findPerfectTour: 'Mos turni qidir',
     destination: 'Yo\'nalish',
     destinationPlaceholder: 'Masalan: Turkiya, Dubai...',
     budget: 'Budjet',

@@ -1,9 +1,9 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import type { TourInterest } from '@/types';
 
 /** Fetch interests (favorites) for an agency with tour & profile info */
 export async function getInterestsByAgency(agencyId: string): Promise<TourInterest[]> {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
   const { data, error } = await supabase
     .from('tour_interests')
     .select('*, tour:tours(id, title, slug, country, city), profile:profiles(full_name, phone, telegram_username, avatar_url)')
@@ -19,7 +19,7 @@ export async function getInterestsByAgency(agencyId: string): Promise<TourIntere
 
 /** Get analytics data: per-tour interest, call, and favorite counts */
 export async function getAgencyAnalytics(agencyId: string) {
-  const supabase = await createServerSupabaseClient();
+  const supabase = await createAdminClient();
 
   // Get all published tours for this agency
   const { data: tours } = await supabase
