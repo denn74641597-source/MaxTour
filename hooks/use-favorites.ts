@@ -52,6 +52,33 @@ export function useFavorites() {
       } else {
         setFavorites((prev) => prev.filter((f) => f.id !== `temp-${tourId}`));
       }
+
+      // Record interest for the agency (best-effort, don't block UI)
+      supabase
+        .from('tours')
+        .select('agency_id')
+        .eq('id', tourId)
+        .single()
+        .then(({ data: tour }) => {
+          if (!tour?.agency_id) return;
+          // Fetch user profile for contact info
+          supabase
+            .from('profiles')
+            .select('full_name, phone, telegram_username')
+            .eq('id', user.id)
+            .single()
+            .then(({ data: profile }) => {
+              supabase.from('tour_interests').upsert({
+                tour_id: tourId,
+                agency_id: tour.agency_id,
+                user_id: user.id,
+                full_name: profile?.full_name ?? null,
+                phone: profile?.phone ?? null,
+                telegram_username: profile?.telegram_username ?? null,
+                source: 'favorite',
+              }, { onConflict: 'user_id,tour_id' });
+            });
+        });
     }
   }, [favorites]);
 

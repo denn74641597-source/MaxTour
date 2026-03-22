@@ -474,6 +474,53 @@ export interface Translations {
     agencyLoginTitle: string;
     registerOrLogin: string;
   };
+  analytics: {
+    title: string;
+    subtitle: string;
+    interests: string;
+    calls: string;
+    saved: string;
+    tourName: string;
+    total: string;
+    noData: string;
+    noDataHint: string;
+  };
+  interestsPage: {
+    title: string;
+    subtitle: string;
+    noInterests: string;
+    noInterestsHint: string;
+    interestedIn: string;
+    source: string;
+    sourceFavorite: string;
+  };
+  tourFilter: {
+    findPerfectTour: string;
+    destination: string;
+    destinationPlaceholder: string;
+    budget: string;
+    budgetFrom: string;
+    budgetTo: string;
+    month: string;
+    monthPlaceholder: string;
+    boardType: string;
+    searchTours: string;
+    resetFilters: string;
+    sortCheapest: string;
+    sortExpensive: string;
+    sortPopular: string;
+    sortReviewed: string;
+  };
+  similarTours: {
+    title: string;
+    sameDestination: string;
+    otherDestinations: string;
+  };
+  agencySearch: {
+    topAgencies: string;
+    byRating: string;
+    noAgencies: string;
+  };
   metadata: {
     title: string;
     description: string;

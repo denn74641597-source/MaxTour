@@ -15,9 +15,10 @@ interface HomeContentProps {
   featuredTours: Tour[];
   recentTours: Tour[];
   agencies: Agency[];
+  topAgencies?: Agency[];
 }
 
-export function HomeContent({ featuredTours, recentTours, agencies }: HomeContentProps) {
+export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [] }: HomeContentProps) {
   const { t } = useTranslation();
 
   const heroTour = featuredTours[0] ?? recentTours[0];
@@ -78,6 +79,21 @@ export function HomeContent({ featuredTours, recentTours, agencies }: HomeConten
           />
         )}
       </section>
+
+      {/* Top Rated Agencies */}
+      {topAgencies.length > 0 && (
+        <section className="mt-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-slate-900">{t.agencySearch.topAgencies}</h3>
+            <span className="text-xs text-slate-500 font-medium">{t.agencySearch.byRating}</span>
+          </div>
+          <div className="flex gap-6 overflow-x-auto no-scrollbar items-center py-2 -mx-4 px-4">
+            {topAgencies.map((agency) => (
+              <AgencyCard key={agency.id} agency={agency} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

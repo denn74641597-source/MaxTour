@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Building2, MapPin, Users, CreditCard, ChevronLeft,
-  Menu, MessageSquareText, UserCheck
+  Menu, MessageSquareText, UserCheck, BarChart3
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -22,8 +22,9 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
   const agencyMobileNav = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/leads', label: t.nav.interested, icon: UserCheck },
-    { href: '/agency/requests', label: t.nav.requests, icon: MessageSquareText },
+    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
+    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
@@ -31,8 +32,9 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
   const agencyNavFull = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/leads', label: t.nav.interested, icon: UserCheck },
-    { href: '/agency/requests', label: t.nav.requests, icon: MessageSquareText },
+    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
+    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];

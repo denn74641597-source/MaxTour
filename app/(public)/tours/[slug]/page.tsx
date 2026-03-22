@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getTourBySlug } from '@/features/tours/queries';
+import { getTourBySlug, getSimilarTours } from '@/features/tours/queries';
 import { TourDetailContent } from './tour-detail-content';
 import type { Metadata } from 'next';
 
@@ -22,5 +22,7 @@ export default async function TourDetailsPage({ params }: Props) {
   const tour = await getTourBySlug(slug);
   if (!tour) notFound();
 
-  return <TourDetailContent tour={tour} />;
+  const similarTours = await getSimilarTours(tour, 6);
+
+  return <TourDetailContent tour={tour} similarTours={similarTours} />;
 }

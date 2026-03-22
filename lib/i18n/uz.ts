@@ -537,6 +537,63 @@ export const uz: Translations = {
     description: 'O\'zbekistondagi tasdiqlangan sayohat agentliklaridan eng yaxshi tur paketlarini toping va band qiling.',
   },
 
+  // ─── Analytics ───
+  analytics: {
+    title: 'Analitika',
+    subtitle: 'Turlar bo\'yicha statistika',
+    interests: 'Qiziqish',
+    calls: 'Qo\'ng\'iroqlar',
+    saved: 'Saqlanganlar',
+    tourName: 'Tur nomi',
+    total: 'Jami',
+    noData: 'Ma\'lumot yo\'q',
+    noDataHint: 'Turlaringiz bo\'yicha statistika bu yerda ko\'rinadi.',
+  },
+
+  // ─── Interests Page ───
+  interestsPage: {
+    title: 'Qiziqish bildirganlar',
+    subtitle: 'Turlaringizga qiziqish bildirgan foydalanuvchilar',
+    noInterests: 'Hali qiziqish bildirganlar yo\'q',
+    noInterestsHint: 'Foydalanuvchilar turlaringizni saqlagan vaqtda bu yerda ko\'rinadi.',
+    interestedIn: 'Qiziqdi',
+    source: 'Manba',
+    sourceFavorite: 'Sevimlilar',
+  },
+
+  // ─── Tour Filter ───
+  tourFilter: {
+    findPerfectTour: 'Mega mos turni top',
+    destination: 'Yo\'nalish',
+    destinationPlaceholder: 'Masalan: Turkiya, Dubai...',
+    budget: 'Budjet',
+    budgetFrom: 'dan',
+    budgetTo: 'gacha',
+    month: 'Oy',
+    monthPlaceholder: 'Oyni tanlang',
+    boardType: 'Pansion turi',
+    searchTours: 'Turlarni qidirish',
+    resetFilters: 'Tozalash',
+    sortCheapest: 'Eng arzon',
+    sortExpensive: 'Eng qimmat',
+    sortPopular: 'Mashhur',
+    sortReviewed: 'Izohlar bo\'yicha',
+  },
+
+  // ─── Similar Tours ───
+  similarTours: {
+    title: 'O\'xshash turlar',
+    sameDestination: 'Shu yo\'nalishdagi turlar',
+    otherDestinations: 'Yaqin yo\'nalishdagi turlar',
+  },
+
+  // ─── Agency Search ───
+  agencySearch: {
+    topAgencies: 'Eng yaxshi agentliklar',
+    byRating: 'Reyting bo\'yicha',
+    noAgencies: 'Agentliklar topilmadi',
+  },
+
   // ─── Destinations ───
   destinations: {
     uzbekistan: 'O\'zbekiston',

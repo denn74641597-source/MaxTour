@@ -190,6 +190,29 @@ export interface AgencyFollow {
   created_at: string;
 }
 
+export interface TourInterest {
+  id: string;
+  tour_id: string;
+  agency_id: string;
+  user_id: string;
+  full_name: string | null;
+  phone: string | null;
+  telegram_username: string | null;
+  source: string;
+  created_at: string;
+  // Joined
+  tour?: Tour;
+  profile?: Profile;
+}
+
+export interface CallTracking {
+  id: string;
+  tour_id: string | null;
+  agency_id: string;
+  user_id: string | null;
+  created_at: string;
+}
+
 // Filter & search types
 export interface TourFilters {
   search?: string;
@@ -203,7 +226,7 @@ export interface TourFilters {
   transport?: TransportType;
   meal?: MealType;
   visaFree?: boolean;
-  sortBy?: 'price_asc' | 'price_desc' | 'date_asc' | 'date_desc' | 'newest';
+  sortBy?: 'price_asc' | 'price_desc' | 'date_asc' | 'date_desc' | 'newest' | 'popular';
   limit?: number;
 }
 

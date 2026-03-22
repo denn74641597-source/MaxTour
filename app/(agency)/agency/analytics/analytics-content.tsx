@@ -1,0 +1,91 @@
+'use client';
+
+import { EmptyState } from '@/components/shared/empty-state';
+import { useTranslation } from '@/lib/i18n';
+import { BarChart3, Heart, Phone, Bookmark } from 'lucide-react';
+
+interface TourAnalyticsRow {
+  tour: { id: string; title: string; slug: string; country: string; city: string | null };
+  interests: number;
+  calls: number;
+  saved: number;
+}
+
+interface AnalyticsContentProps {
+  analytics: TourAnalyticsRow[];
+}
+
+export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
+  const { t } = useTranslation();
+
+  const totals = analytics.reduce(
+    (acc, row) => ({
+      interests: acc.interests + row.interests,
+      calls: acc.calls + row.calls,
+      saved: acc.saved + row.saved,
+    }),
+    { interests: 0, calls: 0, saved: 0 }
+  );
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-bold">{t.analytics.title}</h1>
+        <p className="text-sm text-muted-foreground">{t.analytics.subtitle}</p>
+      </div>
+
+      {analytics.length > 0 ? (
+        <>
+          {/* Summary Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-pink-50 rounded-2xl p-4 text-center border border-pink-100">
+              <Heart className="h-5 w-5 text-pink-500 mx-auto mb-1" />
+              <p className="text-2xl font-bold text-pink-600">{totals.interests}</p>
+              <p className="text-[10px] text-pink-400 font-medium uppercase tracking-wider">{t.analytics.interests}</p>
+            </div>
+            <div className="bg-emerald-50 rounded-2xl p-4 text-center border border-emerald-100">
+              <Phone className="h-5 w-5 text-emerald-500 mx-auto mb-1" />
+              <p className="text-2xl font-bold text-emerald-600">{totals.calls}</p>
+              <p className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider">{t.analytics.calls}</p>
+            </div>
+            <div className="bg-violet-50 rounded-2xl p-4 text-center border border-violet-100">
+              <Bookmark className="h-5 w-5 text-violet-500 mx-auto mb-1" />
+              <p className="text-2xl font-bold text-violet-600">{totals.saved}</p>
+              <p className="text-[10px] text-violet-400 font-medium uppercase tracking-wider">{t.analytics.saved}</p>
+            </div>
+          </div>
+
+          {/* Per-tour table */}
+          <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+            <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 bg-slate-50 border-b border-slate-100 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              <span>{t.analytics.tourName}</span>
+              <span className="text-center w-12">{t.analytics.interests}</span>
+              <span className="text-center w-12">{t.analytics.calls}</span>
+              <span className="text-center w-12">{t.analytics.saved}</span>
+            </div>
+            {analytics.map((row) => (
+              <div
+                key={row.tour.id}
+                className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 border-b border-slate-50 last:border-0 items-center"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-slate-800 truncate">{row.tour.title}</p>
+                  <p className="text-xs text-slate-400">{row.tour.city ? `${row.tour.city}, ` : ''}{row.tour.country}</p>
+                </div>
+                <span className="text-center w-12 text-sm font-bold text-pink-500">{row.interests}</span>
+                <span className="text-center w-12 text-sm font-bold text-emerald-500">{row.calls}</span>
+                <span className="text-center w-12 text-sm font-bold text-violet-500">{row.saved}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <EmptyState
+          icon={<BarChart3 className="h-12 w-12 text-muted-foreground/50 mb-4" />}
+          title={t.analytics.noData}
+          description={t.analytics.noDataHint}
+        />
+      )}
+    </div>
+  );
+}

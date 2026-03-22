@@ -537,6 +537,63 @@ export const ru: Translations = {
     description: 'Находите и бронируйте лучшие тур-пакеты от проверенных туристических агентств Узбекистана.',
   },
 
+  // ─── Analytics ───
+  analytics: {
+    title: 'Аналитика',
+    subtitle: 'Статистика по турам',
+    interests: 'Интерес',
+    calls: 'Звонки',
+    saved: 'Сохранённые',
+    tourName: 'Название тура',
+    total: 'Всего',
+    noData: 'Нет данных',
+    noDataHint: 'Статистика по вашим турам появится здесь.',
+  },
+
+  // ─── Interests Page ───
+  interestsPage: {
+    title: 'Заинтересованные',
+    subtitle: 'Пользователи, проявившие интерес к вашим турам',
+    noInterests: 'Пока нет заинтересованных',
+    noInterestsHint: 'Когда пользователи сохранят ваши туры, они появятся здесь.',
+    interestedIn: 'Интересуется',
+    source: 'Источник',
+    sourceFavorite: 'Избранное',
+  },
+
+  // ─── Tour Filter ───
+  tourFilter: {
+    findPerfectTour: 'Найди идеальный тур',
+    destination: 'Направление',
+    destinationPlaceholder: 'Например: Турция, Дубай...',
+    budget: 'Бюджет',
+    budgetFrom: 'от',
+    budgetTo: 'до',
+    month: 'Месяц',
+    monthPlaceholder: 'Выберите месяц',
+    boardType: 'Тип питания',
+    searchTours: 'Найти туры',
+    resetFilters: 'Сбросить',
+    sortCheapest: 'Самые дешёвые',
+    sortExpensive: 'Самые дорогие',
+    sortPopular: 'Популярные',
+    sortReviewed: 'По отзывам',
+  },
+
+  // ─── Similar Tours ───
+  similarTours: {
+    title: 'Похожие туры',
+    sameDestination: 'Туры в том же направлении',
+    otherDestinations: 'Похожие направления',
+  },
+
+  // ─── Agency Search ───
+  agencySearch: {
+    topAgencies: 'Лучшие агентства',
+    byRating: 'По рейтингу',
+    noAgencies: 'Агентства не найдены',
+  },
+
   // ─── Destinations ───
   destinations: {
     uzbekistan: 'Узбекистан',

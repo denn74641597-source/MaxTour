@@ -6,6 +6,8 @@ import { TourCardCatalog } from '@/components/shared/tour-card-catalog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from '@/lib/i18n';
 import { ToursFilterBar } from './tours-filter-bar';
+import { ToursSortBar } from './tours-sort-bar';
+import { AdvancedTourFilter } from './advanced-tour-filter';
 import type { Tour } from '@/types';
 
 interface ToursContentProps {
@@ -32,6 +34,16 @@ export function ToursContent({ tours }: ToursContentProps) {
             <ToursFilterBar />
           </Suspense>
         </div>
+      </div>
+
+      {/* Advanced Filter + Sort */}
+      <div className="px-4 pt-3">
+        <Suspense>
+          <AdvancedTourFilter />
+        </Suspense>
+        <Suspense>
+          <ToursSortBar />
+        </Suspense>
       </div>
 
       {/* Tour list */}

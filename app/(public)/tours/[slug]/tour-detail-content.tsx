@@ -16,13 +16,15 @@ import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { LeadForm } from '@/components/shared/lead-form';
-import type { TourHotel } from '@/types';
+import { TourCard } from '@/components/shared/tour-card';
+import type { Tour, TourHotel } from '@/types';
 
 interface TourDetailContentProps {
   tour: any;
+  similarTours?: Tour[];
 }
 
-export function TourDetailContent({ tour }: TourDetailContentProps) {
+export function TourDetailContent({ tour, similarTours = [] }: TourDetailContentProps) {
   const { t, language } = useTranslation();
   const [showLeadForm, setShowLeadForm] = useState(false);
 
@@ -396,6 +398,22 @@ export function TourDetailContent({ tour }: TourDetailContentProps) {
           </section>
         ) : null}
       </div>
+
+      {/* Similar Tours */}
+      {similarTours.length > 0 && (
+        <section className="mt-4 px-3">
+          <h2 className="text-lg font-bold text-slate-900 mb-3">
+            {t.similarTours?.title ?? "O'xshash turlar"}
+          </h2>
+          <div className="flex gap-3 overflow-x-auto pb-3 -mx-3 px-3 snap-x snap-mandatory scrollbar-hide">
+            {similarTours.map((st) => (
+              <div key={st.id} className="min-w-[260px] max-w-[260px] snap-start">
+                <TourCard tour={st} />
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* CTA Bar — sits above BottomNav */}
       <div className="sticky bottom-16 bg-white/95 backdrop-blur-md border-t border-slate-200 px-3 py-2.5 z-40 mt-4">

@@ -72,6 +72,25 @@ export async function getAgencyFollowersCount(agencyId: string): Promise<number>
   return count ?? 0;
 }
 
+/** Fetch top-rated agencies (by avg_rating or review count) */
+export async function getTopRatedAgencies(limit = 10): Promise<Agency[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('agencies')
+    .select('*')
+    .eq('is_approved', true)
+    .order('avg_rating', { ascending: false })
+    .order('review_count', { ascending: false })
+    .gt('review_count', 0)
+    .limit(limit);
+
+  if (error) {
+    console.error('getTopRatedAgencies error:', error);
+    return [];
+  }
+  return data ?? [];
+}
+
 /** Fetch reviews for an agency */
 export async function getAgencyReviews(agencyId: string): Promise<Review[]> {
   const supabase = await createServerSupabaseClient();

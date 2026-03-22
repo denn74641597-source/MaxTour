@@ -23,6 +23,8 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   if (filters?.transport) query = query.eq('transport_type', filters.transport);
   if (filters?.meal) query = query.eq('meal_type', filters.meal);
   if (filters?.visaFree) query = query.eq('visa_required', false);
+  if (filters?.departureFrom) query = query.gte('departure_date', filters.departureFrom);
+  if (filters?.departureTo) query = query.lte('departure_date', filters.departureTo);
 
   // Category filter — keyword-based search across title & descriptions
   if (filters?.category) {
@@ -67,6 +69,9 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
       break;
     case 'date_desc':
       query = query.order('departure_date', { ascending: false });
+      break;
+    case 'popular':
+      query = query.order('is_featured', { ascending: false }).order('seats_total', { ascending: false });
       break;
     default:
       query = query.order('created_at', { ascending: false });
