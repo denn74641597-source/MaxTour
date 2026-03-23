@@ -289,7 +289,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       return_date: data.return_date || null,
       duration_days: data.duration_days ? Number(data.duration_days) : null,
       duration_nights: data.duration_nights ? Number(data.duration_nights) : null,
-      price: hotels.length > 0 ? hotels[0].price : Number(data.price),
+      price: hotels.length > 0
+        ? (Math.min(...hotels.map(h => h.price).filter(p => p > 0)) || Number(data.price))
+        : Number(data.price),
       old_price: data.old_price ? Number(data.old_price) : null,
       currency: tourType === 'domestic' ? 'UZS' : 'USD',
       seats_total: data.seats_total ? Number(data.seats_total) : null,
@@ -1079,8 +1081,15 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.price}</p>
+                  {watch('old_price') && Number(watch('old_price')) > 0 && (
+                    <p className="text-xs text-muted-foreground line-through">
+                      {watch('old_price')} <span className="text-[10px]">{isDomestic ? 'UZS' : (watch('currency') || 'USD')}</span>
+                    </p>
+                  )}
                   <p className="text-lg font-bold">
-                    {hotels.length > 0 ? hotels[0].price : watch('price') || '0'}
+                    {hotels.length > 0
+                      ? (Math.min(...hotels.map(h => h.price).filter(p => p > 0)) || watch('price') || '0')
+                      : (watch('price') || '0')}
                     <span className="text-xs font-normal ml-1">{isDomestic ? 'UZS' : (watch('currency') || 'USD')}</span>
                   </p>
                 </div>
