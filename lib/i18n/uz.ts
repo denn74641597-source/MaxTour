@@ -57,7 +57,7 @@ export const uz: Translations = {
     leads: 'So\'rovlar',
     interested: 'Qiziqish bildirganlar',
     requests: 'So\'rovlar',
-    subscription: 'Obunachilar',
+    subscription: 'Obunalar',
     agencies: 'Agentliklar',
     overview: 'Umumiy',
     featured: 'Tavsiya etilgan',
@@ -271,7 +271,7 @@ export const uz: Translations = {
     activeTours: 'Faol turlar',
     totalLeads: 'Jami so\'rovlar',
     featuredTours: 'Tavsiya etilgan turlar',
-    subscription: 'Obunachilar',
+    subscription: 'Obunalar',
     newTour: '+ Yangi tur',
     viewLeads: 'So\'rovlarni ko\'rish',
     editProfile: 'Profilni tahrirlash',
@@ -502,12 +502,11 @@ export const uz: Translations = {
 
   // ─── Subscription Page ───
   subscriptionPage: {
-    title: 'Obunachilar',
-    subtitle: 'Sizga obuna bo\'lgan foydalanuvchilar',
-    totalFollowers: 'Jami obunachilar',
-    anonymousUser: 'Foydalanuvchi',
-    noFollowers: 'Hozircha obunachilar yo\'q',
-    noFollowersHint: 'Turlaringizni ko\'proq e\'lon qiling — foydalanuvchilar sizga obuna bo\'lishadi',
+    title: 'Obunalar',
+    subtitle: 'Siz obuna bo\'lgan agentliklar',
+    totalFollowing: 'Jami obunalar',
+    noFollowing: 'Hozircha obunalar yo\'q',
+    noFollowingHint: 'Agentliklarga obuna bo\'ling — ularning yangi turlari haqida xabardor bo\'ling',
   },
 
   // ─── Image Uploader ───

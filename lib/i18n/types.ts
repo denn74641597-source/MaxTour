@@ -451,10 +451,9 @@ export interface Translations {
   subscriptionPage: {
     title: string;
     subtitle: string;
-    totalFollowers: string;
-    anonymousUser: string;
-    noFollowers: string;
-    noFollowersHint: string;
+    totalFollowing: string;
+    noFollowing: string;
+    noFollowingHint: string;
   };
   imageUploader: {
     uploadImage: string;
