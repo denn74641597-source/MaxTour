@@ -72,7 +72,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   return (
     <div className="pb-4 bg-background">
       {/* Top App Bar */}
-      <div className="sticky top-0 z-50 flex items-center glass-nav px-6 py-2.5 justify-between">
+      <div className="sticky top-0 z-50 flex items-center glass-nav px-6 py-2.5 justify-between" style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 10px)' }}>
         <Link
           href="/tours"
           className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"

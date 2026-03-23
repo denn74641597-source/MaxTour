@@ -192,6 +192,12 @@
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Telegram safe area CSS variables (set by JS) */
+:root {
+  --tg-safe-top: env(safe-area-inset-top, 0px);
+  --tg-safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Prevent Telegram Mini App pull-to-close gesture */
 html, body {
   overscroll-behavior-y: contain;

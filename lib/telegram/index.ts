@@ -62,6 +62,10 @@ export interface TelegramWebApp {
     impactOccurred: (style: 'light' | 'medium' | 'heavy') => void;
     notificationOccurred: (type: 'error' | 'success' | 'warning') => void;
   };
+  safeAreaInset?: { top: number; bottom: number; left: number; right: number };
+  contentSafeAreaInset?: { top: number; bottom: number; left: number; right: number };
+  onEvent: (eventType: string, callback: () => void) => void;
+  offEvent: (eventType: string, callback: () => void) => void;
   openLink: (url: string) => void;
   openTelegramLink: (url: string) => void;
   disableVerticalSwipes: () => void;
@@ -96,6 +100,14 @@ export function getTelegramUser() {
 
 /** Initialize the Telegram Mini App (call on mount) */
 export function initTelegramApp() {
+  function applySafeArea(webapp: TelegramWebApp) {
+    const sa = webapp.safeAreaInset ?? { top: 0, bottom: 0, left: 0, right: 0 };
+    const csa = webapp.contentSafeAreaInset ?? { top: 0, bottom: 0, left: 0, right: 0 };
+    const topInset = sa.top + csa.top;
+    document.documentElement.style.setProperty('--tg-safe-top', `${topInset}px`);
+    document.documentElement.style.setProperty('--tg-safe-bottom', `${sa.bottom}px`);
+  }
+
   function init() {
     const webapp = getTelegramWebApp();
     if (webapp) {
@@ -103,6 +115,12 @@ export function initTelegramApp() {
       webapp.expand();
       if (typeof webapp.disableVerticalSwipes === 'function') {
         webapp.disableVerticalSwipes();
+      }
+      applySafeArea(webapp);
+      // Listen for safe area changes
+      if (typeof webapp.onEvent === 'function') {
+        webapp.onEvent('safeAreaChanged', () => applySafeArea(webapp));
+        webapp.onEvent('contentSafeAreaChanged', () => applySafeArea(webapp));
       }
       return true;
     }

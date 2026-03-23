@@ -88,7 +88,7 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
       </aside>
 
       {/* Mobile top header with hamburger menu */}
-      <div className="md:hidden sticky top-0 z-50 glass-nav">
+      <div className="md:hidden sticky top-0 z-50 glass-nav" style={{ paddingTop: 'var(--tg-safe-top, env(safe-area-inset-top, 0px))' }}>
         <div className="flex items-center justify-between px-6 py-3">
           <div className="flex items-center gap-2">
             <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5">
