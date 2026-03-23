@@ -72,16 +72,16 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   return (
     <div className="pb-4 bg-background">
       {/* Top App Bar */}
-      <div className="sticky top-0 z-50 flex items-center glass-nav px-6 py-2.5 justify-between">
+      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
         <Link
           href="/tours"
-          className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-muted transition-colors"
+          className="p-1"
         >
-          <ArrowLeft className="h-5 w-5 text-foreground" />
+          <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h2 className="text-lg font-bold tracking-tight text-foreground">{t.tours.tourDetails}</h2>
-        <button className="flex size-10 items-center justify-center rounded-full hover:bg-muted transition-colors">
-          <Share2 className="h-5 w-5 text-foreground" />
+        <h2 className="font-semibold text-sm">{t.tours.tourDetails}</h2>
+        <button className="p-1">
+          <Share2 className="h-5 w-5" />
         </button>
       </div>
 
