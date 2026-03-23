@@ -1,21 +1,20 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useFollows } from '@/hooks/use-follows';
 import { TourCard } from '@/components/shared/tour-card';
-import { TourCardCatalog } from '@/components/shared/tour-card-catalog';
 import { EmptyState } from '@/components/shared/empty-state';
 import { TourListSkeleton } from '@/components/shared/loading-skeleton';
 import { Button } from '@/components/ui/button';
-import { Heart, Users } from 'lucide-react';
+import { Heart, Users, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
 import { placeholderImage } from '@/lib/utils';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
-import type { Tour, Agency } from '@/types';
+import type { Agency } from '@/types';
 
 type TabKey = 'subscriptions' | 'favorites';
 
@@ -25,25 +24,30 @@ export default function FavoritesPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<TabKey>('subscriptions');
 
-  // Followed agency tours
-  const [followedTours, setFollowedTours] = useState<Tour[]>([]);
-  const [toursLoading, setToursLoading] = useState(true);
+  // Followed agencies data
+  const [followedAgencies, setFollowedAgencies] = useState<Agency[]>([]);
+  const [agenciesLoading, setAgenciesLoading] = useState(true);
 
   // All agencies for "no follows" state
   const [allAgencies, setAllAgencies] = useState<Agency[]>([]);
-  const [agenciesLoading, setAgenciesLoading] = useState(false);
 
-  // Fetch tours from followed agencies
+  // Fetch followed agencies
   useEffect(() => {
     if (followsLoading) return;
 
-    const fetchFollowedTours = async () => {
-      if (followedAgencyIds.length === 0) {
-        setFollowedTours([]);
-        setToursLoading(false);
-        // Load agencies list as fallback
-        setAgenciesLoading(true);
-        const supabase = createClient();
+    const fetchAgencies = async () => {
+      const supabase = createClient();
+
+      if (followedAgencyIds.length > 0) {
+        const { data } = await supabase
+          .from('agencies')
+          .select('*')
+          .in('id', followedAgencyIds)
+          .eq('is_approved', true);
+        setFollowedAgencies(data ?? []);
+      } else {
+        setFollowedAgencies([]);
+        // Load all agencies as fallback
         const { data } = await supabase
           .from('agencies')
           .select('*')
@@ -51,24 +55,11 @@ export default function FavoritesPage() {
           .order('created_at', { ascending: false })
           .limit(20);
         setAllAgencies(data ?? []);
-        setAgenciesLoading(false);
-        return;
       }
-
-      const supabase = createClient();
-      const { data } = await supabase
-        .from('tours')
-        .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
-        .eq('status', 'published')
-        .in('agency_id', followedAgencyIds)
-        .order('created_at', { ascending: false })
-        .limit(50);
-
-      setFollowedTours(data ?? []);
-      setToursLoading(false);
+      setAgenciesLoading(false);
     };
 
-    fetchFollowedTours();
+    fetchAgencies();
   }, [followsLoading, followedAgencyIds]);
 
   const tabs: { key: TabKey; label: string }[] = [
@@ -76,7 +67,7 @@ export default function FavoritesPage() {
     { key: 'favorites', label: t.favorites.favoritesTab },
   ];
 
-  const loading = activeTab === 'subscriptions' ? (followsLoading || toursLoading) : favLoading;
+  const loading = activeTab === 'subscriptions' ? (followsLoading || agenciesLoading) : favLoading;
 
   if (loading) {
     return (
@@ -126,18 +117,59 @@ export default function FavoritesPage() {
 
       {/* Tab Content */}
       <div className="px-4 py-4">
-        {/* Subscriptions Tab */}
+        {/* Subscriptions Tab — list of followed agencies */}
         {activeTab === 'subscriptions' && (
           <div className="space-y-4">
             {followedAgencyIds.length > 0 ? (
-              followedTours.length > 0 ? (
-                followedTours.map((tour) => (
-                  <TourCardCatalog key={tour.id} tour={tour} />
-                ))
+              followedAgencies.length > 0 ? (
+                <div className="bg-surface rounded-[1.5rem] shadow-ambient overflow-hidden divide-y divide-muted">
+                  {followedAgencies.map((agency) => (
+                    <div key={agency.id} className="flex items-center gap-3 px-4 py-3">
+                      <Link href={`/agencies/${agency.slug}`} className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="relative shrink-0">
+                          <div className="w-11 h-11 rounded-full overflow-hidden bg-muted">
+                            {agency.logo_url ? (
+                              <Image
+                                src={agency.logo_url}
+                                alt={agency.name}
+                                width={44}
+                                height={44}
+                                className="object-cover w-full h-full"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center bg-primary/10">
+                                <Building2 className="h-5 w-5 text-primary/60" />
+                              </div>
+                            )}
+                          </div>
+                          {agency.is_verified && (
+                            <div className="absolute -bottom-0.5 -right-0.5 bg-surface rounded-full p-[1px]">
+                              <VerifiedBadge size="sm" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold truncate">{agency.name}</p>
+                          {agency.city && (
+                            <p className="text-xs text-muted-foreground truncate">{agency.city}</p>
+                          )}
+                        </div>
+                      </Link>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full px-4 shrink-0"
+                        onClick={() => toggleFollow(agency.id)}
+                      >
+                        {t.agencyProfile.following}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
               ) : (
                 <EmptyState
-                  title={t.tours.noToursFound}
-                  description={t.tours.noToursHint}
+                  title={t.favorites.noFollows}
+                  description={t.favorites.noFollowsHint}
                 />
               )
             ) : (

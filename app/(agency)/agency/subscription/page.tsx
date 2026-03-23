@@ -1,25 +1,36 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getMyAgency } from '@/features/agencies/queries';
 import { SubscriptionContent } from './subscription-content';
 
-async function getFollowedAgencies() {
+async function getSubscriptionData() {
   const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
 
-  const { data, error } = await supabase
-    .from('agency_follows')
-    .select('id, created_at, agency:agencies(id, name, slug, logo_url, description)')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  const [plansRes, agency] = await Promise.all([
+    supabase
+      .from('subscription_plans')
+      .select('*')
+      .order('price_monthly', { ascending: true }),
+    getMyAgency(),
+  ]);
 
-  if (error) {
-    console.error('getFollowedAgencies error:', error);
-    return [];
+  const plans = plansRes.data ?? [];
+
+  let currentSub = null;
+  if (agency) {
+    const { data } = await supabase
+      .from('agency_subscriptions')
+      .select('*, plan:subscription_plans(*)')
+      .eq('agency_id', agency.id)
+      .eq('status', 'active')
+      .limit(1)
+      .single();
+    currentSub = data;
   }
-  return data ?? [];
+
+  return { plans, currentSub };
 }
 
 export default async function SubscriptionPage() {
-  const agencies = await getFollowedAgencies();
-  return <SubscriptionContent followedAgencies={agencies} />;
+  const { plans, currentSub } = await getSubscriptionData();
+  return <SubscriptionContent plans={plans} currentSub={currentSub} />;
 }

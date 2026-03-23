@@ -57,7 +57,7 @@ export const uz: Translations = {
     leads: 'So\'rovlar',
     interested: 'Qiziqish bildirganlar',
     requests: 'So\'rovlar',
-    subscription: 'Obunalar',
+    subscription: 'Obuna',
     agencies: 'Agentliklar',
     overview: 'Umumiy',
     featured: 'Tavsiya etilgan',
@@ -271,7 +271,7 @@ export const uz: Translations = {
     activeTours: 'Faol turlar',
     totalLeads: 'Jami so\'rovlar',
     featuredTours: 'Tavsiya etilgan turlar',
-    subscription: 'Obunalar',
+    subscription: 'Obuna',
     newTour: '+ Yangi tur',
     viewLeads: 'So\'rovlarni ko\'rish',
     editProfile: 'Profilni tahrirlash',
@@ -502,11 +502,15 @@ export const uz: Translations = {
 
   // ─── Subscription Page ───
   subscriptionPage: {
-    title: 'Obunalar',
-    subtitle: 'Siz obuna bo\'lgan agentliklar',
-    totalFollowing: 'Jami obunalar',
-    noFollowing: 'Hozircha obunalar yo\'q',
-    noFollowingHint: 'Agentliklarga obuna bo\'ling — ularning yangi turlari haqida xabardor bo\'ling',
+    title: 'Obuna',
+    subtitle: 'Obuna rejangizni boshqaring',
+    currentPlan: 'Joriy reja',
+    expires: 'Tugash sanasi',
+    availablePlans: 'Mavjud rejalar',
+    activeTours: 'ta faol tur',
+    featuredPlacement: 'Tavsiya etilgan joylashtirish',
+    prioritySupport: 'Ustuvor qo\'llab-quvvatlash',
+    paymentNote: 'To\'lov integratsiyasi tez orada qo\'shiladi. Reja o\'zgarishlari uchun qo\'llab-quvvatlash xizmatiga murojaat qiling.',
   },
 
   // ─── Image Uploader ───

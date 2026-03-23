@@ -451,9 +451,13 @@ export interface Translations {
   subscriptionPage: {
     title: string;
     subtitle: string;
-    totalFollowing: string;
-    noFollowing: string;
-    noFollowingHint: string;
+    currentPlan: string;
+    expires: string;
+    availablePlans: string;
+    activeTours: string;
+    featuredPlacement: string;
+    prioritySupport: string;
+    paymentNote: string;
   };
   imageUploader: {
     uploadImage: string;
