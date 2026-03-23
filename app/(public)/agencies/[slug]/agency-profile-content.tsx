@@ -69,7 +69,7 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10" style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 12px)' }}>
+      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
         <button onClick={() => router.back()} className="p-1">
           <ArrowLeft className="h-5 w-5" />
         </button>
