@@ -140,7 +140,10 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           <div className="bg-surface p-2 rounded-xl shadow-ambient flex flex-col items-center">
             <Clock className="h-4 w-4 text-primary mb-0.5" />
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.tours.duration}</span>
-            <span className="text-xs font-bold text-foreground">{tour.duration_days} {t.common.days}</span>
+            <span className="text-xs font-bold text-foreground">
+              {tour.duration_days} {t.common.days}
+              {tour.duration_nights ? ` | ${tour.duration_nights} ${t.common.nights}` : ''}
+            </span>
           </div>
         )}
         {tour.departure_date && (

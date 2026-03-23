@@ -34,7 +34,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
   const agencyLogo = tour.agency?.logo_url;
   const agencyId = tour.agency?.id;
   const nightsText = tour.duration_days
-    ? `${tour.duration_days} ${tour.duration_days > 1 ? t.common.nights : t.common.night}`
+    ? `${tour.duration_days} ${t.common.days}${tour.duration_nights ? ` | ${tour.duration_nights} ${t.common.nights}` : ''}`
     : null;
   const location = tour.tour_type === 'domestic'
     ? [tour.district, tour.region || 'O\'zbekiston'].filter(Boolean).join(', ')

@@ -1086,7 +1086,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
                 <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.durationLabel}</p>
-                  <p className="text-lg font-bold">{watch('duration_days') || '—'} {t.agencyTours.daysSuffix}{watch('duration_nights') ? ` / ${watch('duration_nights')} ${t.agencyTours.nightsSuffix}` : ''}</p>
+                  <p className="text-lg font-bold">{watch('duration_days') || '\u2014'} {t.agencyTours.daysSuffix}{watch('duration_nights') ? ` | ${watch('duration_nights')} ${t.agencyTours.nightsSuffix}` : ''}</p>
                 </div>
                 <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.departureDate}</p>

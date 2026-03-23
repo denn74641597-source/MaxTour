@@ -447,7 +447,7 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
             {tour.duration_days && (
               <span className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
-                {tour.duration_days} {t.common.days}
+                {tour.duration_days} {t.common.days}{tour.duration_nights ? ` | ${tour.duration_nights} ${t.common.nights}` : ''}
               </span>
             )}
             {location && (
