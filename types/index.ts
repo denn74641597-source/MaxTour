@@ -120,6 +120,7 @@ export interface Tour {
   country: string;
   city: string | null;
   departure_date: string | null;
+  departure_month: string | null;
   return_date: string | null;
   duration_days: number | null;
   price: number;

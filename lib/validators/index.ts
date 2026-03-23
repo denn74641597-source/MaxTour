@@ -52,6 +52,7 @@ export const tourSchema = z.object({
   country: z.string().optional(),
   city: z.string().optional(),
   departure_date: z.string().optional(),
+  departure_month: z.string().optional(),
   return_date: z.string().optional(),
   duration_days: z.coerce.number().int().positive().optional(),
   price: z.coerce.number().positive('Price must be greater than 0'),

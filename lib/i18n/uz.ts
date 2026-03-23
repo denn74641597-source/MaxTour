@@ -339,6 +339,8 @@ export const uz: Translations = {
     cityPlaceholder: 'Istanbul',
     selectCountryFirst: 'Avval davlatni tanlang',
     departureDate: 'Jo\'nash sanasi',
+    departureMonth: 'Jo\'nash oyi',
+    departureMonthPlaceholder: 'Oyni tanlang',
     returnDate: 'Qaytish sanasi',
     durationDays: 'Davomiyligi (kun)',
     pricingAvailability: 'Narx va mavjudlik',
@@ -362,7 +364,7 @@ export const uz: Translations = {
     destinations: 'Yo\'nalish shaharlari',
     addDestination: 'Shahar qo\'shish',
     destinationPlaceholder: 'Shahar nomi...',
-    destinationsHint: '1-3 ta shahar kiriting (masalan: Istanbul, Antalya)',
+    destinationsHint: 'Yo\'nalish shaharlarini kiriting (masalan: Istanbul, Antalya, Dubai)',
     airline: 'Aviakompaniya',
     airlinePlaceholder: 'Turkish Airlines',
     extraCharges: 'Qo\'shimcha to\'lovlar',
@@ -371,7 +373,7 @@ export const uz: Translations = {
     extraChargeAmount: 'Narxi',
     extraChargesHint: 'Ixtiyoriy: faqat qo\'shimcha to\'lovlar bo\'lsa to\'ldiring',
     includedServices: 'Kiritilgan xizmatlar',
-    includedServicesHint: 'Turga kiritilgan barcha xizmatlarni qo\'shing. Masalan: Aviachipta va yo\'nalish (Toshkent - Kuala Lumpur - Bali - Kuala Lumpur - Toshkent), UzAirways: bagaj 20kg + 8 kg',
+    includedServicesHint: 'Tur paketga kiritilgan xizmatlar to\'liq ko\'rsatilishi shart: aviabilet yo\'nalishi (masalan: Toshkent – Kuala Lumpur – Toshkent), aviakompaniya nomi, bagaj normasi, mehmonxona va ovqatlanish turi, transfer, med sug\'urta, ekskursiyalar va boshqa qo\'shimcha xizmatlar.',
     addIncludedService: 'Kiritilgan xizmat qo\'shing...',
     excludedServices: 'Kiritilmagan xizmatlar',
     addExcludedService: 'Kiritilmagan xizmat qo\'shing...',
@@ -391,7 +393,7 @@ export const uz: Translations = {
     operatorPhonePlaceholder: '+998 90 123 45 67',
     operatorPhoneHint: 'Operator telefon raqamini kiriting',
     tourCategory: 'Tur kategoriyasi',
-    tourCategoryHint: 'Turga mos kategoriyani tanlang',
+    tourCategoryHint: 'Turga mos kategoriyalarni tanlang (5 tagacha)',
     additionalInfo: 'Qo\'shimcha ma\'lumot',
     additionalInfoPlaceholder: 'Avviabilet: Toshkent - Kuala Lumpur - Singapur - Bali - Kuala Lumpur - Toshkent\n - UzAirways: bagaj 20kg + 8 kg',
     coverImageHint: 'Maksimal hajm: 10MB (avtomatik siqiladi). Tavsiya: 16:9 nisbat. Istalgan o\'lchamdagi rasm yuklanadi.',
@@ -665,5 +667,11 @@ export const uz: Translations = {
 
   dateFormat: {
     placeholder: 'kk.oo.yyyy',
+    monthNames: {
+      '01': 'Yanvar', '02': 'Fevral', '03': 'Mart', '04': 'Aprel',
+      '05': 'May', '06': 'Iyun', '07': 'Iyul', '08': 'Avgust',
+      '09': 'Sentyabr', '10': 'Oktyabr', '11': 'Noyabr', '12': 'Dekabr',
+    },
+    dateOrMonthRequired: 'Sana yoki oyni ko\'rsatish majburiy',
   },
 };

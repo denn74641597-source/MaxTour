@@ -94,6 +94,10 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
     initialData?.category ? initialData.category.split(',').filter(Boolean) : []
   );
   const [additionalInfo, setAdditionalInfo] = useState<string>(initialData?.additional_info ?? '');
+  const [departureMonth, setDepartureMonth] = useState<string>(
+    (initialData as Record<string, unknown>)?.departure_month as string ?? ''
+  );
+  const [coverKey, setCoverKey] = useState(0);
 
   const isEditing = !!tourId;
 
@@ -126,7 +130,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   }
 
   function addDestination() {
-    if (!newDestination.trim() || destinations.length >= 3) return;
+    if (!newDestination.trim() || destinations.length >= 10) return;
     setDestinations((prev) => [...prev, newDestination.trim()]);
     setNewDestination('');
   }
@@ -195,6 +199,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       country: tourType === 'international' ? (data.country || null) : 'O\'zbekiston',
       city: tourType === 'international' ? (data.city || null) : (data.district || null),
       departure_date: data.departure_date || null,
+      departure_month: departureMonth || null,
       return_date: data.return_date || null,
       duration_days: data.duration_days ? Number(data.duration_days) : null,
       price: hotels.length > 0 ? hotels[0].price : Number(data.price),
@@ -377,7 +382,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-muted bg-surface-container-low">
                 {TOUR_CATEGORIES.map((cat) => {
                   const isSelected = selectedCategories.includes(cat);
-                  const isDisabled = !isSelected && selectedCategories.length >= 3;
+                  const isDisabled = !isSelected && selectedCategories.length >= 5;
                   return (
                     <button
                       key={cat}
@@ -385,7 +390,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                       onClick={() => {
                         if (isSelected) {
                           setSelectedCategories(prev => prev.filter(c => c !== cat));
-                        } else if (selectedCategories.length < 3) {
+                        } else if (selectedCategories.length < 5) {
                           setSelectedCategories(prev => [...prev, cat]);
                         }
                       }}
@@ -405,7 +410,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 })}
               </div>
               {selectedCategories.length > 0 && (
-                <p className="text-xs text-muted-foreground mt-1">{selectedCategories.length}/3</p>
+                <p className="text-xs text-muted-foreground mt-1">{selectedCategories.length}/5</p>
               )}
             </div>
 
@@ -600,14 +605,33 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 <Input type="date" {...register('departure_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
               <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationDays}</Label>
-                <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureMonth}</Label>
+                <select
+                  value={departureMonth}
+                  onChange={(e) => setDepartureMonth(e.target.value)}
+                  className="mt-1.5 w-full h-11 rounded-xl border border-muted bg-surface-container-low px-3 text-sm text-foreground"
+                >
+                  <option value="">{t.agencyTours.departureMonthPlaceholder}</option>
+                  {Object.entries(t.dateFormat.monthNames).map(([key, name]) => (
+                    <option key={key} value={`${new Date().getFullYear()}-${key}`}>{name} {new Date().getFullYear()}</option>
+                  ))}
+                  {Object.entries(t.dateFormat.monthNames).map(([key, name]) => (
+                    <option key={`next-${key}`} value={`${new Date().getFullYear() + 1}-${key}`}>{name} {new Date().getFullYear() + 1}</option>
+                  ))}
+                </select>
+                <p className="text-xs text-muted-foreground mt-1">{t.dateFormat.dateOrMonthRequired}</p>
               </div>
             </div>
 
-            <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
-              <Input type="date" {...register('return_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationDays}</Label>
+                <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
+                <Input type="date" {...register('return_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+              </div>
             </div>
           </div>
         </section>
@@ -853,8 +877,12 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
         <section>
           <SectionHeader icon={<ImageIcon className="h-4 w-4" />} label={t.agencyTours.coverImage} />
           <ImageUploader
+            key={coverKey}
             value={coverUrl}
-            onChange={setCoverUrl}
+            onChange={(url) => {
+              setCoverUrl(url);
+              if (!url) setCoverKey((k) => k + 1);
+            }}
             label={t.agencyTours.uploadCoverImage}
           />
           <p className="text-xs text-muted-foreground mt-1.5">{t.agencyTours.coverImageHint}</p>
@@ -934,7 +962,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
                 <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.departureDate}</p>
-                  <p className="text-sm font-semibold">{watch('departure_date') || 'вЂ”'}</p>
+                  <p className="text-sm font-semibold">{watch('departure_date') || (departureMonth ? (() => { const [y, m] = departureMonth.split('-'); return `${t.dateFormat.monthNames[m as keyof typeof t.dateFormat.monthNames] ?? m} ${y}`; })() : '—')}</p>
                 </div>
                 <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.totalSeats}</p>

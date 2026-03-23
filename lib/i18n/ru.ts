@@ -339,6 +339,8 @@ export const ru: Translations = {
     cityPlaceholder: 'Стамбул',
     selectCountryFirst: 'Сначала выберите страну',
     departureDate: 'Дата вылета',
+    departureMonth: 'Месяц вылета',
+    departureMonthPlaceholder: 'Выберите месяц',
     returnDate: 'Дата возвращения',
     durationDays: 'Длительность (дней)',
     pricingAvailability: 'Цена и доступность',
@@ -362,7 +364,7 @@ export const ru: Translations = {
     destinations: 'Города маршрута',
     addDestination: 'Добавить город',
     destinationPlaceholder: 'Название города...',
-    destinationsHint: 'Укажите 1-3 города (например: Стамбул, Анталья)',
+    destinationsHint: 'Укажите города маршрута (например: Стамбул, Анталья, Дубай)',
     airline: 'Авиакомпания',
     airlinePlaceholder: 'Turkish Airlines',
     extraCharges: 'Дополнительные доплаты',
@@ -371,7 +373,7 @@ export const ru: Translations = {
     extraChargeAmount: 'Цена',
     extraChargesHint: 'Необязательно: заполните только если есть доплаты',
     includedServices: 'Включённые услуги',
-    includedServicesHint: 'Добавьте все включённые услуги. Например: Авиабилет и маршрут (Ташкент - Куала Лумпур - Бали - Куала Лумпур - Ташкент), UzAirways: багаж 20кг + 8 кг',
+    includedServicesHint: 'Полный список включённых услуг обязателен: маршрут перелёта (например: Ташкент – Куала Лумпур – Ташкент), авиакомпания, норма багажа, отель и тип питания, трансфер, мед. страховка, экскурсии и другие дополнительные услуги.',
     addIncludedService: 'Добавить включённую услугу...',
     excludedServices: 'Не включённые услуги',
     addExcludedService: 'Добавить не включённую услугу...',
@@ -391,7 +393,7 @@ export const ru: Translations = {
     operatorPhonePlaceholder: '+998 90 123 45 67',
     operatorPhoneHint: 'Введите номер телефона оператора',
     tourCategory: 'Категория тура',
-    tourCategoryHint: 'Выберите подходящую категорию для тура',
+    tourCategoryHint: 'Выберите подходящие категории для тура (до 5)',
     additionalInfo: 'Дополнительная информация',
     additionalInfoPlaceholder: 'Авиабилет: Ташкент - Куала Лумпур - Сингапур - Бали - Куала Лумпур - Ташкент\n - UzAirways: багаж 20кг + 8 кг',
     coverImageHint: 'Максимальный размер: 10MB (автосжатие). Рекомендация: соотношение 16:9. Загружается изображение любого размера.',
@@ -665,5 +667,11 @@ export const ru: Translations = {
 
   dateFormat: {
     placeholder: 'дд.мм.гггг',
+    monthNames: {
+      '01': 'Январь', '02': 'Февраль', '03': 'Март', '04': 'Апрель',
+      '05': 'Май', '06': 'Июнь', '07': 'Июль', '08': 'Август',
+      '09': 'Сентябрь', '10': 'Октябрь', '11': 'Ноябрь', '12': 'Декабрь',
+    },
+    dateOrMonthRequired: 'Необходимо указать дату или месяц',
   },
 };
