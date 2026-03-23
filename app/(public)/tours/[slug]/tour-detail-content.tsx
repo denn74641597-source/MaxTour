@@ -70,9 +70,9 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   }
 
   return (
-    <div className="fixed inset-0 z-40 overflow-y-auto pb-4 bg-background">
+    <div className="pb-4 bg-background">
       {/* Top App Bar */}
-      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-50">
+      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
         <Link
           href="/tours"
           className="p-1"
