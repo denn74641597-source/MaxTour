@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import {
   MapPin, CalendarDays, Clock, Users,
@@ -26,6 +27,7 @@ interface TourDetailContentProps {
 
 export function TourDetailContent({ tour, similarTours = [] }: TourDetailContentProps) {
   const { t, language } = useTranslation();
+  const router = useRouter();
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [showContact, setShowContact] = useState(false);
 
@@ -72,13 +74,10 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   return (
     <div className="pb-4 bg-background">
       {/* Top App Bar */}
-      <div className="flex items-center justify-between px-4 py-3 bg-white/95 backdrop-blur">
-        <Link
-          href="/tours"
-          className="p-1"
-        >
+      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
+        <button onClick={() => router.back()} className="p-1">
           <ArrowLeft className="h-5 w-5" />
-        </Link>
+        </button>
         <h2 className="font-semibold text-sm">{t.tours.tourDetails}</h2>
         <button className="p-1">
           <Share2 className="h-5 w-5" />
