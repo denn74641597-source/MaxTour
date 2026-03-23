@@ -53,6 +53,83 @@ interface TourFormProps {
   tourLimit?: TourLimitInfo;
 }
 
+// Inline sub-component to add a combo country+city pair (avoids lifting search state)
+function ComboDestinationAdder({ language, onAdd, t }: { language: string; onAdd: (d: { country: string; city: string }) => void; t: ReturnType<typeof useTranslation>['t'] }) {
+  const [cs, setCs] = useState('');
+  const [cis, setCis] = useState('');
+  const [selCountry, setSelCountry] = useState('');
+
+  return (
+    <div className="flex gap-2 mt-2">
+      <div className="flex-1 relative">
+        {selCountry ? (
+          <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
+            <span className="flex-1 text-sm truncate">{selCountry}</span>
+            <button type="button" onClick={() => { setSelCountry(''); setCis(''); }} className="text-muted-foreground hover:text-foreground">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          <>
+            <Input
+              placeholder={t.agencyTours.countryPlaceholder}
+              value={cs}
+              onChange={(e) => setCs(e.target.value)}
+              className="rounded-xl border-muted bg-surface-container-low h-11"
+            />
+            {cs && (
+              <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
+                {COUNTRIES[language].filter(c => c.toLowerCase().includes(cs.toLowerCase())).map((country) => (
+                  <button key={country} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setSelCountry(country); setCs(''); setCis(''); }}>
+                    {country}
+                  </button>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      <div className="flex-1 relative">
+        {!selCountry ? (
+          <Input placeholder={t.agencyTours.selectCountryFirst} disabled className="rounded-xl border-muted bg-surface-container-low h-11" />
+        ) : (
+          <>
+            <Input
+              placeholder={t.agencyTours.cityPlaceholder}
+              value={cis}
+              onChange={(e) => setCis(e.target.value)}
+              className="rounded-xl border-muted bg-surface-container-low h-11"
+            />
+            {cis && (() => {
+              const cities = CITIES_BY_COUNTRY[language][selCountry] ?? [];
+              const filtered = cities.filter(c => c.toLowerCase().includes(cis.toLowerCase()));
+              return filtered.length > 0 ? (
+                <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
+                  {filtered.map((city) => (
+                    <button key={city} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { onAdd({ country: selCountry, city }); setSelCountry(''); setCis(''); }}>
+                      {city}
+                    </button>
+                  ))}
+                </div>
+              ) : null;
+            })()}
+          </>
+        )}
+      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        disabled={!selCountry}
+        onClick={() => { if (selCountry) { onAdd({ country: selCountry, city: '' }); setSelCountry(''); setCis(''); } }}
+        className="rounded-xl h-11 w-11 shrink-0"
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
 export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   const router = useRouter();
   const { t, language } = useTranslation();
@@ -98,8 +175,17 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
     (initialData as Record<string, unknown>)?.departure_month as string ?? ''
   );
   const [coverKey, setCoverKey] = useState(0);
+  // Combo tour: extra country+city pairs
+  const [comboDestinations, setComboDestinations] = useState<{ country: string; city: string }[]>(() => {
+    // Parse from destinations if editing (stored as "Country - City")
+    const dests = initialData?.destinations ?? [];
+    return dests
+      .filter(d => d.includes(' - '))
+      .map(d => { const [country, ...rest] = d.split(' - '); return { country, city: rest.join(' - ') }; });
+  });
 
   const isEditing = !!tourId;
+  const isCombo = selectedCategories.includes('combo');
 
   const {
     register,
@@ -212,7 +298,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       hotel_booking_url: hotels.length > 0 ? hotels[0].booking_url : (data.hotel_booking_url || null),
       hotel_images: hotels.length > 0 ? hotels[0].images : [],
       hotels: hotels,
-      destinations: destinations,
+      destinations: isCombo
+        ? comboDestinations.filter(d => d.country).map(d => `${d.country} - ${d.city || ''}`.replace(/ - $/, ''))
+        : destinations,
       airline: tourType === 'international' ? (data.airline || null) : null,
       extra_charges: extraCharges,
       meal_type: data.meal_type || 'none',
@@ -490,6 +578,36 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                     )}
                   </div>
                 </div>
+              </div>
+            )}
+
+
+            {/* Combo Tour: Additional Country+City pairs */}
+            {!isDomestic && isCombo && (
+              <div>
+                <Label className="text-sm font-medium text-foreground">Qo&apos;shimcha mamlakatlar va shaharlar</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">Kombi tur uchun 5 tagacha qo&apos;shimcha mamlakat va shahar qo&apos;shing</p>
+                {comboDestinations.length > 0 && (
+                  <div className="space-y-2 mt-2">
+                    {comboDestinations.map((dest, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-primary/5 rounded-xl px-3 py-2">
+                        <Globe className="h-3.5 w-3.5 text-primary shrink-0" />
+                        <span className="flex-1 text-sm font-medium text-foreground">{dest.country}{dest.city ? ` \u2014 ${dest.city}` : ''}</span>
+                        <button type="button" onClick={() => setComboDestinations(prev => prev.filter((_, idx) => idx !== i))} className="text-muted-foreground hover:text-red-500">
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {comboDestinations.length < 5 && (
+                  <ComboDestinationAdder
+                    language={language}
+                    onAdd={(dest) => setComboDestinations(prev => [...prev, dest])}
+                    t={t}
+                  />
+                )}
+                <p className="text-xs text-muted-foreground mt-1">{comboDestinations.length}/5</p>
               </div>
             )}
 
