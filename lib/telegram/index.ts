@@ -96,15 +96,30 @@ export function getTelegramUser() {
 
 /** Initialize the Telegram Mini App (call on mount) */
 export function initTelegramApp() {
-  const webapp = getTelegramWebApp();
-  if (webapp) {
-    webapp.ready();
-    webapp.expand();
-    // Prevent swipe-to-close when scrolling content
-    if (typeof webapp.disableVerticalSwipes === 'function') {
-      webapp.disableVerticalSwipes();
+  function init() {
+    const webapp = getTelegramWebApp();
+    if (webapp) {
+      webapp.ready();
+      webapp.expand();
+      if (typeof webapp.disableVerticalSwipes === 'function') {
+        webapp.disableVerticalSwipes();
+      }
+      return true;
     }
+    return false;
   }
+
+  // Try immediately
+  if (init()) return;
+
+  // SDK may not be loaded yet — poll until available
+  let attempts = 0;
+  const interval = setInterval(() => {
+    attempts++;
+    if (init() || attempts > 50) {
+      clearInterval(interval);
+    }
+  }, 100);
 }
 
 /** Trigger haptic impact feedback (vibration) */

@@ -191,3 +191,8 @@
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
+
+/* Prevent Telegram Mini App pull-to-close gesture */
+html, body {
+  overscroll-behavior-y: contain;
+}
