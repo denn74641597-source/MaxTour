@@ -160,14 +160,14 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
             <Button
               variant="outline"
               size="icon"
-              className="absolute top-4 right-4 h-9 w-9 rounded-full bg-white/80 backdrop-blur"
+              className="absolute top-4 right-4 h-9 w-9 rounded-full bg-card/80 backdrop-blur"
               onClick={handleEdit}
             >
               <Pencil className="h-4 w-4" />
             </Button>
 
             {/* Logo */}
-            <div className="relative h-24 w-24 rounded-full overflow-hidden ring-4 ring-white shadow-lg bg-white mb-4">
+            <div className="relative h-24 w-24 rounded-full overflow-hidden ring-4 ring-card shadow-lg bg-card mb-4">
               <Image
                 src={agency.logo_url || placeholderImage(200, 200, agency.name[0])}
                 alt={agency.name}

@@ -67,9 +67,9 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
   ];
 
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-background min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
+      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background/95 backdrop-blur z-10">
         <button onClick={() => router.back()} className="p-1">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -219,7 +219,7 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-slate-200">
+      <div className="border-b border-border">
         <div className="flex px-4">
           {tabs.map((tab) => (
             <button
@@ -429,7 +429,7 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
 
   return (
     <Link href={`/tours/${tour.slug}`}>
-      <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-slate-100">
+      <div className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border">
         <div className="relative aspect-[16/10] w-full overflow-hidden">
           <Image
             src={tour.cover_image_url || placeholderImage(600, 375, tour.title)}
@@ -439,7 +439,7 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
             sizes="(max-width: 768px) 100vw, 480px"
           />
           <button
-            className="absolute top-3 right-3 p-2 bg-white/80 backdrop-blur rounded-full"
+            className="absolute top-3 right-3 p-2 bg-card/80 backdrop-blur rounded-full"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
           >
             <Heart className={`h-4 w-4 ${liked ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
@@ -452,7 +452,7 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
             </div>
           )}
           {maxStars && (
-            <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur rounded-lg">
+            <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-card/90 backdrop-blur rounded-lg">
               <Star className="h-3 w-3 text-tertiary fill-tertiary" />
               <span className="text-xs font-bold">{maxStars}</span>
             </div>

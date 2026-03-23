@@ -132,7 +132,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
             }
           </p>
           <Link href="/agency/subscription">
-            <button className="mt-3 w-full bg-white text-indigo-700 font-bold text-sm py-2.5 rounded-xl hover:bg-surface transition-colors">
+            <button className="mt-3 w-full bg-card text-indigo-700 dark:text-indigo-300 font-bold text-sm py-2.5 rounded-xl hover:bg-surface transition-colors">
               {t.agency.upgrade}
             </button>
           </Link>

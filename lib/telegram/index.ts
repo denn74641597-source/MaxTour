@@ -108,6 +108,11 @@ export function initTelegramApp() {
     document.documentElement.style.setProperty('--tg-safe-bottom', `${sa.bottom}px`);
   }
 
+  function applyTheme(webapp: TelegramWebApp) {
+    const isDark = webapp.colorScheme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+  }
+
   function init() {
     const webapp = getTelegramWebApp();
     if (webapp) {
@@ -117,10 +122,12 @@ export function initTelegramApp() {
         webapp.disableVerticalSwipes();
       }
       applySafeArea(webapp);
+      applyTheme(webapp);
       // Listen for safe area changes
       if (typeof webapp.onEvent === 'function') {
         webapp.onEvent('safeAreaChanged', () => applySafeArea(webapp));
         webapp.onEvent('contentSafeAreaChanged', () => applySafeArea(webapp));
+        webapp.onEvent('themeChanged', () => applyTheme(webapp));
       }
       return true;
     }
@@ -129,6 +136,15 @@ export function initTelegramApp() {
 
   // Try immediately
   if (init()) return;
+
+  // If not inside Telegram, follow system preference
+  if (typeof window !== 'undefined' && !window.Telegram?.WebApp?.initData) {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    document.documentElement.classList.toggle('dark', mq.matches);
+    mq.addEventListener('change', (e) => {
+      document.documentElement.classList.toggle('dark', e.matches);
+    });
+  }
 
   // SDK may not be loaded yet — poll until available
   let attempts = 0;
