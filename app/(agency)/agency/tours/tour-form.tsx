@@ -288,6 +288,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
       departure_month: departureMonth || null,
       return_date: data.return_date || null,
       duration_days: data.duration_days ? Number(data.duration_days) : null,
+      duration_nights: data.duration_nights ? Number(data.duration_nights) : null,
       price: hotels.length > 0 ? hotels[0].price : Number(data.price),
       old_price: data.old_price ? Number(data.old_price) : null,
       currency: tourType === 'domestic' ? 'UZS' : 'USD',
@@ -743,8 +744,17 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationDays}</Label>
-                <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationLabel}</Label>
+                <div className="flex gap-2 mt-1.5">
+                  <div className="relative flex-1">
+                    <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="rounded-xl border-muted bg-surface-container-low h-11 pr-14" />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground pointer-events-none">{t.agencyTours.daysSuffix}</span>
+                  </div>
+                  <div className="relative flex-1">
+                    <Input type="number" min={0} placeholder="6" {...register('duration_nights')} className="rounded-xl border-muted bg-surface-container-low h-11 pr-16" />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground pointer-events-none">{t.agencyTours.nightsSuffix}</span>
+                  </div>
+                </div>
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
@@ -1075,8 +1085,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   </p>
                 </div>
                 <div className="bg-surface-container-low rounded-xl p-3">
-                  <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.durationDays}</p>
-                  <p className="text-lg font-bold">{watch('duration_days') || 'вЂ”'} {t.common.days || 'kun'}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.durationLabel}</p>
+                  <p className="text-lg font-bold">{watch('duration_days') || '—'} {t.agencyTours.daysSuffix}{watch('duration_nights') ? ` / ${watch('duration_nights')} ${t.agencyTours.nightsSuffix}` : ''}</p>
                 </div>
                 <div className="bg-surface-container-low rounded-xl p-3">
                   <p className="text-[10px] text-muted-foreground uppercase font-medium">{t.agencyTours.departureDate}</p>

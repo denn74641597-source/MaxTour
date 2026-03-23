@@ -303,6 +303,10 @@ export interface Translations {
     departureMonthPlaceholder: string;
     returnDate: string;
     durationDays: string;
+    durationNights: string;
+    durationLabel: string;
+    daysSuffix: string;
+    nightsSuffix: string;
     pricingAvailability: string;
     price: string;
     oldPrice: string;

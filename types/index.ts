@@ -123,6 +123,7 @@ export interface Tour {
   departure_month: string | null;
   return_date: string | null;
   duration_days: number | null;
+  duration_nights: number | null;
   price: number;
   old_price: number | null;
   currency: Currency;
