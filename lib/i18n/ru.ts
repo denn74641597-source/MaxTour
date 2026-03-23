@@ -57,7 +57,7 @@ export const ru: Translations = {
     leads: 'Заявки',
     interested: 'Заинтересованные',
     requests: 'Запросы',
-    subscription: 'Подписка',
+    subscription: 'Подписчики',
     agencies: 'Агентства',
     overview: 'Обзор',
     featured: 'Рекомендации',
@@ -271,7 +271,7 @@ export const ru: Translations = {
     activeTours: 'Активные туры',
     totalLeads: 'Всего заявок',
     featuredTours: 'Рекомендуемые туры',
-    subscription: 'Подписка',
+    subscription: 'Подписчики',
     newTour: '+ Новый тур',
     viewLeads: 'Смотреть заявки',
     editProfile: 'Редактировать профиль',
@@ -502,15 +502,12 @@ export const ru: Translations = {
 
   // ─── Subscription Page ───
   subscriptionPage: {
-    title: 'Подписка',
-    subtitle: 'Управление планом подписки',
-    currentPlan: 'Текущий план',
-    expires: 'Истекает',
-    availablePlans: 'Доступные планы',
-    activeTours: 'активных туров',
-    featuredPlacement: 'Рекомендуемое размещение',
-    prioritySupport: 'Приоритетная поддержка',
-    paymentNote: 'Интеграция оплаты скоро будет доступна. Для изменения плана обратитесь в поддержку.',
+    title: 'Подписчики',
+    subtitle: 'Пользователи, подписанные на вас',
+    totalFollowers: 'Всего подписчиков',
+    anonymousUser: 'Пользователь',
+    noFollowers: 'Подписчиков пока нет',
+    noFollowersHint: 'Публикуйте больше туров — пользователи будут подписываться на вас',
   },
 
   // ─── Image Uploader ───

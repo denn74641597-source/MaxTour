@@ -54,7 +54,7 @@ export function AdminSubscriptionsContent({ plans, subscriptions }: AdminSubscri
                   <div>
                     <h3 className="font-semibold text-sm">{sub.agency?.name}</h3>
                     <p className="text-xs text-muted-foreground">
-                      Plan: {sub.plan?.name} · {t.subscriptionPage.expires}: {formatDate(sub.ends_at)}
+                      Plan: {sub.plan?.name} · Expires: {formatDate(sub.ends_at)}
                     </p>
                   </div>
                   <StatusBadge status={sub.status} />
