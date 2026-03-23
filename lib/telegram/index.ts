@@ -64,6 +64,8 @@ export interface TelegramWebApp {
   };
   openLink: (url: string) => void;
   openTelegramLink: (url: string) => void;
+  disableVerticalSwipes: () => void;
+  enableVerticalSwipes: () => void;
   showPopup: (params: {
     title?: string;
     message: string;
@@ -98,6 +100,10 @@ export function initTelegramApp() {
   if (webapp) {
     webapp.ready();
     webapp.expand();
+    // Prevent swipe-to-close when scrolling content
+    if (typeof webapp.disableVerticalSwipes === 'function') {
+      webapp.disableVerticalSwipes();
+    }
   }
 }
 

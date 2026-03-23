@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { hapticFeedback } from '@/lib/telegram';
+import { hapticFeedback, initTelegramApp } from '@/lib/telegram';
 
 /**
  * Global haptic feedback provider.
@@ -9,6 +9,11 @@ import { hapticFeedback } from '@/lib/telegram';
  * and triggers vibration automatically — no need to add haptic to each element.
  */
 export function HapticProvider() {
+  useEffect(() => {
+    // Initialize Telegram Mini App (expand, disable vertical swipes, etc.)
+    initTelegramApp();
+  }, []);
+
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       const target = e.target as HTMLElement | null;
