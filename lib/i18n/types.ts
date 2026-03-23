@@ -60,6 +60,7 @@ export interface Translations {
     adminPanel: string;
     agencyPanel: string;
     home: string;
+    verification: string;
   };
   home: {
     searchPlaceholder: string;
@@ -252,6 +253,24 @@ export interface Translations {
     renewsIn: string;
     days: string;
     upgrade: string;
+  };
+  verification: {
+    title: string;
+    description: string;
+    uploadCertificate: string;
+    uploadHint: string;
+    pending: string;
+    pendingDescription: string;
+    approved: string;
+    approvedDescription: string;
+    rejected: string;
+    rejectedDescription: string;
+    resubmit: string;
+    submit: string;
+    submitting: string;
+    noAgency: string;
+    adminNote: string;
+    successMessage: string;
   };
   agencyTours: {
     title: string;

@@ -389,23 +389,6 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
 
 
       </div>
-
-      {/* Verified Badge Card */}
-      {agency.is_verified && (
-        <div className="px-4 pb-6">
-          <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center shrink-0 mt-0.5">
-              <VerifiedBadge className="text-white h-5 w-5" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm text-green-900">{t.agencyProfile.verifiedByMaxTour}</p>
-              <p className="text-xs text-green-700 mt-0.5 leading-relaxed">
-                {t.agencyProfile.verifiedDescription}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

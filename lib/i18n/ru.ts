@@ -65,6 +65,7 @@ export const ru: Translations = {
     adminPanel: 'Админ панель',
     agencyPanel: 'Панель агентства',
     home: 'Главная',
+    verification: 'Верификация',
   },
 
   // ─── Home Page ───
@@ -292,7 +293,25 @@ export const ru: Translations = {
     upgrade: 'Улучшить',
   },
 
-  // ─── Agency Tours ───
+  // ─── Verification ───
+  verification: {
+    title: 'Верификация',
+    description: 'Загрузите сертификат вашего агентства в формате PDF для прохождения верификации.',
+    uploadCertificate: 'Загрузить сертификат',
+    uploadHint: 'Формат PDF, до 10МБ',
+    pending: 'На рассмотрении',
+    pendingDescription: 'Ваш запрос находится на рассмотрении. Результат будет сообщён в ближайшее время.',
+    approved: 'Подтверждено',
+    approvedDescription: 'Ваше агентство успешно верифицировано. Бейдж проверенного агентства присвоен.',
+    rejected: 'Отклонено',
+    rejectedDescription: 'К сожалению, ваш запрос отклонён. Вы можете подать повторную заявку с новым сертификатом.',
+    resubmit: 'Повторно отправить',
+    submit: 'Отправить',
+    submitting: 'Отправка...',
+    noAgency: 'Сначала создайте профиль агентства.',
+    adminNote: 'Комментарий администратора',
+    successMessage: 'Сертификат успешно отправлен!',
+  },
   agencyTours: {
     title: 'Туры',
     newTour: 'Новый тур',

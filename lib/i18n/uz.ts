@@ -65,6 +65,7 @@ export const uz: Translations = {
     adminPanel: 'Admin panel',
     agencyPanel: 'Agentlik paneli',
     home: 'Bosh sahifa',
+    verification: 'Tasdiqlash',
   },
 
   // ─── Home Page ───
@@ -292,7 +293,25 @@ export const uz: Translations = {
     upgrade: 'Yangilash',
   },
 
-  // ─── Agency Tours ───
+  // ─── Verification ───
+  verification: {
+    title: 'Tasdiqlash',
+    description: 'Agentligingizni tasdiqlash uchun guvohnomangizni PDF shaklida yuklang.',
+    uploadCertificate: 'Guvohnomani yuklash',
+    uploadHint: 'PDF formatida, 10MB gacha',
+    pending: 'Ko\'rib chiqilmoqda',
+    pendingDescription: 'Sizning so\'rovingiz ko\'rib chiqilmoqda. Natija tez orada ma\'lum bo\'ladi.',
+    approved: 'Tasdiqlangan',
+    approvedDescription: 'Agentligingiz muvaffaqiyatli tasdiqlandi. Tekshirilgan belgisi berildi.',
+    rejected: 'Rad etilgan',
+    rejectedDescription: 'Afsuski, so\'rovingiz rad etildi. Yangi guvohnoma bilan qayta ariza topshirishingiz mumkin.',
+    resubmit: 'Qayta yuborish',
+    submit: 'Yuborish',
+    submitting: 'Yuborilmoqda...',
+    noAgency: 'Avval agentlik profilini yarating.',
+    adminNote: 'Admin izohi',
+    successMessage: 'Guvohnoma muvaffaqiyatli yuborildi!',
+  },
   agencyTours: {
     title: 'Turlar',
     newTour: 'Yangi tur',

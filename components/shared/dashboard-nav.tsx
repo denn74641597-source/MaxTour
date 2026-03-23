@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Building2, MapPin, Users, CreditCard,
-  Menu, MessageSquareText, UserCheck, BarChart3, Home
+  Menu, MessageSquareText, UserCheck, BarChart3, Home, ShieldCheck
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -25,6 +25,7 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
     { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
     { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
     { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
+    { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
     { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
@@ -35,6 +36,7 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
     { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
     { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
     { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
+    { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
     { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
@@ -43,6 +45,7 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
     { href: '/admin', label: t.nav.overview, icon: LayoutDashboard },
     { href: '/admin/agencies', label: t.nav.agencies, icon: Building2 },
     { href: '/admin/tours', label: t.nav.tours, icon: MapPin },
+    { href: '/admin/verification', label: t.nav.verification, icon: ShieldCheck },
     { href: '/admin/featured', label: t.nav.featured, icon: CreditCard },
     { href: '/admin/subscriptions', label: t.nav.subscriptions, icon: Users },
   ];

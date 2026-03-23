@@ -66,6 +66,18 @@ export interface Agency {
   updated_at: string;
 }
 
+export type VerificationStatus = 'pending' | 'approved' | 'rejected';
+
+export interface VerificationRequest {
+  id: string;
+  agency_id: string;
+  certificate_url: string;
+  status: VerificationStatus;
+  admin_note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface SubscriptionPlan {
   id: string;
   name: string;
