@@ -72,7 +72,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   }
 
   return (
-    <div className="pb-4 bg-background">
+    <div className="bg-white min-h-screen pb-4">
       {/* Top App Bar */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-white/95 backdrop-blur z-10">
         <button onClick={() => router.back()} className="p-1">
