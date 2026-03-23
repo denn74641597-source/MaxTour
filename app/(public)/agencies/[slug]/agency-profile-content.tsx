@@ -434,12 +434,6 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
               </span>
             </div>
           )}
-          {maxStars && (
-            <div className="absolute top-3 left-3 flex items-center gap-1 px-2 py-1 bg-card/90 backdrop-blur rounded-lg">
-              <Star className="h-3 w-3 text-tertiary fill-tertiary" />
-              <span className="text-xs font-bold">{maxStars}</span>
-            </div>
-          )}
         </div>
         <div className="p-3.5">
           <h3 className="font-bold text-base mb-1 line-clamp-1">{tour.title}</h3>

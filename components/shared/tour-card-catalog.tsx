@@ -125,17 +125,11 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
 
       {/* Content */}
       <Link href={`/tours/${tour.slug}`} className="block p-4">
-        {/* Title + Rating */}
-        <div className="flex justify-between items-start mb-1">
-          <h3 className="text-lg font-bold text-foreground leading-tight line-clamp-2 flex-1 mr-2">
+        {/* Title */}
+        <div className="mb-1">
+          <h3 className="text-lg font-bold text-foreground leading-tight line-clamp-2">
             {tour.title}
           </h3>
-          {maxStars && (
-            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-yellow-400/10 text-yellow-700 rounded text-xs font-bold shrink-0">
-              <Star className="h-3 w-3 fill-current" />
-              {maxStars.toFixed(1)}
-            </div>
-          )}
         </div>
 
         {/* Location + Duration */}

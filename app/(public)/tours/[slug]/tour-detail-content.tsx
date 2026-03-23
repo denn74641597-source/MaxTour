@@ -15,6 +15,7 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDate, placeholderImage } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
+import { useFavorites } from '@/hooks/use-favorites';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { LeadForm } from '@/components/shared/lead-form';
 import { TourCard } from '@/components/shared/tour-card';
@@ -30,6 +31,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   const router = useRouter();
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const { isFavorite, toggleFavorite } = useFavorites();
 
   const agency = tour.agency;
   const images = tour.images ?? [];
@@ -94,6 +96,13 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           priority
           sizes="100vw"
         />
+        {/* Favorite button */}
+        <button
+          onClick={() => toggleFavorite(tour.id)}
+          className="absolute top-3 right-3 p-2.5 bg-surface/90 backdrop-blur rounded-full shadow-ambient z-10"
+        >
+          <Heart className={`h-5 w-5 ${isFavorite(tour.id) ? 'text-red-500 fill-red-500' : 'text-white'}`} />
+        </button>
         {allImages.length > 1 && (
           <div className="absolute bottom-5 left-0 right-0 flex justify-center gap-2">
             {allImages.slice(0, 5).map((_: any, i: number) => (
