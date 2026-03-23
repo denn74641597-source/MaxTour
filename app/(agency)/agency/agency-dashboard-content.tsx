@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { MapPin, Users, Eye, Plus, Settings, Bell, Star, Home } from 'lucide-react';
+import { MapPin, Users, Eye, Plus, Settings, Bell, Star } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -74,13 +74,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
 
   return (
     <div className="space-y-6 pb-6">
-      {/* Mobile home button */}
-      <div className="md:hidden flex items-center justify-between mb-2">
-        <Link href="/" className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <Home className="h-4 w-4" />
-          <span>{t.errors.goHome}</span>
-        </Link>
-      </div>
+
 
       {/* Header */}
       <div className="flex items-center justify-between">

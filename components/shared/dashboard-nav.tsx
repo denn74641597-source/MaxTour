@@ -100,7 +100,7 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
             <SheetTrigger className="p-2 -mr-2 rounded-xl hover:bg-muted transition-colors">
               <Menu className="h-5 w-5 text-foreground" />
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 p-0">
+            <SheetContent side="right" className="w-72 p-0" style={{ paddingTop: 'var(--tg-safe-top, env(safe-area-inset-top, 0px))' }}>
               <SheetHeader className="px-4 py-4">
                 <SheetTitle className="text-base font-semibold">
                   {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
