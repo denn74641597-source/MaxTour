@@ -162,11 +162,19 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
             </span>
           </div>
         )}
-        {tour.departure_date && (
+        {(tour.departure_date || tour.departure_month) && (
           <div className="bg-surface p-2 rounded-xl shadow-ambient flex flex-col items-center">
             <CalendarDays className="h-4 w-4 text-primary mb-0.5" />
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.tours.departure}</span>
-            <span className="text-xs font-bold text-foreground">{formatDate(tour.departure_date)}</span>
+            <span className="text-xs font-bold text-foreground">
+              {tour.departure_date
+                ? formatDate(tour.departure_date)
+                : (() => {
+                    const [y, m] = (tour.departure_month as string).split('-');
+                    return `${t.dateFormat.monthNames[m as keyof typeof t.dateFormat.monthNames] ?? m} ${y}`;
+                  })()
+              }
+            </span>
           </div>
         )}
         {tour.seats_left !== null && (
@@ -174,7 +182,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
             <Users className="h-4 w-4 text-primary mb-0.5" />
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.common.seatsLeft}</span>
             <span className={`text-xs font-bold ${tour.seats_left <= 5 ? 'text-red-500' : 'text-foreground'}`}>
-              {tour.seats_left} {t.common.left}
+              {tour.seats_left} {t.common.seats}
             </span>
           </div>
         )}

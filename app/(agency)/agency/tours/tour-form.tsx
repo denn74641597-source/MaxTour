@@ -19,7 +19,7 @@ import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
 import { Loader2, MapPin, Plus, X, Hotel, Star, Search, Globe, Map, Mountain, Landmark, Heart, Compass, TreePine, ArrowLeft, Send, CalendarDays, Clock, DollarSign, Utensils, Bus, Plane, Image as ImageIcon, FileText, CheckCircle2, Phone, User, Eye, AlertTriangle } from 'lucide-react';
 import type { TourLimitInfo } from '@/features/agencies/queries';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
@@ -208,6 +208,15 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   });
 
   const title = watch('title');
+  const watchedDepartureDate = watch('departure_date');
+  const watchedReturnDate = watch('return_date');
+
+  // Clear month when dates are entered
+  useEffect(() => {
+    if (watchedDepartureDate || watchedReturnDate) {
+      setDepartureMonth('');
+    }
+  }, [watchedDepartureDate, watchedReturnDate]);
 
   function autoSlug() {
     if (title) {
@@ -720,16 +729,25 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
         <section>
           <SectionHeader icon={<CalendarDays className="h-4 w-4" />} label={t.agencyTours.dates} />
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+            {/* Row 1: Departure date & Return date */}
+            <div className={`grid grid-cols-2 gap-3 transition-opacity duration-200 ${departureMonth ? 'opacity-40 pointer-events-none' : ''}`}>
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureDate}</Label>
                 <Input type="date" {...register('departure_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
               <div>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
+                <Input type="date" {...register('return_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+              </div>
+            </div>
+
+            {/* Row 2: Departure month & Duration */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className={`transition-opacity duration-200 ${(watch('departure_date') || watch('return_date')) ? 'opacity-40 pointer-events-none' : ''}`}>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureMonth}</Label>
                 <select
                   value={departureMonth}
-                  onChange={(e) => setDepartureMonth(e.target.value)}
+                  onChange={(e) => { setDepartureMonth(e.target.value); if (e.target.value) { setValue('departure_date', ''); setValue('return_date', ''); } }}
                   className="mt-1.5 w-full h-11 rounded-xl border border-muted bg-surface-container-low px-3 text-sm text-foreground"
                 >
                   <option value="">{t.agencyTours.departureMonthPlaceholder}</option>
@@ -740,11 +758,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                     <option key={`next-${key}`} value={`${new Date().getFullYear() + 1}-${key}`}>{name} {new Date().getFullYear() + 1}</option>
                   ))}
                 </select>
-                <p className="text-xs text-muted-foreground mt-1">{t.dateFormat.dateOrMonthRequired}</p>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationLabel}</Label>
                 <div className="flex gap-2 mt-1.5">
@@ -758,11 +772,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   </div>
                 </div>
               </div>
-              <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
-                <Input type="date" {...register('return_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
-              </div>
             </div>
+            <p className="text-xs text-muted-foreground">{t.dateFormat.dateOrMonthRequired}</p>
           </div>
         </section>
 

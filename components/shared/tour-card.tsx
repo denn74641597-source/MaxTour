@@ -72,16 +72,22 @@ export function TourCard({ tour, compact }: TourCardProps) {
                 {tour.duration_days} {t.common.days}{tour.duration_nights ? ` | ${tour.duration_nights} ${t.common.nights}` : ''}
               </span>
             )}
-            {tour.departure_date && (
+            {(tour.departure_date || tour.departure_month) && (
               <span className="flex items-center gap-1">
                 <CalendarDays className="h-3 w-3" />
-                {formatDate(tour.departure_date)}
+                {tour.departure_date
+                  ? formatDate(tour.departure_date)
+                  : (() => {
+                      const [y, m] = (tour.departure_month as string).split('-');
+                      return `${t.dateFormat.monthNames[m as keyof typeof t.dateFormat.monthNames] ?? m} ${y}`;
+                    })()
+                }
               </span>
             )}
             {tour.seats_left !== null && (
               <span className="flex items-center gap-1">
                 <Users className="h-3 w-3" />
-                {tour.seats_left} {t.common.left}
+                {tour.seats_left} {t.common.seats}
               </span>
             )}
           </div>
