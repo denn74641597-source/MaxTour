@@ -4,7 +4,9 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Coins, Star, Flame, TrendingUp, Eye, Zap, ShoppingCart, Shield } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { purchaseMaxCoins, promoteTour, COIN_PRICE_UZS } from '@/features/maxcoin/actions';
+import { purchaseMaxCoins, promoteTour } from '@/features/maxcoin/actions';
+
+const COIN_PRICE_UZS = 15000;
 import { toast } from 'sonner';
 import type { Tour, PromotionTier, TourPromotion, MaxCoinTransaction, PromotionPlacement } from '@/types';
 

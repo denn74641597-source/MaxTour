@@ -41,6 +41,11 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
   return { success: true, newBalance: currentBalance + coins };
 }
 
+/** Get coin price in UZS */
+export async function getCoinPriceUzs() {
+  return COIN_PRICE_UZS;
+}
+
 /** Promote a tour using a fixed pricing tier */
 export async function promoteTour(agencyId: string, tourId: string, tierId: string) {
   const supabase = await createServerSupabaseClient();
@@ -131,5 +136,3 @@ async function getBalance(client: Awaited<ReturnType<typeof createAdminClient>>,
     .single();
   return (data as { maxcoin_balance: number } | null)?.maxcoin_balance ?? 0;
 }
-
-export { COIN_PRICE_UZS };
