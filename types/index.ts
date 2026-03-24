@@ -322,21 +322,11 @@ export interface TourPromotion {
   tour?: Tour;
 }
 
-export interface MaxCoinPackage {
-  id: string;
-  coins: number;
-  bonus_coins: number;
-  price_uzs: number;
-  is_popular: boolean;
-  sort_order: number;
-  created_at: string;
-}
-
-export interface PromotionPricing {
+export interface PromotionTier {
   id: string;
   placement: PromotionPlacement;
-  cost_per_day: number;
-  min_days: number;
-  max_days: number;
+  coins: number;
+  days: number;
+  sort_order: number;
   created_at: string;
 }

@@ -3,14 +3,16 @@
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 import type { PromotionPlacement } from '@/types';
 
-/** Purchase MaxCoins (simulate — in production this would be after payment confirmation) */
-export async function purchaseMaxCoins(agencyId: string, packageId: string) {
-  const supabase = await createServerSupabaseClient();
+const COIN_PRICE_UZS = 15000; // UZS per coin
 
+/** Purchase MaxCoins via slider (min 5, max 200, step 3) */
+export async function purchaseMaxCoins(agencyId: string, coins: number) {
+  if (coins < 5 || coins > 200) return { error: 'Invalid coin amount' };
+
+  const supabase = await createServerSupabaseClient();
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Not authenticated' };
 
-  // Verify ownership
   const { data: agency } = await supabase
     .from('agencies')
     .select('id, owner_id')
@@ -19,43 +21,32 @@ export async function purchaseMaxCoins(agencyId: string, packageId: string) {
     .single();
   if (!agency) return { error: 'Agency not found' };
 
-  // Get package
   const admin = await createAdminClient();
-  const { data: pkg } = await admin
-    .from('maxcoin_packages')
-    .select('*')
-    .eq('id', packageId)
-    .single();
-  if (!pkg) return { error: 'Package not found' };
+  const currentBalance = await getBalance(admin, agencyId);
+  const priceUzs = coins * COIN_PRICE_UZS;
 
-  const totalCoins = pkg.coins + pkg.bonus_coins;
-
-  // Credit coins
   const { error: balanceError } = await admin
     .from('agencies')
-    .update({ maxcoin_balance: (await getBalance(admin, agencyId)) + totalCoins })
+    .update({ maxcoin_balance: currentBalance + coins })
     .eq('id', agencyId);
   if (balanceError) return { error: balanceError.message };
 
-  // Record transaction
   await admin.from('maxcoin_transactions').insert({
     agency_id: agencyId,
-    amount: totalCoins,
+    amount: coins,
     type: 'purchase',
-    description: `${pkg.coins} MC + ${pkg.bonus_coins} bonus sotib olindi`,
+    description: `${coins} MC sotib olindi (${priceUzs.toLocaleString()} UZS)`,
   });
 
-  return { success: true, newBalance: (await getBalance(admin, agencyId)) };
+  return { success: true, newBalance: currentBalance + coins };
 }
 
-/** Promote a tour to a placement (featured / hot_deals / hot_tours) */
-export async function promoteTour(agencyId: string, tourId: string, placement: PromotionPlacement, days: number) {
+/** Promote a tour using a fixed pricing tier */
+export async function promoteTour(agencyId: string, tourId: string, tierId: string) {
   const supabase = await createServerSupabaseClient();
-
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return { error: 'Not authenticated' };
 
-  // Verify ownership
   const { data: agency } = await supabase
     .from('agencies')
     .select('id, owner_id')
@@ -64,7 +55,6 @@ export async function promoteTour(agencyId: string, tourId: string, placement: P
     .single();
   if (!agency) return { error: 'Agency not found' };
 
-  // Verify tour belongs to agency
   const { data: tour } = await supabase
     .from('tours')
     .select('id')
@@ -75,23 +65,16 @@ export async function promoteTour(agencyId: string, tourId: string, placement: P
 
   const admin = await createAdminClient();
 
-  // Get pricing
-  const { data: pricing } = await admin
-    .from('promotion_pricing')
+  const { data: tier } = await admin
+    .from('promotion_tiers')
     .select('*')
-    .eq('placement', placement)
+    .eq('id', tierId)
     .single();
-  if (!pricing) return { error: 'Pricing not found' };
+  if (!tier) return { error: 'Tier not found' };
 
-  if (days < pricing.min_days || days > pricing.max_days) {
-    return { error: `Days must be between ${pricing.min_days} and ${pricing.max_days}` };
-  }
-
-  const totalCost = pricing.cost_per_day * days;
   const balance = await getBalance(admin, agencyId);
-
-  if (balance < totalCost) {
-    return { error: 'Insufficient MaxCoin balance', required: totalCost, current: balance };
+  if (balance < tier.coins) {
+    return { error: 'Insufficient MaxCoin balance', required: tier.coins, current: balance };
   }
 
   // Check for existing active promotion
@@ -99,35 +82,31 @@ export async function promoteTour(agencyId: string, tourId: string, placement: P
     .from('tour_promotions')
     .select('id')
     .eq('tour_id', tourId)
-    .eq('placement', placement)
+    .eq('placement', tier.placement)
     .eq('is_active', true)
     .gte('ends_at', new Date().toISOString())
     .single();
-
   if (existing) return { error: 'Tour already has active promotion for this placement' };
 
   const now = new Date();
-  const endsAt = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
+  const endsAt = new Date(now.getTime() + tier.days * 24 * 60 * 60 * 1000);
 
-  // Debit coins
   const { error: balanceError } = await admin
     .from('agencies')
-    .update({ maxcoin_balance: balance - totalCost })
+    .update({ maxcoin_balance: balance - tier.coins })
     .eq('id', agencyId);
   if (balanceError) return { error: balanceError.message };
 
-  // Create promotion
   const { error: promoError } = await admin.from('tour_promotions').insert({
     tour_id: tourId,
     agency_id: agencyId,
-    placement,
-    cost_coins: totalCost,
+    placement: tier.placement,
+    cost_coins: tier.coins,
     starts_at: now.toISOString(),
     ends_at: endsAt.toISOString(),
   });
   if (promoError) return { error: promoError.message };
 
-  // Record transaction
   const typeMap: Record<PromotionPlacement, string> = {
     featured: 'spend_featured',
     hot_deals: 'spend_hot_deals',
@@ -135,13 +114,13 @@ export async function promoteTour(agencyId: string, tourId: string, placement: P
   };
   await admin.from('maxcoin_transactions').insert({
     agency_id: agencyId,
-    amount: -totalCost,
-    type: typeMap[placement],
-    description: `${placement} uchun ${days} kunlik reklama`,
+    amount: -tier.coins,
+    type: typeMap[tier.placement as PromotionPlacement],
+    description: `${tier.placement} uchun ${tier.days} kunlik reklama`,
     tour_id: tourId,
   });
 
-  return { success: true, newBalance: balance - totalCost };
+  return { success: true, newBalance: balance - tier.coins };
 }
 
 async function getBalance(client: Awaited<ReturnType<typeof createAdminClient>>, agencyId: string): Promise<number> {
@@ -152,3 +131,5 @@ async function getBalance(client: Awaited<ReturnType<typeof createAdminClient>>,
     .single();
   return (data as { maxcoin_balance: number } | null)?.maxcoin_balance ?? 0;
 }
+
+export { COIN_PRICE_UZS };

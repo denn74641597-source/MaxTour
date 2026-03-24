@@ -2,74 +2,68 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Coins, Star, Flame, TrendingUp, Eye, Zap, ShoppingCart, Shield, ChevronRight, Clock, Check } from 'lucide-react';
+import { Coins, Star, Flame, TrendingUp, Eye, Zap, ShoppingCart, Shield } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { purchaseMaxCoins, promoteTour } from '@/features/maxcoin/actions';
+import { purchaseMaxCoins, promoteTour, COIN_PRICE_UZS } from '@/features/maxcoin/actions';
 import { toast } from 'sonner';
-import type { Tour, MaxCoinPackage, PromotionPricing, TourPromotion, MaxCoinTransaction, PromotionPlacement } from '@/types';
+import type { Tour, PromotionTier, TourPromotion, MaxCoinTransaction, PromotionPlacement } from '@/types';
 
 interface AdvertisingContentProps {
   agencyId: string;
   balance: number;
-  packages: MaxCoinPackage[];
-  pricing: PromotionPricing[];
+  tiers: PromotionTier[];
   activePromotions: TourPromotion[];
   transactions: MaxCoinTransaction[];
   tours: Tour[];
 }
 
 export function AdvertisingContent({
-  agencyId, balance: initialBalance, packages, pricing, activePromotions: initialPromos, transactions: initialTx, tours,
+  agencyId, balance: initialBalance, tiers, activePromotions: initialPromos, transactions: initialTx, tours,
 }: AdvertisingContentProps) {
   const { t } = useTranslation();
   const router = useRouter();
   const [balance, setBalance] = useState(initialBalance);
   const [activeTab, setActiveTab] = useState<'main' | 'buy' | 'history'>('main');
-  const [sliderValue, setSliderValue] = useState(50);
+  const [sliderValue, setSliderValue] = useState(5);
   const [buying, setBuying] = useState(false);
 
   // Promote state
   const [selectedTour, setSelectedTour] = useState('');
   const [selectedPlacement, setSelectedPlacement] = useState<PromotionPlacement>('featured');
-  const [promoteDays, setPromoteDays] = useState(7);
+  const [selectedTierId, setSelectedTierId] = useState('');
   const [promoting, setPromoting] = useState(false);
 
-  const selectedPricing = pricing.find(p => p.placement === selectedPlacement);
-  const promoteCost = selectedPricing ? selectedPricing.cost_per_day * promoteDays : 0;
+  const placementTiers = tiers.filter(t => t.placement === selectedPlacement);
+  const selectedTier = tiers.find(t => t.id === selectedTierId);
 
-  // Find best matching package for slider
-  const sortedPackages = [...packages].sort((a, b) => a.coins - b.coins);
-  const closestPackage = sortedPackages.reduce((prev, curr) =>
-    Math.abs(curr.coins - sliderValue) < Math.abs(prev.coins - sliderValue) ? curr : prev,
-    sortedPackages[0]
-  );
-
-  const pricePerCoin = closestPackage ? Math.round(closestPackage.price_uzs / closestPackage.coins) : 15000;
+  // Auto-calculate price
+  const totalPrice = sliderValue * COIN_PRICE_UZS;
 
   async function handleBuy() {
-    if (!closestPackage) return;
+    if (sliderValue < 5 || sliderValue > 200) return;
     setBuying(true);
-    const result = await purchaseMaxCoins(agencyId, closestPackage.id);
+    const result = await purchaseMaxCoins(agencyId, sliderValue);
     setBuying(false);
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success(`${closestPackage.coins + closestPackage.bonus_coins} MC qo'shildi!`);
+      toast.success(`${sliderValue} MC qo'shildi!`);
       if (result.newBalance !== undefined) setBalance(result.newBalance);
       router.refresh();
     }
   }
 
   async function handlePromote() {
-    if (!selectedTour || !selectedPlacement) return;
+    if (!selectedTour || !selectedTierId) return;
     setPromoting(true);
-    const result = await promoteTour(agencyId, selectedTour, selectedPlacement, promoteDays);
+    const result = await promoteTour(agencyId, selectedTour, selectedTierId);
     setPromoting(false);
     if (result.error) {
       toast.error(result.error);
     } else {
       toast.success('Tur muvaffaqiyatli reklama qilindi!');
       if (result.newBalance !== undefined) setBalance(result.newBalance);
+      setSelectedTierId('');
       router.refresh();
     }
   }
@@ -98,7 +92,6 @@ export function AdvertisingContent({
           <p className="text-[10px] uppercase tracking-widest text-white/60 font-semibold">{t.maxcoin.balance}</p>
           <p className="text-4xl font-bold mt-1">{balance.toLocaleString()} <span className="text-lg font-medium">MC</span></p>
 
-          {/* Action buttons */}
           <div className="flex gap-3 mt-4">
             <button
               onClick={() => setActiveTab('buy')}
@@ -116,7 +109,7 @@ export function AdvertisingContent({
         </div>
       </div>
 
-      {/* Tab Content */}
+      {/* Main Tab */}
       {activeTab === 'main' && (
         <div className="px-6 mt-6 space-y-6">
           {/* Where to use */}
@@ -159,60 +152,63 @@ export function AdvertisingContent({
               <div>
                 <label className="text-xs text-muted-foreground font-medium">{t.maxcoin.selectPlacement}</label>
                 <div className="grid grid-cols-3 gap-2 mt-1.5">
-                  {(['featured', 'hot_deals', 'hot_tours'] as PromotionPlacement[]).map((p) => {
-                    const pr = pricing.find(pp => pp.placement === p);
-                    return (
-                      <button
-                        key={p}
-                        onClick={() => setSelectedPlacement(p)}
-                        className={`p-3 rounded-xl border text-center transition-all ${
-                          selectedPlacement === p
-                            ? 'border-primary bg-primary/5 text-primary'
-                            : 'border-muted bg-surface-container-low text-foreground'
-                        }`}
-                      >
-                        <div className="flex justify-center mb-1">{placementIcons[p]}</div>
-                        <p className="text-[10px] font-semibold leading-tight">{placementLabels[p]}</p>
-                        {pr && <p className="text-[10px] text-muted-foreground mt-0.5">{pr.cost_per_day} MC/{t.maxcoin.perDay}</p>}
-                      </button>
-                    );
-                  })}
+                  {(['featured', 'hot_deals', 'hot_tours'] as PromotionPlacement[]).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => { setSelectedPlacement(p); setSelectedTierId(''); }}
+                      className={`p-3 rounded-xl border text-center transition-all ${
+                        selectedPlacement === p
+                          ? 'border-primary bg-primary/5 text-primary'
+                          : 'border-muted bg-surface-container-low text-foreground'
+                      }`}
+                    >
+                      <div className="flex justify-center mb-1">{placementIcons[p]}</div>
+                      <p className="text-[10px] font-semibold leading-tight">{placementLabels[p]}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              {/* Days slider */}
+              {/* Tier selection */}
               <div>
-                <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-                  <span>{t.maxcoin.days}</span>
-                  <span className="font-bold text-foreground">{promoteDays} {t.maxcoin.days}</span>
-                </div>
-                <input
-                  type="range"
-                  min={selectedPricing?.min_days ?? 1}
-                  max={selectedPricing?.max_days ?? 30}
-                  value={promoteDays}
-                  onChange={(e) => setPromoteDays(Number(e.target.value))}
-                  className="w-full accent-primary"
-                />
-                <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>{selectedPricing?.min_days ?? 1}</span>
-                  <span>{selectedPricing?.max_days ?? 30}</span>
+                <label className="text-xs text-muted-foreground font-medium">{t.maxcoin.days}</label>
+                <div className="flex flex-col gap-2 mt-1.5">
+                  {placementTiers.map((tier) => (
+                    <button
+                      key={tier.id}
+                      onClick={() => setSelectedTierId(tier.id)}
+                      className={`flex items-center justify-between p-3 rounded-xl border transition-all ${
+                        selectedTierId === tier.id
+                          ? 'border-primary bg-primary/5'
+                          : 'border-muted bg-surface-container-low'
+                      }`}
+                    >
+                      <span className={`text-sm font-semibold ${selectedTierId === tier.id ? 'text-primary' : 'text-foreground'}`}>
+                        {tier.days} {t.maxcoin.days}
+                      </span>
+                      <span className={`text-sm font-bold ${selectedTierId === tier.id ? 'text-primary' : 'text-muted-foreground'}`}>
+                        {tier.coins} MC
+                      </span>
+                    </button>
+                  ))}
                 </div>
               </div>
 
               {/* Cost summary */}
-              <div className="flex items-center justify-between bg-primary/5 rounded-xl p-3">
-                <span className="text-sm font-medium text-foreground">{t.maxcoin.totalCost}</span>
-                <span className="text-lg font-bold text-primary">{promoteCost} MC</span>
-              </div>
+              {selectedTier && (
+                <div className="flex items-center justify-between bg-primary/5 rounded-xl p-3">
+                  <span className="text-sm font-medium text-foreground">{t.maxcoin.totalCost}</span>
+                  <span className="text-lg font-bold text-primary">{selectedTier.coins} MC / {selectedTier.days} {t.maxcoin.days}</span>
+                </div>
+              )}
 
               {/* Promote button */}
               <button
                 onClick={handlePromote}
-                disabled={!selectedTour || promoting || balance < promoteCost}
+                disabled={!selectedTour || !selectedTierId || promoting || (selectedTier ? balance < selectedTier.coins : true)}
                 className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               >
-                {promoting ? '...' : balance < promoteCost ? t.maxcoin.insufficientBalance : t.maxcoin.promoteNow}
+                {promoting ? '...' : (selectedTier && balance < selectedTier.coins) ? t.maxcoin.insufficientBalance : t.maxcoin.promoteNow}
               </button>
             </div>
           </section>
@@ -272,68 +268,59 @@ export function AdvertisingContent({
         </div>
       )}
 
+      {/* Buy Tab */}
       {activeTab === 'buy' && (
         <div className="px-6 mt-6 space-y-6">
-          {/* Back to main */}
           <button onClick={() => setActiveTab('main')} className="text-sm text-primary font-medium">
             ← {t.maxcoin.title}
           </button>
 
-          {/* Purchase Card */}
           <div className="bg-surface rounded-2xl p-6 shadow-ambient text-center">
             <h2 className="text-xl font-bold text-foreground">{t.maxcoin.purchaseTitle}</h2>
             <p className="text-muted-foreground text-sm mt-1">{t.maxcoin.purchaseSubtitle}</p>
 
             {/* Coin display */}
             <div className="mt-6 bg-gradient-to-br from-primary/5 to-primary/10 rounded-2xl p-6">
-              {closestPackage && closestPackage.bonus_coins > 0 && (
-                <p className="text-[10px] uppercase tracking-widest text-primary font-bold mb-1">{t.maxcoin.bestPrice}</p>
-              )}
-              <p className="text-4xl font-bold text-primary">{closestPackage?.coins ?? sliderValue}</p>
+              <p className="text-4xl font-bold text-primary">{sliderValue}</p>
               <p className="text-sm font-semibold text-primary/80">{t.maxcoin.coins}</p>
-              <p className="text-lg font-bold text-foreground mt-2">
-                {closestPackage?.price_uzs?.toLocaleString() ?? '—'} UZS
-              </p>
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground mt-1">
-                {t.maxcoin.pricePerCoin} {pricePerCoin.toLocaleString()} UZS
-              </p>
             </div>
 
             {/* Slider */}
             <div className="mt-5">
               <input
                 type="range"
-                min={sortedPackages[0]?.coins ?? 10}
-                max={sortedPackages[sortedPackages.length - 1]?.coins ?? 1000}
-                step={1}
+                min={5}
+                max={200}
+                step={3}
                 value={sliderValue}
                 onChange={(e) => setSliderValue(Number(e.target.value))}
                 className="w-full accent-primary"
               />
-              <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                {sortedPackages.map((p) => (
-                  <button
-                    key={p.id}
-                    onClick={() => setSliderValue(p.coins)}
-                    className={`text-xs font-medium ${closestPackage?.id === p.id ? 'text-primary font-bold' : 'text-muted-foreground'}`}
-                  >
-                    {p.coins}
-                  </button>
-                ))}
+              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                <span>5</span>
+                <span>50</span>
+                <span>100</span>
+                <span>150</span>
+                <span>200</span>
               </div>
             </div>
 
-            {/* Bonus display */}
-            {closestPackage && closestPackage.bonus_coins > 0 && (
-              <p className="text-sm text-primary font-semibold mt-3">
-                + {closestPackage.bonus_coins} {t.maxcoin.bonus} 🎁
-              </p>
-            )}
+            {/* Auto-calculated price */}
+            <div className="mt-4 bg-surface-container-low rounded-xl p-4 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">{t.maxcoin.totalCost}</span>
+                <span className="text-lg font-bold text-foreground">{totalPrice.toLocaleString()} UZS</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-muted-foreground">{t.maxcoin.pricePerCoin}</span>
+                <span className="text-xs text-muted-foreground">{COIN_PRICE_UZS.toLocaleString()} UZS</span>
+              </div>
+            </div>
 
             {/* Buy button */}
             <button
               onClick={handleBuy}
-              disabled={buying || !closestPackage}
+              disabled={buying}
               className="w-full bg-primary text-white font-bold py-3.5 rounded-xl mt-5 hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 text-sm"
             >
               <ShoppingCart className="h-4 w-4" />
@@ -348,9 +335,9 @@ export function AdvertisingContent({
         </div>
       )}
 
+      {/* History Tab */}
       {activeTab === 'history' && (
         <div className="px-6 mt-6 space-y-4">
-          {/* Back to main */}
           <button onClick={() => setActiveTab('main')} className="text-sm text-primary font-medium">
             ← {t.maxcoin.title}
           </button>

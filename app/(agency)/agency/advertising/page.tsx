@@ -1,5 +1,5 @@
 import { getMyAgency } from '@/features/agencies/queries';
-import { getMaxCoinBalance, getMaxCoinPackages, getPromotionPricing, getActivePromotions, getMaxCoinTransactions } from '@/features/maxcoin/queries';
+import { getMaxCoinBalance, getPromotionTiers, getActivePromotions, getMaxCoinTransactions } from '@/features/maxcoin/queries';
 import { getToursByAgency } from '@/features/tours/queries';
 import { redirect } from 'next/navigation';
 import { AdvertisingContent } from './advertising-content';
@@ -8,10 +8,9 @@ export default async function AdvertisingPage() {
   const agency = await getMyAgency();
   if (!agency) redirect('/agency');
 
-  const [balance, packages, pricing, activePromotions, transactions, tours] = await Promise.all([
+  const [balance, tiers, activePromotions, transactions, tours] = await Promise.all([
     getMaxCoinBalance(agency.id),
-    getMaxCoinPackages(),
-    getPromotionPricing(),
+    getPromotionTiers(),
     getActivePromotions(agency.id),
     getMaxCoinTransactions(agency.id),
     getToursByAgency(agency.id),
@@ -21,8 +20,7 @@ export default async function AdvertisingPage() {
     <AdvertisingContent
       agencyId={agency.id}
       balance={balance}
-      packages={packages}
-      pricing={pricing}
+      tiers={tiers}
       activePromotions={activePromotions}
       transactions={transactions}
       tours={tours}

@@ -24,21 +24,12 @@ export async function getMaxCoinTransactions(agencyId: string) {
   return data ?? [];
 }
 
-export async function getMaxCoinPackages() {
+export async function getPromotionTiers() {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
-    .from('maxcoin_packages')
+    .from('promotion_tiers')
     .select('*')
     .order('sort_order', { ascending: true });
-  return data ?? [];
-}
-
-export async function getPromotionPricing() {
-  const supabase = await createServerSupabaseClient();
-  const { data } = await supabase
-    .from('promotion_pricing')
-    .select('*')
-    .order('placement');
   return data ?? [];
 }
 
