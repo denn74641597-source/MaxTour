@@ -294,3 +294,49 @@ export const TOUR_CATEGORIES = [
 ] as const;
 
 export type TourCategory = (typeof TOUR_CATEGORIES)[number];
+
+// MaxCoin types
+export type MaxCoinTransactionType = 'purchase' | 'spend_featured' | 'spend_hot_deals' | 'spend_hot_tours' | 'bonus' | 'refund';
+export type PromotionPlacement = 'featured' | 'hot_deals' | 'hot_tours';
+
+export interface MaxCoinTransaction {
+  id: string;
+  agency_id: string;
+  amount: number;
+  type: MaxCoinTransactionType;
+  description: string | null;
+  tour_id: string | null;
+  created_at: string;
+}
+
+export interface TourPromotion {
+  id: string;
+  tour_id: string;
+  agency_id: string;
+  placement: PromotionPlacement;
+  cost_coins: number;
+  starts_at: string;
+  ends_at: string;
+  is_active: boolean;
+  created_at: string;
+  tour?: Tour;
+}
+
+export interface MaxCoinPackage {
+  id: string;
+  coins: number;
+  bonus_coins: number;
+  price_uzs: number;
+  is_popular: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface PromotionPricing {
+  id: string;
+  placement: PromotionPlacement;
+  cost_per_day: number;
+  min_days: number;
+  max_days: number;
+  created_at: string;
+}

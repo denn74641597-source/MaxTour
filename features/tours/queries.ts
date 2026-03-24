@@ -199,3 +199,35 @@ export async function incrementTourViewCount(tourId: string): Promise<void> {
     // Silently fail — view_count column may not exist yet
   }
 }
+
+/** Fetch promoted tours for a given placement (featured / hot_deals / hot_tours) */
+export async function getPromotedTours(placement: string, limit = 20): Promise<Tour[]> {
+  const supabase = await createServerSupabaseClient();
+  const now = new Date().toISOString();
+
+  // Get active promotion tour IDs
+  const { data: promos } = await supabase
+    .from('tour_promotions')
+    .select('tour_id')
+    .eq('placement', placement)
+    .eq('is_active', true)
+    .gte('ends_at', now)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (!promos || promos.length === 0) return [];
+
+  const tourIds = promos.map(p => p.tour_id);
+
+  const { data, error } = await supabase
+    .from('tours')
+    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .eq('status', 'published')
+    .in('id', tourIds);
+
+  if (error) {
+    console.error('getPromotedTours error:', error);
+    return [];
+  }
+  return data ?? [];
+}

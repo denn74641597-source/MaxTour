@@ -21,14 +21,15 @@ interface HomeContentProps {
   agencies: Agency[];
   topAgencies?: Agency[];
   popularTours?: Tour[];
+  hotDeals?: Tour[];
   hotTours?: Tour[];
 }
 
-export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [], popularTours = [], hotTours = [] }: HomeContentProps) {
+export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [], popularTours = [], hotDeals = [], hotTours = [] }: HomeContentProps) {
   const { t } = useTranslation();
 
   const heroTour = featuredTours[0] ?? recentTours[0];
-  const hotDeals = recentTours.slice(0, 20);
+  const hotDealsDisplay = hotDeals.slice(0, 20);
   const hotToursDisplay = hotTours.slice(0, 20);
 
   return (
@@ -80,12 +81,12 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
         </div>
-        {hotDeals.length > 0 ? (
+        {hotDealsDisplay.length > 0 ? (
           <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2 snap-x snap-mandatory">
             {/* Group tours in pairs of 2 for 2x2 grid pages */}
-            {Array.from({ length: Math.ceil(hotDeals.length / 4) }).map((_, pageIdx) => (
+            {Array.from({ length: Math.ceil(hotDealsDisplay.length / 4) }).map((_, pageIdx) => (
               <div key={pageIdx} className="grid grid-cols-2 grid-rows-2 gap-3 min-w-[calc(100vw-3rem)] snap-start">
-                {hotDeals.slice(pageIdx * 4, pageIdx * 4 + 4).map((tour) => (
+                {hotDealsDisplay.slice(pageIdx * 4, pageIdx * 4 + 4).map((tour) => (
                   <HotDealCard key={tour.id} tour={tour} />
                 ))}
               </div>
