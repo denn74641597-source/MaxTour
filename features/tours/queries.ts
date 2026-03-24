@@ -201,7 +201,7 @@ export async function incrementTourViewCount(tourId: string): Promise<void> {
 }
 
 /** Fetch promoted tours for a given placement (featured / hot_deals / hot_tours) */
-export async function getPromotedTours(placement: string, limit = 20): Promise<Tour[]> {
+export async function getPromotedTours(placement: string, limit = 50): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const now = new Date().toISOString();
 

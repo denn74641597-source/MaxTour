@@ -1,5 +1,6 @@
 import { getFeaturedTours, getTours, getPopularTours, getPromotedTours } from '@/features/tours/queries';
 import { getVerifiedAgencies, getTopRatedAgencies } from '@/features/agencies/queries';
+import { getMyAgency } from '@/features/agencies/queries';
 import { HomeContent } from './home/home-content';
 import type { Tour } from '@/types';
 
@@ -12,6 +13,7 @@ export default async function HomePage() {
   let promotedFeatured: Tour[] = [];
   let promotedHotDeals: Tour[] = [];
   let promotedHotTours: Tour[] = [];
+  let currentAgencyId: string | undefined;
 
   try {
     [featuredTours, recentTours, agencies, topAgencies, popularTours, promotedFeatured, promotedHotDeals, promotedHotTours] = await Promise.all([
@@ -20,10 +22,12 @@ export default async function HomePage() {
       getVerifiedAgencies(6),
       getTopRatedAgencies(6),
       getPopularTours(10),
-      getPromotedTours('featured', 20),
-      getPromotedTours('hot_deals', 20),
-      getPromotedTours('hot_tours', 20),
+      getPromotedTours('featured'),
+      getPromotedTours('hot_deals'),
+      getPromotedTours('hot_tours'),
     ]);
+    const myAgency = await getMyAgency();
+    currentAgencyId = myAgency?.id;
   } catch (error) {
     console.error('HomePage data fetch error:', error);
   }
@@ -37,6 +41,7 @@ export default async function HomePage() {
       popularTours={popularTours}
       hotDeals={promotedHotDeals}
       hotTours={promotedHotTours}
+      currentAgencyId={currentAgencyId}
     />
   );
 }

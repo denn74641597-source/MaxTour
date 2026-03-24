@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
@@ -9,9 +9,8 @@ import { AgencyCard } from '@/components/shared/agency-card';
 import { HeroBanner } from '@/components/shared/hero-banner';
 import { PopularDestinations } from '@/components/shared/popular-destinations';
 import { EmptyState } from '@/components/shared/empty-state';
-import { placeholderImage, formatPrice } from '@/lib/utils';
+import { placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
-import { HomeFilterChipsClient } from '../home-filter-chips';
 import { TOUR_CATEGORIES } from '@/types';
 import type { Tour, Agency } from '@/types';
 
@@ -23,14 +22,33 @@ interface HomeContentProps {
   popularTours?: Tour[];
   hotDeals?: Tour[];
   hotTours?: Tour[];
+  /** Current user's agency ID (if agency owner) — their tours show first */
+  currentAgencyId?: string;
 }
 
-export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [], popularTours = [], hotDeals = [], hotTours = [] }: HomeContentProps) {
+/** Shuffle array (Fisher-Yates) returning a new array */
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** Pick `limit` random tours from `all`, with `ownAgencyId` tours always first */
+function pickRandom(all: Tour[], limit: number, ownAgencyId?: string): Tour[] {
+  if (all.length === 0) return [];
+  const own = ownAgencyId ? all.filter(t => t.agency_id === ownAgencyId) : [];
+  const others = ownAgencyId ? all.filter(t => t.agency_id !== ownAgencyId) : all;
+  const shuffled = [...own, ...shuffle(others)];
+  return shuffled.slice(0, limit);
+}
+
+export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [], popularTours = [], hotDeals = [], hotTours = [], currentAgencyId }: HomeContentProps) {
   const { t } = useTranslation();
 
   const heroTour = featuredTours[0] ?? recentTours[0];
-  const hotDealsDisplay = hotDeals.slice(0, 20);
-  const hotToursDisplay = hotTours.slice(0, 20);
 
   return (
     <div className="px-6 pb-8">
@@ -56,8 +74,14 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
         </div>
       </div>
 
-      {/* Hero Banner */}
-      {heroTour && <div className="mb-10"><HeroBanner tour={heroTour} /></div>}
+      {/* Hero Banner — rotates featured tours every 3s */}
+      {featuredTours.length > 0 ? (
+        <div className="mb-10">
+          <RotatingHero tours={featuredTours} currentAgencyId={currentAgencyId} />
+        </div>
+      ) : heroTour ? (
+        <div className="mb-10"><HeroBanner tour={heroTour} /></div>
+      ) : null}
 
       {/* Popular Destinations (dynamic - most viewed tours) */}
       <div className="mb-10">
@@ -76,50 +100,37 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
         </section>
       )}
 
-      {/* Hot Deals / Yaxshi takliflar — 2x2 grid with swipe */}
+      {/* Hot Deals / Yaxshi takliflar */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
         </div>
-        {hotDealsDisplay.length > 0 ? (
-          <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2 snap-x snap-mandatory">
-            {/* Group tours in pairs of 2 for 2x2 grid pages */}
-            {Array.from({ length: Math.ceil(hotDealsDisplay.length / 4) }).map((_, pageIdx) => (
-              <div key={pageIdx} className="grid grid-cols-2 grid-rows-2 gap-3 min-w-[calc(100vw-3rem)] snap-start">
-                {hotDealsDisplay.slice(pageIdx * 4, pageIdx * 4 + 4).map((tour) => (
-                  <HotDealCard key={tour.id} tour={tour} />
-                ))}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title={t.tours.noToursFound}
-            description={t.tours.noToursHint}
+        {hotDeals.length > 0 ? (
+          <RotatingGrid
+            allTours={hotDeals}
+            limit={20}
+            currentAgencyId={currentAgencyId}
+            CardComponent={HotDealCard}
           />
+        ) : (
+          <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
         )}
       </section>
 
-      {/* Qaynoq turlar — same 2x2 grid with swipe, price focused */}
+      {/* Qaynoq turlar */}
       <section className="mb-10">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-bold text-foreground">{t.home.hotTours}</h3>
         </div>
-        {hotToursDisplay.length > 0 ? (
-          <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2 snap-x snap-mandatory">
-            {Array.from({ length: Math.ceil(hotToursDisplay.length / 4) }).map((_, pageIdx) => (
-              <div key={pageIdx} className="grid grid-cols-2 grid-rows-2 gap-3 min-w-[calc(100vw-3rem)] snap-start">
-                {hotToursDisplay.slice(pageIdx * 4, pageIdx * 4 + 4).map((tour) => (
-                  <HotTourCard key={tour.id} tour={tour} />
-                ))}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <EmptyState
-            title={t.tours.noToursFound}
-            description={t.tours.noToursHint}
+        {hotTours.length > 0 ? (
+          <RotatingGrid
+            allTours={hotTours}
+            limit={20}
+            currentAgencyId={currentAgencyId}
+            CardComponent={HotTourCard}
           />
+        ) : (
+          <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
         )}
       </section>
 
@@ -133,6 +144,112 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
             ))}
           </div>
         </section>
+      )}
+    </div>
+  );
+}
+
+/** Rotating Hero Banner — picks random 10 from featured, auto-rotates every 3s */
+function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgencyId?: string }) {
+  const [current, setCurrent] = useState(() => pickRandom(tours, 10, currentAgencyId));
+  const [idx, setIdx] = useState(0);
+
+  // Re-shuffle every full cycle
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIdx(prev => {
+        const next = prev + 1;
+        if (next >= current.length) {
+          setCurrent(pickRandom(tours, 10, currentAgencyId));
+          return 0;
+        }
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [tours, currentAgencyId, current.length]);
+
+  const tour = current[idx] ?? tours[0];
+  if (!tour) return null;
+
+  return (
+    <div className="transition-opacity duration-500">
+      <HeroBanner tour={tour} />
+      {/* Dots indicator */}
+      {current.length > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {current.map((_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === idx ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30'
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Rotating 2x2 Grid — picks random `limit` tours, groups into pages of 4, auto-rotates */
+function RotatingGrid({
+  allTours,
+  limit,
+  currentAgencyId,
+  CardComponent,
+}: {
+  allTours: Tour[];
+  limit: number;
+  currentAgencyId?: string;
+  CardComponent: React.ComponentType<{ tour: Tour }>;
+}) {
+  const [display, setDisplay] = useState(() => pickRandom(allTours, limit, currentAgencyId));
+  const [pageIdx, setPageIdx] = useState(0);
+
+  const totalPages = Math.ceil(display.length / 4);
+
+  // Auto-rotate pages every 3s, re-shuffle after full cycle
+  useEffect(() => {
+    if (totalPages <= 1) return;
+    const interval = setInterval(() => {
+      setPageIdx(prev => {
+        const next = prev + 1;
+        if (next >= totalPages) {
+          setDisplay(pickRandom(allTours, limit, currentAgencyId));
+          return 0;
+        }
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [allTours, limit, currentAgencyId, totalPages]);
+
+  const pageTours = display.slice(pageIdx * 4, pageIdx * 4 + 4);
+  const rows = Math.ceil(pageTours.length / 2);
+
+  return (
+    <div>
+      <div
+        className="grid grid-cols-2 gap-3 transition-opacity duration-300"
+        style={{ gridTemplateRows: `repeat(${rows}, auto)` }}
+      >
+        {pageTours.map((tour) => (
+          <CardComponent key={tour.id} tour={tour} />
+        ))}
+      </div>
+      {/* Page dots */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-1.5 mt-3">
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <span
+              key={i}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                i === pageIdx ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30'
+              }`}
+            />
+          ))}
+        </div>
       )}
     </div>
   );
