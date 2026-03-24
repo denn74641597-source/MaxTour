@@ -337,13 +337,13 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           </section>
         )}
 
-        {/* Extra Charges */}
-        {extraCharges.length > 0 && (
+        {/* Extra Charges + Variable Charges combined */}
+        {(extraCharges.length > 0 || variableCharges.length > 0) && (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.extraCharges}</h3>
             <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
               {extraCharges.map((charge: { name: string; amount: number }, i: number) => (
-                <div key={i} className="flex items-center justify-between px-3 py-2">
+                <div key={`ec-${i}`} className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center gap-2.5">
                     <div className="size-5 rounded-full bg-tertiary/10 flex items-center justify-center shrink-0">
                       <DollarSign className="h-3.5 w-3.5 text-tertiary" />
@@ -353,24 +353,15 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                   <span className="text-sm font-bold text-tertiary">${charge.amount}</span>
                 </div>
               ))}
-            </div>
-          </section>
-        )}
-
-        {/* Variable Charges */}
-        {variableCharges.length > 0 && (
-          <section>
-            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.variableCharges}</h3>
-            <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
               {variableCharges.map((charge: { name: string; min_amount: number; max_amount: number }, i: number) => (
-                <div key={i} className="flex items-center justify-between px-3 py-2">
+                <div key={`vc-${i}`} className="flex items-center justify-between px-3 py-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                      <DollarSign className="h-3.5 w-3.5 text-primary" />
+                    <div className="size-5 rounded-full bg-tertiary/10 flex items-center justify-center shrink-0">
+                      <DollarSign className="h-3.5 w-3.5 text-tertiary" />
                     </div>
                     <span className="text-sm text-foreground">{charge.name}</span>
                   </div>
-                  <span className="text-sm font-bold text-primary">${charge.min_amount} – ${charge.max_amount}</span>
+                  <span className="text-sm font-bold text-tertiary">${charge.min_amount} – ${charge.max_amount}</span>
                 </div>
               ))}
             </div>
