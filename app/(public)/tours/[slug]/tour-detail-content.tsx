@@ -374,35 +374,55 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
             <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.hotels}</h3>
             <div className="space-y-3">
               {hotels.map((hotel: TourHotel, hotelIdx: number) => (
-                <div key={hotelIdx} className="rounded-[1.5rem] overflow-hidden shadow-ambient bg-surface">
-                  {hotel.images.length > 0 ? (
-                    <HotelImageCarousel images={hotel.images} hotelName={hotel.name} />
-                  ) : (
-                    <div className="h-40 w-full bg-muted relative flex items-center justify-center">
-                      <Hotel className="h-10 w-10 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="p-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <h4 className="font-bold text-base text-foreground">{hotel.name}</h4>
+                <div key={hotelIdx} className="rounded-2xl overflow-hidden shadow-ambient bg-surface flex">
+                  {/* Left: compact image */}
+                  <div className="w-28 shrink-0 relative bg-muted">
+                    {hotel.images.length > 0 ? (
+                      <Image
+                        src={hotel.images[0]}
+                        alt={hotel.name}
+                        fill
+                        className="object-cover"
+                        sizes="112px"
+                      />
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <Hotel className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Right: info */}
+                  <div className="flex-1 p-3 min-w-0">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-sm text-foreground truncate">{hotel.name}</h4>
                         {hotel.stars && (
                           <div className="flex items-center gap-0.5 mt-0.5">
                             {Array.from({ length: hotel.stars }).map((_: unknown, i: number) => (
-                              <Star key={i} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                              <Star key={i} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
                             ))}
                           </div>
                         )}
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-primary text-lg font-bold">${hotel.price.toLocaleString()}</p>
+                        <p className="text-primary text-base font-bold">${hotel.price.toLocaleString()}</p>
                         <p className="text-muted-foreground text-[10px]">{t.common.perPerson}</p>
                       </div>
                     </div>
                     {hotel.description && (
-                      <p className="text-sm text-muted-foreground leading-snug mt-2">
+                      <p className="text-xs text-muted-foreground leading-snug mt-1.5 line-clamp-2">
                         {hotel.description}
                       </p>
+                    )}
+                    {hotel.booking_url && (
+                      <a
+                        href={hotel.booking_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-block mt-1.5 text-[11px] font-semibold text-primary hover:underline"
+                      >
+                        {t.tours.hotelInfo} →
+                      </a>
                     )}
                   </div>
                 </div>
@@ -412,20 +432,28 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         ) : tour.hotel_name ? (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.hotelInfo}</h3>
-            <div className="rounded-[1.5rem] overflow-hidden shadow-ambient bg-surface">
-              {hotelImages.length > 0 ? (
-                <HotelImageCarousel images={hotelImages} hotelName={tour.hotel_name} />
-              ) : (
-                <div className="h-40 w-full bg-muted relative flex items-center justify-center">
-                  <Hotel className="h-10 w-10 text-muted-foreground" />
-                </div>
-              )}
-              <div className="p-3">
-                <h4 className="font-bold text-base text-foreground">{tour.hotel_name}</h4>
+            <div className="rounded-2xl overflow-hidden shadow-ambient bg-surface flex">
+              <div className="w-28 shrink-0 relative bg-muted">
+                {hotelImages.length > 0 ? (
+                  <Image
+                    src={hotelImages[0]}
+                    alt={tour.hotel_name}
+                    fill
+                    className="object-cover"
+                    sizes="112px"
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <Hotel className="h-8 w-8 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1 p-3 min-w-0">
+                <h4 className="font-bold text-sm text-foreground">{tour.hotel_name}</h4>
                 {tour.hotel_stars && (
-                  <div className="flex items-center gap-0.5 mb-1">
+                  <div className="flex items-center gap-0.5 mt-0.5">
                     {Array.from({ length: tour.hotel_stars }).map((_: any, i: number) => (
-                      <Star key={i} className="h-3.5 w-3.5 text-yellow-500 fill-yellow-500" />
+                      <Star key={i} className="h-3 w-3 text-yellow-500 fill-yellow-500" />
                     ))}
                   </div>
                 )}
