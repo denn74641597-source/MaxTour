@@ -124,6 +124,7 @@ export const ru: Translations = {
     route: 'Маршрут',
     airline: 'Авиакомпания',
     extraCharges: 'Дополнительные доплаты',
+    variableCharges: 'Ориентировочные расходы',
   },
 
   // ─── Favorites ───
@@ -381,6 +382,11 @@ export const ru: Translations = {
     extraChargeName: 'Название',
     extraChargeAmount: 'Цена',
     extraChargesHint: 'Необязательно: заполните только если есть доплаты',
+    variableCharges: 'Ориентировочные расходы',
+    variableChargesHint: 'Укажите диапазон для расходов с неточной суммой',
+    variableChargeName: 'Название',
+    variableChargeMin: 'от',
+    variableChargeMax: 'до',
     includedServices: 'Включённые услуги',
     includedServicesHint: 'Полный список включённых услуг обязателен: маршрут перелёта (например: Ташкент – Куала Лумпур – Ташкент), авиакомпания, норма багажа, отель и тип питания, трансфер, мед. страховка, экскурсии и другие дополнительные услуги.',
     addIncludedService: 'Добавить включённую услугу...',

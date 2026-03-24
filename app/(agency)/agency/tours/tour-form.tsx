@@ -157,6 +157,12 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   );
   const [newChargeName, setNewChargeName] = useState('');
   const [newChargeAmount, setNewChargeAmount] = useState('');
+  const [variableCharges, setVariableCharges] = useState<{ name: string; min_amount: number; max_amount: number }[]>(
+    (initialData as Record<string, unknown>)?.variable_charges as { name: string; min_amount: number; max_amount: number }[] ?? []
+  );
+  const [newVarName, setNewVarName] = useState('');
+  const [newVarMin, setNewVarMin] = useState('');
+  const [newVarMax, setNewVarMax] = useState('');
 
   // Domestic tour state
   const [regionSearch, setRegionSearch] = useState('');
@@ -248,6 +254,21 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
     setExtraCharges((prev) => prev.filter((_, i) => i !== index));
   }
 
+  function addVariableCharge() {
+    if (!newVarName.trim() || !newVarMin || !newVarMax) return;
+    setVariableCharges((prev) => [
+      ...prev,
+      { name: newVarName.trim(), min_amount: Number(newVarMin), max_amount: Number(newVarMax) },
+    ]);
+    setNewVarName('');
+    setNewVarMin('');
+    setNewVarMax('');
+  }
+
+  function removeVariableCharge(index: number) {
+    setVariableCharges((prev) => prev.filter((_, i) => i !== index));
+  }
+
   function addService() {
     if (!newIncluded.trim()) return;
     setIncludedServices((prev) => [...prev, newIncluded.trim()]);
@@ -315,6 +336,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
         : destinations,
       airline: tourType === 'international' ? (data.airline || null) : null,
       extra_charges: extraCharges,
+      variable_charges: variableCharges,
       meal_type: data.meal_type || 'none',
       transport_type: data.transport_type || (tourType === 'domestic' ? 'bus' : 'flight'),
       visa_required: tourType === 'domestic' ? false : (data.visa_required || false),
@@ -836,6 +858,39 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
                 </div>
                 <Button type="button" variant="outline" size="icon" onClick={addExtraCharge} className="rounded-xl h-11 w-11 shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Variable Charges */}
+            <div>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.variableCharges}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.variableChargesHint}</p>
+              {variableCharges.length > 0 && (
+                <div className="space-y-1.5 mt-2">
+                  {variableCharges.map((charge, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-primary/10 rounded-xl px-3 py-2 text-sm">
+                      <span className="flex-1 font-medium text-foreground">{charge.name}</span>
+                      <span className="text-primary font-bold text-xs">${charge.min_amount} – ${charge.max_amount}</span>
+                      <button type="button" onClick={() => removeVariableCharge(i)} className="text-muted-foreground hover:text-red-500">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2 mt-2">
+                <Input placeholder={t.agencyTours.variableChargeName} value={newVarName} onChange={(e) => setNewVarName(e.target.value)} className="flex-1 rounded-xl border-muted bg-surface-container-low h-11" />
+                <div className="relative w-24">
+                  <Input placeholder={t.agencyTours.variableChargeMin} type="number" min={0} value={newVarMin} onChange={(e) => setNewVarMin(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11 pr-12" />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
+                </div>
+                <div className="relative w-24">
+                  <Input placeholder={t.agencyTours.variableChargeMax} type="number" min={0} value={newVarMax} onChange={(e) => setNewVarMax(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11 pr-12" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addVariableCharge(); } }} />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
+                </div>
+                <Button type="button" variant="outline" size="icon" onClick={addVariableCharge} className="rounded-xl h-11 w-11 shrink-0">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>

@@ -44,6 +44,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   const hotelImages = (tour.hotel_images as string[]) ?? [];
   const destinations = (tour.destinations as string[]) ?? [];
   const extraCharges = (tour.extra_charges as { name: string; amount: number }[]) ?? [];
+  const variableCharges = (tour.variable_charges as { name: string; min_amount: number; max_amount: number }[]) ?? [];
   const hotels = (tour.hotels as TourHotel[]) ?? [];
   const whatToBring = (tour.what_to_bring as string[]) ?? [];
   const isDomestic = tour.tour_type === 'domestic';
@@ -350,6 +351,26 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                     <span className="text-sm text-foreground">{charge.name}</span>
                   </div>
                   <span className="text-sm font-bold text-tertiary">${charge.amount}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Variable Charges */}
+        {variableCharges.length > 0 && (
+          <section>
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.variableCharges}</h3>
+            <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
+              {variableCharges.map((charge: { name: string; min_amount: number; max_amount: number }, i: number) => (
+                <div key={i} className="flex items-center justify-between px-3 py-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="size-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                      <DollarSign className="h-3.5 w-3.5 text-primary" />
+                    </div>
+                    <span className="text-sm text-foreground">{charge.name}</span>
+                  </div>
+                  <span className="text-sm font-bold text-primary">${charge.min_amount} – ${charge.max_amount}</span>
                 </div>
               ))}
             </div>

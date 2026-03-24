@@ -124,6 +124,7 @@ export const uz: Translations = {
     route: 'Yo\'nalish',
     airline: 'Aviakompaniya',
     extraCharges: 'Qo\'shimcha to\'lovlar',
+    variableCharges: 'Noma\'lum to\'lovlar',
   },
 
   // ─── Favorites ───
@@ -381,6 +382,11 @@ export const uz: Translations = {
     extraChargeName: 'Nomi',
     extraChargeAmount: 'Narxi',
     extraChargesHint: 'Ixtiyoriy: faqat qo\'shimcha to\'lovlar bo\'lsa to\'ldiring',
+    variableCharges: 'Noma\'lum to\'lovlar',
+    variableChargesHint: 'Aniq narxi noma\'lum to\'lovlar uchun diapazon kiriting',
+    variableChargeName: 'Nomi',
+    variableChargeMin: 'dan',
+    variableChargeMax: 'gacha',
     includedServices: 'Kiritilgan xizmatlar',
     includedServicesHint: 'Tur paketga kiritilgan xizmatlar to\'liq ko\'rsatilishi shart: aviabilet yo\'nalishi (masalan: Toshkent – Kuala Lumpur – Toshkent), aviakompaniya nomi, bagaj normasi, mehmonxona va ovqatlanish turi, transfer, med sug\'urta, ekskursiyalar va boshqa qo\'shimcha xizmatlar.',
     addIncludedService: 'Kiritilgan xizmat qo\'shing...',
