@@ -67,6 +67,7 @@ export const uz: Translations = {
     home: 'Bosh sahifa',
     verification: 'Tasdiqlash',
     advertising: 'Reklama',
+    coinRequests: 'Coin so\'rovlar',
   },
 
   // ─── Home Page ───
@@ -724,5 +725,7 @@ export const uz: Translations = {
     transactionRefund: 'Qaytarish',
     sliderMin: '10',
     sliderMax: '100',
+    requestSent: 'So\'rov yuborildi! Admin tasdiqlashini kuting.',
+    requestPending: 'So\'rovingiz ko\'rib chiqilmoqda',
   },
 };

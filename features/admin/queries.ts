@@ -75,7 +75,7 @@ export async function getFeaturedItems() {
 export async function getAdminStats() {
   const supabase = await createAdminClient();
 
-  const [agencies, tours, leads, subscriptions] = await Promise.all([
+  const [agencies, tours, leads, subscriptions, pendingCoinRequests] = await Promise.all([
     supabase.from('agencies').select('id', { count: 'exact', head: true }),
     supabase.from('tours').select('id', { count: 'exact', head: true }),
     supabase.from('leads').select('id', { count: 'exact', head: true }),
@@ -83,6 +83,10 @@ export async function getAdminStats() {
       .from('agency_subscriptions')
       .select('id', { count: 'exact', head: true })
       .eq('status', 'active'),
+    supabase
+      .from('coin_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending'),
   ]);
 
   return {
@@ -90,5 +94,22 @@ export async function getAdminStats() {
     totalTours: tours.count ?? 0,
     totalLeads: leads.count ?? 0,
     activeSubscriptions: subscriptions.count ?? 0,
+    pendingCoinRequests: pendingCoinRequests.count ?? 0,
   };
+}
+
+/** Admin: get coin purchase requests */
+export async function getCoinRequests(status?: string) {
+  const supabase = await createAdminClient();
+  let query = supabase
+    .from('coin_requests')
+    .select('*, agency:agencies(name, slug)')
+    .order('created_at', { ascending: false });
+
+  if (status) {
+    query = query.eq('status', status);
+  }
+
+  const { data } = await query;
+  return data ?? [];
 }

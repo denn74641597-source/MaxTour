@@ -5,7 +5,7 @@ import type { PromotionPlacement } from '@/types';
 
 const COIN_PRICE_UZS = 15000; // UZS per coin
 
-/** Purchase MaxCoins via slider (min 5, max 200, step 3) */
+/** Submit a coin purchase request (pending admin approval) */
 export async function purchaseMaxCoins(agencyId: string, coins: number) {
   if (coins < 5 || coins > 200) return { error: 'Invalid coin amount' };
 
@@ -21,24 +21,18 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
     .single();
   if (!agency) return { error: 'Agency not found' };
 
-  const admin = await createAdminClient();
-  const currentBalance = await getBalance(admin, agencyId);
   const priceUzs = coins * COIN_PRICE_UZS;
 
-  const { error: balanceError } = await admin
-    .from('agencies')
-    .update({ maxcoin_balance: currentBalance + coins })
-    .eq('id', agencyId);
-  if (balanceError) return { error: balanceError.message };
-
-  await admin.from('maxcoin_transactions').insert({
+  const admin = await createAdminClient();
+  const { error } = await admin.from('coin_requests').insert({
     agency_id: agencyId,
-    amount: coins,
-    type: 'purchase',
-    description: `${coins} MC sotib olindi (${priceUzs.toLocaleString()} UZS)`,
+    coins,
+    price_uzs: priceUzs,
+    status: 'pending',
   });
+  if (error) return { error: error.message };
 
-  return { success: true, newBalance: currentBalance + coins };
+  return { success: true, pending: true };
 }
 
 /** Get coin price in UZS */

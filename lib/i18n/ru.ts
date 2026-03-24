@@ -67,6 +67,7 @@ export const ru: Translations = {
     home: 'Главная',
     verification: 'Верификация',
     advertising: 'Реклама',
+    coinRequests: 'Запросы монет',
   },
 
   // ─── Home Page ───
@@ -724,5 +725,7 @@ export const ru: Translations = {
     transactionRefund: 'Возврат',
     sliderMin: '10',
     sliderMax: '100',
+    requestSent: 'Запрос отправлен! Ожидайте подтверждения админа.',
+    requestPending: 'Ваш запрос рассматривается',
   },
 };

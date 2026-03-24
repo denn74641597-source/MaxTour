@@ -49,9 +49,8 @@ export function AdvertisingContent({
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success(`${sliderValue} MC qo'shildi!`);
-      if (result.newBalance !== undefined) setBalance(result.newBalance);
-      router.refresh();
+      toast.success(t.maxcoin.requestSent);
+      setActiveTab('main');
     }
   }
 

@@ -62,6 +62,7 @@ export interface Translations {
     home: string;
     verification: string;
     advertising: string;
+    coinRequests: string;
   };
   home: {
     searchPlaceholder: string;
@@ -652,5 +653,7 @@ export interface Translations {
     transactionRefund: string;
     sliderMin: string;
     sliderMax: string;
+    requestSent: string;
+    requestPending: string;
   };
 }

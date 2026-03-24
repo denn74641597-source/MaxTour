@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard, Building2, MapPin, Users, CreditCard,
-  Menu, MessageSquareText, UserCheck, BarChart3, Home, ShieldCheck, Megaphone
+  Menu, MessageSquareText, UserCheck, BarChart3, Home, ShieldCheck, Megaphone, Coins
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -48,6 +48,7 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
     { href: '/admin/agencies', label: t.nav.agencies, icon: Building2 },
     { href: '/admin/tours', label: t.nav.tours, icon: MapPin },
     { href: '/admin/verification', label: t.nav.verification, icon: ShieldCheck },
+    { href: '/admin/coin-requests', label: t.nav.coinRequests, icon: Coins },
     { href: '/admin/featured', label: t.nav.featured, icon: CreditCard },
     { href: '/admin/subscriptions', label: t.nav.subscriptions, icon: Users },
   ];

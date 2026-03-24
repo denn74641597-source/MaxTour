@@ -330,3 +330,17 @@ export interface PromotionTier {
   sort_order: number;
   created_at: string;
 }
+
+export type CoinRequestStatus = 'pending' | 'approved' | 'rejected';
+
+export interface CoinRequest {
+  id: string;
+  agency_id: string;
+  coins: number;
+  price_uzs: number;
+  status: CoinRequestStatus;
+  admin_note: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  agency?: { name: string; slug: string };
+}
