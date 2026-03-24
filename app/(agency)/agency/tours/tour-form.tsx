@@ -916,7 +916,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                     <div className="flex items-center gap-0.5 mt-2">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button key={star} type="button" onClick={() => { const u = [...hotels]; u[hotelIndex] = { ...hotel, stars: star }; setHotels(u); }} className="p-0.5">
-                          <Star className={`h-5 w-5 ${hotel.stars && star <= hotel.stars ? 'text-yellow-500 fill-yellow-500' : 'text-muted'}`} />
+                          <Star className={`h-5 w-5 ${hotel.stars && star <= hotel.stars ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground/40'}`} />
                         </button>
                       ))}
                     </div>
@@ -925,7 +925,10 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
                 <div>
                   <Label className="text-xs text-muted-foreground">{t.tours.hotelPrice}</Label>
-                  <Input type="number" min={0} step="0.01" placeholder="850" value={hotel.price || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, price: Number(e.target.value) }; setHotels(u); if (hotelIndex === 0) setValue('price', Number(e.target.value)); }} className="mt-1 rounded-xl border-muted bg-surface h-10 text-sm" />
+                  <div className="relative mt-1">
+                    <Input type="number" min={0} step="0.01" placeholder="850" value={hotel.price || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, price: Number(e.target.value) }; setHotels(u); if (hotelIndex === 0) setValue('price', Number(e.target.value)); }} className="mt-0 pr-14 rounded-xl border-muted bg-surface h-10 text-sm" />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
+                  </div>
                 </div>
 
                 <div>

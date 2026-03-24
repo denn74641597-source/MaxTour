@@ -293,6 +293,9 @@ export const uz: Translations = {
     renewsIn: 'Yangilanadi',
     days: 'kun',
     upgrade: 'Yangilash',
+    timeMinAgo: 'min oldin',
+    timeHourAgo: 'soat oldin',
+    timeDayAgo: 'kun oldin',
   },
 
   // ─── Verification ───
@@ -550,9 +553,9 @@ export const uz: Translations = {
     welcome: 'MaxTour\'ga xush kelibsiz',
     welcomeHint: 'Davom etish uchun ro\'yxatdan o\'ting yoki tizimga kiring',
     chooseRole: 'Ro\'yxatdan o\'tish turini tanlang',
-    registerAsUser: 'Foydalanuvchi sifatida',
+    registerAsUser: 'Foydalanuvchi sifatida kirish',
     registerAsUserHint: 'Turlarni ko\'ring, saqlang va so\'rov yuboring',
-    registerAsAgency: 'Tur agentligi sifatida',
+    registerAsAgency: 'Agentlik sifatida ro\'yxatdan o\'tish',
     registerAsAgencyHint: 'Turlaringizni e\'lon qiling va mijozlarni jalb qiling',
     fullName: 'To\'liq ismingiz',
     fullNamePlaceholder: 'Ismingizni kiriting',

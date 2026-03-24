@@ -293,6 +293,9 @@ export const ru: Translations = {
     renewsIn: 'Обновляется через',
     days: 'дней',
     upgrade: 'Улучшить',
+    timeMinAgo: 'мин назад',
+    timeHourAgo: 'ч назад',
+    timeDayAgo: 'дн назад',
   },
 
   // ─── Verification ───
@@ -550,9 +553,9 @@ export const ru: Translations = {
     welcome: 'Добро пожаловать в MaxTour',
     welcomeHint: 'Зарегистрируйтесь или войдите, чтобы продолжить',
     chooseRole: 'Выберите тип регистрации',
-    registerAsUser: 'Как пользователь',
+    registerAsUser: 'Войти как пользователь',
     registerAsUserHint: 'Просматривайте туры, сохраняйте и отправляйте заявки',
-    registerAsAgency: 'Как турагентство',
+    registerAsAgency: 'Регистрация агентства',
     registerAsAgencyHint: 'Публикуйте свои туры и привлекайте клиентов',
     fullName: 'Полное имя',
     fullNamePlaceholder: 'Введите ваше имя',

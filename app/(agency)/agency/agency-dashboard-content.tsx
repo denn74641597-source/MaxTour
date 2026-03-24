@@ -44,11 +44,11 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
   const timeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins} min ago`;
+    if (mins < 60) return `${mins} ${t.agency.timeMinAgo}`;
     const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs} hour ago`;
+    if (hrs < 24) return `${hrs} ${t.agency.timeHourAgo}`;
     const days = Math.floor(hrs / 24);
-    return `${days} day ago`;
+    return `${days} ${t.agency.timeDayAgo}`;
   };
 
   const statCards = [

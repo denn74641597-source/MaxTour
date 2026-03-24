@@ -127,7 +127,14 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
               <p className="text-muted-foreground text-sm font-medium">
                 {isDomestic
                   ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
-                  : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
+                  : tour.destinations && tour.destinations.length > 1
+                    ? (() => {
+                        const parsed: { country: string; city: string }[] = tour.destinations.map((d: string) => { const p = d.split(' - '); return { country: p[0], city: p[1] || '' }; });
+                        const countries = [...new Set(parsed.map(p => p.country))];
+                        const cities = parsed.map(p => p.city).filter(Boolean);
+                        return cities.length > 0 ? `${cities.join(', ')}, ${countries.join(', ')}` : countries.join(', ');
+                      })()
+                    : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
                 }
               </p>
             </div>

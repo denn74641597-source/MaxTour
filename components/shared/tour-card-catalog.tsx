@@ -36,9 +36,27 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
   const nightsText = tour.duration_days
     ? `${tour.duration_days} ${t.common.days}${tour.duration_nights ? ` | ${tour.duration_nights} ${t.common.nights}` : ''}`
     : null;
-  const location = tour.tour_type === 'domestic'
-    ? [tour.district, tour.region || 'O\'zbekiston'].filter(Boolean).join(', ')
-    : [tour.city, tour.country].filter(Boolean).join(', ');
+  const location = (() => {
+    if (tour.tour_type === 'domestic') {
+      return [tour.district, tour.region || 'O\'zbekiston'].filter(Boolean).join(', ');
+    }
+    // Combo tour with destinations
+    if (tour.destinations && tour.destinations.length > 1) {
+      const parsed = tour.destinations.map(d => {
+        const parts = d.split(' - ');
+        return { country: parts[0], city: parts[1] || '' };
+      });
+      const countries = [...new Set(parsed.map(p => p.country))];
+      const cities = parsed.map(p => p.city).filter(Boolean);
+      if (cities.length > 0) {
+        const countryStr = countries.join(', ');
+        const cityStr = cities.join(', ');
+        return `${cityStr}, ${countryStr}`;
+      }
+      return countries.join(', ');
+    }
+    return [tour.city, tour.country].filter(Boolean).join(', ');
+  })();
   const maxStars = getMaxHotelStars(tour);
   const liked = isFavorite(tour.id);
 
@@ -141,15 +159,15 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
         {/* Price + CTA */}
         <div className="flex items-center justify-between pt-3">
           <div>
-            <span className="text-xs text-muted-foreground block">{t.common.from}</span>
             {tour.old_price && tour.old_price > tour.price && (
-              <span className="text-xs text-muted-foreground line-through mr-1">
+              <span className="text-xs text-muted-foreground line-through block mb-0.5">
                 ${tour.old_price.toLocaleString()}
               </span>
             )}
             <span className="text-xl font-bold text-primary">
               ${tour.price.toLocaleString()}
             </span>
+            <span className="text-xs text-muted-foreground ml-1">{t.common.from}</span>
           </div>
           <span className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
             {t.common.viewDetails}

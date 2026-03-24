@@ -255,6 +255,9 @@ export interface Translations {
     renewsIn: string;
     days: string;
     upgrade: string;
+    timeMinAgo: string;
+    timeHourAgo: string;
+    timeDayAgo: string;
   };
   verification: {
     title: string;

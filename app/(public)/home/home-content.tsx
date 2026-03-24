@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
@@ -149,38 +149,77 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
   );
 }
 
-/** Rotating Hero Banner — picks random 10 from featured, auto-rotates every 3s */
+/** Rotating Hero Banner — picks random 10 from featured, auto-rotates every 3s, supports swipe */
 function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgencyId?: string }) {
   const [current, setCurrent] = useState(() => pickRandom(tours, 10, currentAgencyId));
   const [idx, setIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const touchStart = useRef(0);
+  const autoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Re-shuffle every full cycle
+  const goTo = useCallback((newIdx: number) => {
+    setFading(true);
+    setTimeout(() => {
+      setIdx(newIdx);
+      setFading(false);
+    }, 200);
+  }, []);
+
+  const goNext = useCallback(() => {
+    const next = idx + 1;
+    if (next >= current.length) {
+      setCurrent(pickRandom(tours, 10, currentAgencyId));
+      goTo(0);
+    } else {
+      goTo(next);
+    }
+  }, [idx, current.length, tours, currentAgencyId, goTo]);
+
+  const goPrev = useCallback(() => {
+    goTo(idx > 0 ? idx - 1 : current.length - 1);
+  }, [idx, current.length, goTo]);
+
+  // Auto-rotate
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIdx(prev => {
-        const next = prev + 1;
-        if (next >= current.length) {
-          setCurrent(pickRandom(tours, 10, currentAgencyId));
-          return 0;
-        }
-        return next;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [tours, currentAgencyId, current.length]);
+    autoTimer.current = setInterval(goNext, 3000);
+    return () => { if (autoTimer.current) clearInterval(autoTimer.current); };
+  }, [goNext]);
+
+  // Reset timer on manual interaction
+  const resetTimer = useCallback(() => {
+    if (autoTimer.current) clearInterval(autoTimer.current);
+    autoTimer.current = setInterval(goNext, 3000);
+  }, [goNext]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goNext(); else goPrev();
+      resetTimer();
+    }
+  };
 
   const tour = current[idx] ?? tours[0];
   if (!tour) return null;
 
   return (
-    <div className="transition-opacity duration-500">
-      <HeroBanner tour={tour} />
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+    >
+      <div className={`transition-opacity duration-300 ${fading ? 'opacity-0' : 'opacity-100'}`}>
+        <HeroBanner tour={tour} />
+      </div>
       {/* Dots indicator */}
       {current.length > 1 && (
         <div className="flex justify-center gap-1.5 mt-3">
           {current.map((_, i) => (
-            <span
+            <button
               key={i}
+              onClick={() => { goTo(i); resetTimer(); }}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 i === idx ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30'
               }`}
@@ -206,32 +245,64 @@ function RotatingGrid({
 }) {
   const [display, setDisplay] = useState(() => pickRandom(allTours, limit, currentAgencyId));
   const [pageIdx, setPageIdx] = useState(0);
+  const [fading, setFading] = useState(false);
+  const touchStart = useRef(0);
+  const autoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const totalPages = Math.ceil(display.length / 4);
 
-  // Auto-rotate pages every 3s, re-shuffle after full cycle
+  const goToPage = useCallback((newPage: number) => {
+    setFading(true);
+    setTimeout(() => {
+      setPageIdx(newPage);
+      setFading(false);
+    }, 200);
+  }, []);
+
+  const goNext = useCallback(() => {
+    const next = pageIdx + 1;
+    if (next >= totalPages) {
+      setDisplay(pickRandom(allTours, limit, currentAgencyId));
+      goToPage(0);
+    } else {
+      goToPage(next);
+    }
+  }, [pageIdx, totalPages, allTours, limit, currentAgencyId, goToPage]);
+
+  const goPrev = useCallback(() => {
+    goToPage(pageIdx > 0 ? pageIdx - 1 : totalPages - 1);
+  }, [pageIdx, totalPages, goToPage]);
+
+  // Auto-rotate
   useEffect(() => {
     if (totalPages <= 1) return;
-    const interval = setInterval(() => {
-      setPageIdx(prev => {
-        const next = prev + 1;
-        if (next >= totalPages) {
-          setDisplay(pickRandom(allTours, limit, currentAgencyId));
-          return 0;
-        }
-        return next;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [allTours, limit, currentAgencyId, totalPages]);
+    autoTimer.current = setInterval(goNext, 3000);
+    return () => { if (autoTimer.current) clearInterval(autoTimer.current); };
+  }, [goNext, totalPages]);
+
+  const resetTimer = useCallback(() => {
+    if (autoTimer.current) clearInterval(autoTimer.current);
+    if (totalPages > 1) autoTimer.current = setInterval(goNext, 3000);
+  }, [goNext, totalPages]);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStart.current = e.touches[0].clientX;
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const diff = touchStart.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) goNext(); else goPrev();
+      resetTimer();
+    }
+  };
 
   const pageTours = display.slice(pageIdx * 4, pageIdx * 4 + 4);
   const rows = Math.ceil(pageTours.length / 2);
 
   return (
-    <div>
+    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
       <div
-        className="grid grid-cols-2 gap-3 transition-opacity duration-300"
+        className={`grid grid-cols-2 gap-3 transition-opacity duration-300 ${fading ? 'opacity-0' : 'opacity-100'}`}
         style={{ gridTemplateRows: `repeat(${rows}, auto)` }}
       >
         {pageTours.map((tour) => (
@@ -242,8 +313,9 @@ function RotatingGrid({
       {totalPages > 1 && (
         <div className="flex justify-center gap-1.5 mt-3">
           {Array.from({ length: totalPages }).map((_, i) => (
-            <span
+            <button
               key={i}
+              onClick={() => { goToPage(i); resetTimer(); }}
               className={`h-1.5 rounded-full transition-all duration-300 ${
                 i === pageIdx ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30'
               }`}
