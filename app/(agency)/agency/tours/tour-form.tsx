@@ -18,7 +18,7 @@ import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
 import { slugify } from '@/lib/utils';
 import { Loader2, MapPin, Plus, X, Hotel, Star, Search, Globe, Map, Mountain, Landmark, Heart, Compass, TreePine, ArrowLeft, Send, CalendarDays, Clock, DollarSign, Utensils, Bus, Plane, Image as ImageIcon, FileText, CheckCircle2, Phone, User, Eye, AlertTriangle } from 'lucide-react';
-import type { TourLimitInfo } from '@/features/agencies/queries';
+
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
@@ -50,7 +50,7 @@ interface TourFormProps {
     guide_phone?: string | null;
   };
   tourId?: string;
-  tourLimit?: TourLimitInfo;
+
 }
 
 // Inline sub-component to add a combo country+city pair (avoids lifting search state)
@@ -133,7 +133,7 @@ function ComboDestinationAdder({ language, onAdd, t }: { language: string; onAdd
   );
 }
 
-export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
+export function TourForm({ initialData, tourId }: TourFormProps) {
   const router = useRouter();
   const { t, language } = useTranslation();
   const [coverUrl, setCoverUrl] = useState(initialData?.cover_image_url ?? '');
@@ -342,12 +342,6 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   }
 
   async function onSubmit(data: TourFormData) {
-    // Check tour limit for new tours
-    if (!isEditing && tourLimit && !tourLimit.canCreate) {
-      toast.error(t.agencyTours.tourLimitReached);
-      return;
-    }
-
     const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -1355,13 +1349,6 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
               )}
 
-              {/* Tour limit warning */}
-              {tourLimit && !tourLimit.canCreate && !isEditing && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-600">
-                  <AlertTriangle className="h-4 w-4 shrink-0" />
-                  <span className="text-xs">{t.agencyTours.tourLimitReached}</span>
-                </div>
-              )}
             </div>
 
             {/* Confirm buttons */}
@@ -1369,7 +1356,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               <Button
                 type="button"
                 className="w-full h-12 rounded-2xl text-base font-bold"
-                disabled={isSubmitting || (tourLimit && !tourLimit.canCreate && !isEditing)}
+                disabled={isSubmitting}
                 onClick={() => {
                   setShowPreview(false);
                   ensureSlug();

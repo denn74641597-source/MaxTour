@@ -265,25 +265,10 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         )}
 
         {/* What's Included */}
-        {(includedServices.length > 0 || destinations.length > 0) && (
+        {includedServices.length > 0 && (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.whatsIncluded}</h3>
             <div className="bg-surface rounded-xl shadow-ambient divide-y divide-muted">
-              {destinations.length > 0 && (
-                <div className="flex items-center gap-2.5 px-3 py-2">
-                  <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
-                    <Navigation className="h-3.5 w-3.5 text-emerald-500" />
-                  </div>
-                  <div className="flex items-center gap-1 flex-wrap">
-                    {destinations.map((dest: string, i: number) => (
-                      <span key={i} className="text-xs font-medium">
-                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded-full">{dest}</span>
-                        {i < destinations.length - 1 && <span className="text-muted-foreground mx-0.5">→</span>}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
               {includedServices.map((service, i) => (
                 <div key={i} className="flex items-center gap-2.5 px-3 py-2">
                   <div className="size-5 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">

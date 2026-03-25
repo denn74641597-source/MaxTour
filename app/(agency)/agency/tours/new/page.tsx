@@ -1,5 +1,4 @@
 import { getMyAgency, isAgencyProfileComplete } from '@/features/agencies/queries';
-import { getAgencyTourLimit } from '@/features/agencies/queries';
 import { redirect } from 'next/navigation';
 import { NewTourContent } from './new-tour-content';
 
@@ -11,7 +10,5 @@ export default async function NewTourPage() {
     redirect('/agency/profile');
   }
 
-  const tourLimit = await getAgencyTourLimit(agency.id);
-
-  return <NewTourContent tourLimit={tourLimit} />;
+  return <NewTourContent />;
 }

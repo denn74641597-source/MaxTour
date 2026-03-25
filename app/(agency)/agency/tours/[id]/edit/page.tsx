@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getMyAgency, getAgencyTourLimit } from '@/features/agencies/queries';
+import { getMyAgency } from '@/features/agencies/queries';
 import { EditTourContent } from './edit-tour-content';
 
 interface Props {
@@ -19,13 +19,10 @@ export default async function EditTourPage({ params }: Props) {
   const tour = tourRes.data;
   if (!tour) notFound();
 
-  const tourLimit = agency ? await getAgencyTourLimit(agency.id) : null;
-
   return (
     <EditTourContent
       tourId={tour.id}
       tourTitle={tour.title}
-      tourLimit={tourLimit}
       initialData={{
         title: tour.title,
         slug: tour.slug,

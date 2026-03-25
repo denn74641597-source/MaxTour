@@ -6,12 +6,9 @@ import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { TourFormData } from '@/lib/validators';
 import type { TourHotel } from '@/types';
-import type { TourLimitInfo } from '@/features/agencies/queries';
-
 interface EditTourContentProps {
   tourId: string;
   tourTitle: string;
-  tourLimit: TourLimitInfo | null;
   initialData: Partial<TourFormData> & {
     cover_image_url?: string | null;
     hotel_images?: string[];
@@ -22,7 +19,7 @@ interface EditTourContentProps {
   };
 }
 
-export function EditTourContent({ tourId, tourTitle, tourLimit, initialData }: EditTourContentProps) {
+export function EditTourContent({ tourId, tourTitle, initialData }: EditTourContentProps) {
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -41,7 +38,7 @@ export function EditTourContent({ tourId, tourTitle, tourLimit, initialData }: E
           <p className="text-xs text-muted-foreground">{tourTitle}</p>
         </div>
       </div>
-      <TourForm tourId={tourId} initialData={initialData} tourLimit={tourLimit ?? undefined} />
+      <TourForm tourId={tourId} initialData={initialData} />
     </div>
   );
 }
