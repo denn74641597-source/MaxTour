@@ -349,8 +349,10 @@ export interface Translations {
     extraCharges: string;
     mandatoryCharges: string;
     mandatoryChargesHint: string;
+    mandatoryVariableHint: string;
     optionalCharges: string;
     optionalChargesHint: string;
+    optionalVariableHint: string;
     addExtraCharge: string;
     extraChargeName: string;
     extraChargeAmount: string;

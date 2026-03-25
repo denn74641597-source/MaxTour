@@ -141,7 +141,7 @@ export interface Tour {
   destinations: string[];
   airline: string | null;
   extra_charges: { name: string; amount: number; required?: boolean }[];
-  variable_charges: { name: string; min_amount: number; max_amount: number }[];
+  variable_charges: { name: string; min_amount: number; max_amount: number; required?: boolean }[];
   meal_type: MealType;
   transport_type: TransportType;
   visa_required: boolean;

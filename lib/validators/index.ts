@@ -65,7 +65,7 @@ export const tourSchema = z.object({
   destinations: z.array(z.string()).default([]),
   airline: z.string().optional().or(z.literal('')),
   extra_charges: z.array(z.object({ name: z.string(), amount: z.coerce.number(), required: z.boolean().default(true) })).default([]),
-  variable_charges: z.array(z.object({ name: z.string(), min_amount: z.coerce.number(), max_amount: z.coerce.number() })).default([]),
+  variable_charges: z.array(z.object({ name: z.string(), min_amount: z.coerce.number(), max_amount: z.coerce.number(), required: z.boolean().default(true) })).default([]),
   meal_type: z
     .enum(['none', 'breakfast', 'half_board', 'full_board', 'all_inclusive'])
     .default('none'),
