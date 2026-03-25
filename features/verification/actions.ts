@@ -91,7 +91,7 @@ export async function approveVerificationAction(requestId: string, agencyId: str
 
   const { error: agencyError } = await admin
     .from('agencies')
-    .update({ is_verified: true, updated_at: new Date().toISOString() })
+    .update({ is_verified: true, is_approved: true, updated_at: new Date().toISOString() })
     .eq('id', agencyId);
 
   if (agencyError) return { error: agencyError.message };

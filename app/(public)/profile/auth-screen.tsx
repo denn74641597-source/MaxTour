@@ -273,7 +273,7 @@ export function AuthScreen() {
       const slug = slugify(trimmedName) || `agency-${userId.slice(0, 8)}`;
 
       // Create agency record with all fields
-      await supabase.from('agencies').upsert({
+      const { error: agencyError } = await supabase.from('agencies').upsert({
         owner_id: userId,
         name: trimmedName,
         slug,
@@ -285,6 +285,25 @@ export function AuthScreen() {
         certificate_pdf_url: certificatePdfUrl,
         country: 'Uzbekistan',
       });
+
+      if (agencyError) {
+        setError(agencyError.message);
+        return;
+      }
+
+      // Auto-create verification request so admin sees the new agency
+      const { data: agencyData } = await supabase
+        .from('agencies')
+        .select('id')
+        .eq('owner_id', userId)
+        .single();
+
+      if (agencyData) {
+        await supabase.from('verification_requests').insert({
+          agency_id: agencyData.id,
+          certificate_url: certificatePdfUrl || licensePdfUrl || null,
+        });
+      }
 
       router.push('/agency');
     } catch (err) {
