@@ -859,6 +859,41 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               </div>
             </div>
 
+          </div>
+        </section>
+
+        <div className="border-t border-muted" />
+
+        {/* в”Ђв”Ђ DETAILS в”Ђв”Ђ */}
+        <section>
+          <SectionHeader icon={<CheckCircle2 className="h-4 w-4" />} label={t.agencyTours.includedServices} />
+          <div className="space-y-4">
+            {/* Included Services */}
+            <div>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.includedServices}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.includedServicesHint}</p>
+              {includedServices.length > 0 && (
+                <div className="space-y-1 mt-2">
+                  {includedServices.map((s, i) => (
+                    <div key={i} className="flex items-center gap-2 text-sm bg-emerald-50/50 rounded-lg px-3 py-1.5">
+                      <span className="text-emerald-500 text-xs">вњ“</span>
+                      <span className="flex-1 text-foreground">{s}</span>
+                      <button type="button" onClick={() => removeService(i)} className="text-muted-foreground hover:text-red-500">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2 mt-2">
+                <Input placeholder={t.agencyTours.addIncludedService} value={newIncluded} onChange={(e) => setNewIncluded(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }} className="rounded-xl border-muted bg-surface-container-low h-11" />
+                <Button type="button" variant="outline" size="icon" onClick={() => addService()} className="rounded-xl h-11 w-11 shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+
             {/* Extra Charges */}
             <div>
               <Label className="text-sm font-medium text-foreground">{t.agencyTours.extraCharges}</Label>
@@ -916,39 +951,6 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
                 </div>
                 <Button type="button" variant="outline" size="icon" onClick={addVariableCharge} className="rounded-xl h-11 w-11 shrink-0">
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <div className="border-t border-muted" />
-
-        {/* в”Ђв”Ђ DETAILS в”Ђв”Ђ */}
-        <section>
-          <SectionHeader icon={<CheckCircle2 className="h-4 w-4" />} label={t.agencyTours.includedServices} />
-          <div className="space-y-4">
-            {/* Included Services */}
-            <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.includedServices}</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.includedServicesHint}</p>
-              {includedServices.length > 0 && (
-                <div className="space-y-1 mt-2">
-                  {includedServices.map((s, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm bg-emerald-50/50 rounded-lg px-3 py-1.5">
-                      <span className="text-emerald-500 text-xs">вњ“</span>
-                      <span className="flex-1 text-foreground">{s}</span>
-                      <button type="button" onClick={() => removeService(i)} className="text-muted-foreground hover:text-red-500">
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <div className="flex gap-2 mt-2">
-                <Input placeholder={t.agencyTours.addIncludedService} value={newIncluded} onChange={(e) => setNewIncluded(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addService(); } }} className="rounded-xl border-muted bg-surface-container-low h-11" />
-                <Button type="button" variant="outline" size="icon" onClick={() => addService()} className="rounded-xl h-11 w-11 shrink-0">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
