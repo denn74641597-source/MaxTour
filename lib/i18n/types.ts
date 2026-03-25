@@ -304,6 +304,8 @@ export interface Translations {
     city: string;
     cityPlaceholder: string;
     selectCountryFirst: string;
+    otherCity: string;
+    enterCityName: string;
     departureDate: string;
     departureMonth: string;
     departureMonthPlaceholder: string;
@@ -372,7 +374,11 @@ export interface Translations {
     additionalInfo: string;
     additionalInfoPlaceholder: string;
     coverImageHint: string;
+    comboCountries: string;
+    comboCountriesHint: string;
+    primaryHotel: string;
     previewAndPublish: string;
+    fixErrors: string;
     accommodation: string;
     dates: string;
     tourLimitLabel: string;

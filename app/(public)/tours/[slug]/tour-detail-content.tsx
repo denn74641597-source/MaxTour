@@ -133,7 +133,10 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                         const parsed: { country: string; city: string }[] = tour.destinations.map((d: string) => { const p = d.split(' - '); return { country: p[0], city: p[1] || '' }; });
                         const countries = [...new Set(parsed.map(p => p.country))];
                         const cities = parsed.map(p => p.city).filter(Boolean);
-                        return cities.length > 0 ? `${cities.join(', ')}, ${countries.join(', ')}` : countries.join(', ');
+                        if (countries.length === 1 && cities.length > 0) {
+                          return `${cities.join(' - ')}, ${countries[0]}`;
+                        }
+                        return parsed.map(p => p.city ? `${p.city}, ${p.country}` : p.country).join(' - ');
                       })()
                     : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
                 }
@@ -169,7 +172,16 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{t.tours.departure}</span>
             <span className="text-xs font-bold text-foreground">
               {tour.departure_date
-                ? formatDate(tour.departure_date)
+                ? (() => {
+                    const dep = new Date(tour.departure_date);
+                    const depStr = `${String(dep.getDate()).padStart(2, '0')}.${String(dep.getMonth() + 1).padStart(2, '0')}`;
+                    if (tour.return_date) {
+                      const ret = new Date(tour.return_date);
+                      const retStr = `${String(ret.getDate()).padStart(2, '0')}.${String(ret.getMonth() + 1).padStart(2, '0')}`;
+                      return `${depStr} - ${retStr}`;
+                    }
+                    return depStr;
+                  })()
                 : (() => {
                     const [y, m] = (tour.departure_month as string).split('-');
                     return `${t.dateFormat.monthNames[m as keyof typeof t.dateFormat.monthNames] ?? m} ${y}`;

@@ -103,15 +103,18 @@ function ComboDestinationAdder({ language, onAdd, t }: { language: string; onAdd
             {cis && (() => {
               const cities = CITIES_BY_COUNTRY[language][selCountry] ?? [];
               const filtered = cities.filter(c => c.toLowerCase().includes(cis.toLowerCase()));
-              return filtered.length > 0 ? (
+              return (
                 <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
                   {filtered.map((city) => (
                     <button key={city} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { onAdd({ country: selCountry, city }); setSelCountry(''); setCis(''); }}>
                       {city}
                     </button>
                   ))}
+                  <button type="button" className="w-full text-left px-3 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors border-t border-muted" onClick={() => { onAdd({ country: selCountry, city: cis.trim() }); setSelCountry(''); setCis(''); }}>
+                    {t.agencyTours.otherCity}: &quot;{cis.trim()}&quot;
+                  </button>
                 </div>
-              ) : null;
+              );
             })()}
           </>
         )}
@@ -226,7 +229,26 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
 
   function autoSlug() {
     if (title) {
-      setValue('slug', slugify(title));
+      const slug = slugify(title);
+      setValue('slug', slug || `tour-${Date.now()}`);
+    }
+  }
+
+  function ensureSlug() {
+    const currentSlug = watch('slug');
+    const currentTitle = watch('title');
+    if (!currentSlug && currentTitle) {
+      const slug = slugify(currentTitle);
+      setValue('slug', slug || `tour-${Date.now()}`);
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function onValidationError(fieldErrors: any) {
+    const firstKey = Object.keys(fieldErrors)[0];
+    if (firstKey) {
+      const msg = fieldErrors[firstKey]?.message || t.agencyTours.fixErrors;
+      toast.error(msg);
     }
   }
 
@@ -598,15 +620,18 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                         {citySearch && (() => {
                           const cities = CITIES_BY_COUNTRY[language][watch('country') ?? ''] ?? [];
                           const filtered = cities.filter(c => c.toLowerCase().includes(citySearch.toLowerCase()));
-                          return filtered.length > 0 ? (
+                          return (
                             <div className="absolute z-20 mt-1 w-full border rounded-xl max-h-44 overflow-y-auto bg-surface shadow-lg">
                               {filtered.map((city) => (
                                 <button key={city} type="button" className="w-full text-left px-3 py-2.5 text-sm hover:bg-primary/5 transition-colors" onClick={() => { setValue('city', city); setCitySearch(''); }}>
                                   {city}
                                 </button>
                               ))}
+                              <button type="button" className="w-full text-left px-3 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors border-t border-muted" onClick={() => { setValue('city', citySearch.trim()); setCitySearch(''); }}>
+                                {t.agencyTours.otherCity}: &quot;{citySearch.trim()}&quot;
+                              </button>
                             </div>
-                          ) : null;
+                          );
                         })()}
                       </>
                     )}
@@ -619,8 +644,8 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             {/* Combo Tour: Additional Country+City pairs */}
             {!isDomestic && isCombo && (
               <div>
-                <Label className="text-sm font-medium text-foreground">Qo&apos;shimcha mamlakatlar va shaharlar</Label>
-                <p className="text-xs text-muted-foreground mt-0.5">Kombi tur uchun 5 tagacha qo&apos;shimcha mamlakat va shahar qo&apos;shing</p>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.comboCountries}</Label>
+                <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.comboCountriesHint}</p>
                 {comboDestinations.length > 0 && (
                   <div className="space-y-2 mt-2">
                     {comboDestinations.map((dest, i) => (
@@ -965,7 +990,7 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                   <div className="flex items-center gap-2">
                     <Hotel className="h-4 w-4 text-primary" />
                     <span className="text-sm font-semibold text-foreground">#{hotelIndex + 1}</span>
-                    {hotelIndex === 0 && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">Asosiy</span>}
+                    {hotelIndex === 0 && <span className="text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">{t.agencyTours.primaryHotel}</span>}
                   </div>
                   <button type="button" onClick={() => setHotels((prev) => prev.filter((_, i) => i !== hotelIndex))} className="text-red-400 hover:text-red-500 text-xs font-medium">
                     {t.tours.removeHotel}
@@ -1095,8 +1120,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             className="w-full h-12 rounded-2xl text-base font-bold shadow-lg shadow-primary/20"
             disabled={isSubmitting}
             onClick={() => {
+              ensureSlug();
               setPendingStatus('pending');
-              handleSubmit(() => setShowPreview(true))();
+              handleSubmit(() => setShowPreview(true), onValidationError)();
             }}
           >
             <Eye className="h-4 w-4 mr-2" />
@@ -1109,8 +1135,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
               className="w-full h-11 rounded-2xl text-sm"
               disabled={isSubmitting}
               onClick={() => {
+                ensureSlug();
                 setPendingStatus('draft');
-                handleSubmit(() => setShowPreview(true))();
+                handleSubmit(() => setShowPreview(true), onValidationError)();
               }}
             >
               {t.agencyTours.saveAsDraft}
@@ -1229,8 +1256,9 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 disabled={isSubmitting || (tourLimit && !tourLimit.canCreate && !isEditing)}
                 onClick={() => {
                   setShowPreview(false);
+                  ensureSlug();
                   setValue('status', pendingStatus);
-                  handleSubmit(onSubmit)();
+                  handleSubmit(onSubmit, onValidationError)();
                 }}
               >
                 {isSubmitting ? (
