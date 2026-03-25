@@ -614,6 +614,14 @@ export const uz: Translations = {
     loggingIn: 'Kirilmoqda...',
     agencyLoginTitle: 'Agentlik hisobiga kirish',
     registerOrLogin: 'Ro\'yxatdan o\'ting yoki tizimga kiring',
+    inn: 'INN (soliq raqami)',
+    innPlaceholder: 'Masalan: 123456789',
+    agencyAddress: 'Agentlik manzili',
+    agencyAddressPlaceholder: 'Shahar, ko\'cha, uy raqami',
+    responsiblePerson: 'Mas\'ul shaxs (F.I.O.)',
+    responsiblePersonPlaceholder: 'To\'liq ism-sharif',
+    uploadLicense: 'Litsenziya (PDF)',
+    uploadCertificate: 'Sertifikat (PDF)',
   },
 
   // ─── Metadata ───

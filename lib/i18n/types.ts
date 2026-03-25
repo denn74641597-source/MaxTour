@@ -557,6 +557,14 @@ export interface Translations {
     loggingIn: string;
     agencyLoginTitle: string;
     registerOrLogin: string;
+    inn: string;
+    innPlaceholder: string;
+    agencyAddress: string;
+    agencyAddressPlaceholder: string;
+    responsiblePerson: string;
+    responsiblePersonPlaceholder: string;
+    uploadLicense: string;
+    uploadCertificate: string;
   };
   analytics: {
     title: string;

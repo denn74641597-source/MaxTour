@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 import { useTranslation } from '@/lib/i18n';
 import { upsertAgencyProfileAction, getMyAgencyAction } from '@/features/agencies/actions';
 import Image from 'next/image';
-import { placeholderImage } from '@/lib/utils';
+import { placeholderImage, slugify } from '@/lib/utils';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import type { Agency } from '@/types';
 
@@ -47,7 +47,6 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
   const defaultFormValues = agency
     ? {
         name: agency.name,
-        slug: agency.slug,
         description: agency.description ?? '',
         phone: agency.phone ?? '',
         telegram_username: agency.telegram_username ?? '',
@@ -78,7 +77,6 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
       setLogoUrl(data.logo_url ?? '');
       reset({
         name: data.name,
-        slug: data.slug,
         description: data.description ?? '',
         phone: data.phone ?? '',
         telegram_username: data.telegram_username ?? '',
@@ -99,7 +97,6 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
     if (agency) {
       reset({
         name: agency.name,
-        slug: agency.slug,
         description: agency.description ?? '',
         phone: agency.phone ?? '',
         telegram_username: agency.telegram_username ?? '',
@@ -116,9 +113,10 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
   }
 
   async function onSubmit(data: AgencyProfileData) {
+    const autoSlug = slugify(data.name) || agency?.slug || `agency-${Date.now()}`;
     const result = await upsertAgencyProfileAction({
       name: data.name,
-      slug: data.slug,
+      slug: autoSlug,
       logo_url: logoUrl || null,
       description: data.description || null,
       phone: data.phone || null,
@@ -402,12 +400,6 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
               <Label htmlFor="name">{t.agencyProfileForm.companyName} *</Label>
               <Input id="name" placeholder={t.agencyProfileForm.companyNamePlaceholder} {...register('name')} />
               {errors.name && <p className="text-xs text-destructive">{errors.name.message}</p>}
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="slug">{t.agencyProfileForm.urlSlug} *</Label>
-              <Input id="slug" placeholder={t.agencyProfileForm.urlSlugPlaceholder} {...register('slug')} />
-              {errors.slug && <p className="text-xs text-destructive">{errors.slug.message}</p>}
             </div>
 
             <div className="space-y-2">

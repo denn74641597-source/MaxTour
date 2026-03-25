@@ -614,6 +614,14 @@ export const ru: Translations = {
     loggingIn: 'Вход...',
     agencyLoginTitle: 'Вход в аккаунт агентства',
     registerOrLogin: 'Зарегистрируйтесь или войдите',
+    inn: 'ИНН (налоговый номер)',
+    innPlaceholder: 'Например: 123456789',
+    agencyAddress: 'Адрес агентства',
+    agencyAddressPlaceholder: 'Город, улица, дом',
+    responsiblePerson: 'Ответственное лицо (Ф.И.О.)',
+    responsiblePersonPlaceholder: 'Полное имя',
+    uploadLicense: 'Лицензия (PDF)',
+    uploadCertificate: 'Сертификат (PDF)',
   },
 
   // ─── Metadata ───

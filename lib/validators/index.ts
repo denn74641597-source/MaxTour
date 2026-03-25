@@ -12,10 +12,6 @@ export type LeadFormData = z.infer<typeof leadFormSchema>;
 
 export const agencyProfileSchema = z.object({
   name: z.string().min(2, 'Agency name is required'),
-  slug: z
-    .string()
-    .min(2)
-    .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens'),
   description: z.string().max(2000).optional(),
   phone: z.string().min(7, 'Enter a valid phone number').optional(),
   telegram_username: z.string().optional(),

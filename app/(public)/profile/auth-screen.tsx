@@ -1,14 +1,16 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, User, ArrowRight, Phone, Lock, Loader2, Eye, EyeOff } from 'lucide-react';
+import { Building2, User, ArrowRight, Phone, Lock, Loader2, Eye, EyeOff, Upload, FileText, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
+import { uploadPdfAction } from '@/features/upload/actions';
+import { slugify } from '@/lib/utils';
 import type { UserRole } from '@/types';
 
 type AuthStep = 'role-select' | 'register-form' | 'agency-login';
@@ -26,6 +28,16 @@ export function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Agency registration fields
+  const [agencyName, setAgencyName] = useState('');
+  const [inn, setInn] = useState('');
+  const [agencyAddress, setAgencyAddress] = useState('');
+  const [responsiblePerson, setResponsiblePerson] = useState('');
+  const [licensePdf, setLicensePdf] = useState<File | null>(null);
+  const [certificatePdf, setCertificatePdf] = useState<File | null>(null);
+  const licenseInputRef = useRef<HTMLInputElement>(null);
+  const certificateInputRef = useRef<HTMLInputElement>(null);
+
   const supabase = createClient();
 
   const resetForm = () => {
@@ -34,6 +46,12 @@ export function AuthScreen() {
     setFullName('');
     setPassword('');
     setShowPassword(false);
+    setAgencyName('');
+    setInn('');
+    setAgencyAddress('');
+    setResponsiblePerson('');
+    setLicensePdf(null);
+    setCertificatePdf(null);
   };
 
   const handleRoleSelect = (role: UserRole) => {
@@ -137,11 +155,16 @@ export function AuthScreen() {
     }
   };
 
-  // Register agency (phone + password)
+  // Register agency (all fields)
   const handleAgencyRegister = async () => {
     const trimmedPhone = phone.trim();
     const trimmedPassword = password.trim();
-    if (!trimmedPhone || !trimmedPassword) return;
+    const trimmedName = agencyName.trim();
+    const trimmedInn = inn.trim();
+    const trimmedAddress = agencyAddress.trim();
+    const trimmedPerson = responsiblePerson.trim();
+
+    if (!trimmedPhone || !trimmedPassword || !trimmedName || !trimmedInn || !trimmedAddress || !trimmedPerson) return;
 
     if (trimmedPassword.length < 6) {
       setError(t.auth.passwordTooShort);
@@ -152,6 +175,34 @@ export function AuthScreen() {
     setError('');
 
     try {
+      // Upload PDFs if provided
+      let licensePdfUrl: string | null = null;
+      let certificatePdfUrl: string | null = null;
+
+      if (licensePdf) {
+        const formData = new FormData();
+        formData.append('file', licensePdf);
+        formData.append('folder', 'licenses');
+        const result = await uploadPdfAction(formData);
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        licensePdfUrl = result.url ?? null;
+      }
+
+      if (certificatePdf) {
+        const formData = new FormData();
+        formData.append('file', certificatePdf);
+        formData.append('folder', 'certificates');
+        const result = await uploadPdfAction(formData);
+        if (result.error) {
+          setError(result.error);
+          return;
+        }
+        certificatePdfUrl = result.url ?? null;
+      }
+
       const email = phoneToEmail(trimmedPhone);
 
       const { data: signUpData, error: signUpError } =
@@ -208,7 +259,7 @@ export function AuthScreen() {
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: userId,
         role: 'agency_manager' as const,
-        full_name: trimmedPhone,
+        full_name: trimmedPerson,
         phone: trimmedPhone,
         updated_at: new Date().toISOString(),
       });
@@ -218,12 +269,20 @@ export function AuthScreen() {
         return;
       }
 
-      // Create agency record
-      const slug = `agency-${userId.slice(0, 8)}`;
+      // Generate slug from agency name
+      const slug = slugify(trimmedName) || `agency-${userId.slice(0, 8)}`;
+
+      // Create agency record with all fields
       await supabase.from('agencies').upsert({
         owner_id: userId,
-        name: `Agentlik ${trimmedPhone}`,
+        name: trimmedName,
         slug,
+        phone: trimmedPhone,
+        address: trimmedAddress,
+        inn: trimmedInn,
+        responsible_person: trimmedPerson,
+        license_pdf_url: licensePdfUrl,
+        certificate_pdf_url: certificatePdfUrl,
         country: 'Uzbekistan',
       });
 
@@ -278,7 +337,7 @@ export function AuthScreen() {
   const isFormValid =
     selectedRole === 'user'
       ? phone.trim() && fullName.trim()
-      : phone.trim() && password.trim();
+      : phone.trim() && password.trim() && agencyName.trim() && inn.trim() && agencyAddress.trim() && responsiblePerson.trim();
 
   return (
     <div className="px-4 py-8">
@@ -417,34 +476,156 @@ export function AuthScreen() {
               </div>
             )}
 
-            {/* Agency: Password field */}
+            {/* Agency: All registration fields */}
             {selectedRole === 'agency_manager' && (
-              <div className="space-y-2">
-                <Label htmlFor="password">{t.auth.password}</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder={t.auth.passwordPlaceholder}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 h-12"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
+              <>
+                {/* Agency Name (Latin) */}
+                <div className="space-y-2">
+                  <Label htmlFor="agencyName">{t.auth.agencyName} *</Label>
+                  <div className="relative">
+                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="agencyName"
+                      placeholder={t.auth.agencyNamePlaceholder}
+                      value={agencyName}
+                      onChange={(e) => setAgencyName(e.target.value)}
+                      className="pl-10 h-12"
+                    />
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground">{t.auth.passwordHint}</p>
-              </div>
+
+                {/* INN */}
+                <div className="space-y-2">
+                  <Label htmlFor="inn">{t.auth.inn} *</Label>
+                  <Input
+                    id="inn"
+                    placeholder={t.auth.innPlaceholder}
+                    value={inn}
+                    onChange={(e) => setInn(e.target.value)}
+                    className="h-12"
+                  />
+                </div>
+
+                {/* Address */}
+                <div className="space-y-2">
+                  <Label htmlFor="agencyAddress">{t.auth.agencyAddress} *</Label>
+                  <Input
+                    id="agencyAddress"
+                    placeholder={t.auth.agencyAddressPlaceholder}
+                    value={agencyAddress}
+                    onChange={(e) => setAgencyAddress(e.target.value)}
+                    className="h-12"
+                  />
+                </div>
+
+                {/* Responsible Person F.I.O. */}
+                <div className="space-y-2">
+                  <Label htmlFor="responsiblePerson">{t.auth.responsiblePerson} *</Label>
+                  <Input
+                    id="responsiblePerson"
+                    placeholder={t.auth.responsiblePersonPlaceholder}
+                    value={responsiblePerson}
+                    onChange={(e) => setResponsiblePerson(e.target.value)}
+                    className="h-12"
+                  />
+                </div>
+
+                {/* Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t.auth.password} *</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder={t.auth.passwordPlaceholder}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10 h-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t.auth.passwordHint}</p>
+                </div>
+
+                {/* License PDF */}
+                <div className="space-y-2">
+                  <Label>{t.auth.uploadLicense}</Label>
+                  <input
+                    ref={licenseInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setLicensePdf(file);
+                    }}
+                  />
+                  {licensePdf ? (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-surface-container-low border">
+                      <FileText className="h-5 w-5 text-primary shrink-0" />
+                      <span className="text-sm truncate flex-1">{licensePdf.name}</span>
+                      <button type="button" onClick={() => { setLicensePdf(null); if (licenseInputRef.current) licenseInputRef.current.value = ''; }}>
+                        <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-12"
+                      onClick={() => licenseInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {t.auth.uploadLicense}
+                    </Button>
+                  )}
+                </div>
+
+                {/* Certificate PDF */}
+                <div className="space-y-2">
+                  <Label>{t.auth.uploadCertificate}</Label>
+                  <input
+                    ref={certificateInputRef}
+                    type="file"
+                    accept="application/pdf"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) setCertificatePdf(file);
+                    }}
+                  />
+                  {certificatePdf ? (
+                    <div className="flex items-center gap-2 p-3 rounded-lg bg-surface-container-low border">
+                      <FileText className="h-5 w-5 text-primary shrink-0" />
+                      <span className="text-sm truncate flex-1">{certificatePdf.name}</span>
+                      <button type="button" onClick={() => { setCertificatePdf(null); if (certificateInputRef.current) certificateInputRef.current.value = ''; }}>
+                        <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                      </button>
+                    </div>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full h-12"
+                      onClick={() => certificateInputRef.current?.click()}
+                    >
+                      <Upload className="h-4 w-4 mr-2" />
+                      {t.auth.uploadCertificate}
+                    </Button>
+                  )}
+                </div>
+              </>
             )}
 
             {error && (

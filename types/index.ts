@@ -57,6 +57,10 @@ export interface Agency {
   city: string | null;
   country: string;
   google_maps_url: string | null;
+  inn: string | null;
+  responsible_person: string | null;
+  license_pdf_url: string | null;
+  certificate_pdf_url: string | null;
   is_verified: boolean;
   is_approved: boolean;
   profile_views: number;
