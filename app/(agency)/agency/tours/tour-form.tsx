@@ -35,7 +35,7 @@ interface TourFormProps {
     hotels?: TourHotel[];
     destinations?: string[];
     airline?: string | null;
-    extra_charges?: { name: string; amount: number }[];
+    extra_charges?: { name: string; amount: number; required?: boolean }[];
     operator_telegram_username?: string | null;
     operator_phone?: string | null;
     category?: string | null;
@@ -155,11 +155,16 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
   const [hotels, setHotels] = useState<TourHotel[]>(
     initialData?.hotels ?? []
   );
-  const [extraCharges, setExtraCharges] = useState<{ name: string; amount: number }[]>(
-    initialData?.extra_charges ?? []
+  const [mandatoryCharges, setMandatoryCharges] = useState<{ name: string; amount: number }[]>(
+    (initialData?.extra_charges ?? []).filter(c => c.required !== false).map(({ name, amount }) => ({ name, amount }))
   );
-  const [newChargeName, setNewChargeName] = useState('');
-  const [newChargeAmount, setNewChargeAmount] = useState('');
+  const [optionalCharges, setOptionalCharges] = useState<{ name: string; amount: number }[]>(
+    (initialData?.extra_charges ?? []).filter(c => c.required === false).map(({ name, amount }) => ({ name, amount }))
+  );
+  const [newMandatoryName, setNewMandatoryName] = useState('');
+  const [newMandatoryAmount, setNewMandatoryAmount] = useState('');
+  const [newOptionalName, setNewOptionalName] = useState('');
+  const [newOptionalAmount, setNewOptionalAmount] = useState('');
   const [variableCharges, setVariableCharges] = useState<{ name: string; min_amount: number; max_amount: number }[]>(
     (initialData as Record<string, unknown>)?.variable_charges as { name: string; min_amount: number; max_amount: number }[] ?? []
   );
@@ -262,18 +267,32 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
     setDestinations((prev) => prev.filter((_, i) => i !== index));
   }
 
-  function addExtraCharge() {
-    if (!newChargeName.trim() || !newChargeAmount) return;
-    setExtraCharges((prev) => [
+  function addMandatoryCharge() {
+    if (!newMandatoryName.trim() || !newMandatoryAmount) return;
+    setMandatoryCharges((prev) => [
       ...prev,
-      { name: newChargeName.trim(), amount: Number(newChargeAmount) },
+      { name: newMandatoryName.trim(), amount: Number(newMandatoryAmount) },
     ]);
-    setNewChargeName('');
-    setNewChargeAmount('');
+    setNewMandatoryName('');
+    setNewMandatoryAmount('');
   }
 
-  function removeExtraCharge(index: number) {
-    setExtraCharges((prev) => prev.filter((_, i) => i !== index));
+  function removeMandatoryCharge(index: number) {
+    setMandatoryCharges((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function addOptionalCharge() {
+    if (!newOptionalName.trim() || !newOptionalAmount) return;
+    setOptionalCharges((prev) => [
+      ...prev,
+      { name: newOptionalName.trim(), amount: Number(newOptionalAmount) },
+    ]);
+    setNewOptionalName('');
+    setNewOptionalAmount('');
+  }
+
+  function removeOptionalCharge(index: number) {
+    setOptionalCharges((prev) => prev.filter((_, i) => i !== index));
   }
 
   function addVariableCharge() {
@@ -357,7 +376,10 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
         ? comboDestinations.filter(d => d.country).map(d => `${d.country} - ${d.city || ''}`.replace(/ - $/, ''))
         : destinations,
       airline: tourType === 'international' ? (data.airline || null) : null,
-      extra_charges: extraCharges,
+      extra_charges: [
+        ...mandatoryCharges.map(c => ({ ...c, required: true })),
+        ...optionalCharges.map(c => ({ ...c, required: false })),
+      ],
       variable_charges: variableCharges,
       meal_type: data.meal_type || 'none',
       transport_type: data.transport_type || (tourType === 'domestic' ? 'bus' : 'flight'),
@@ -894,17 +916,17 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
             </div>
 
 
-            {/* Extra Charges */}
+            {/* Mandatory Extra Charges */}
             <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.extraCharges}</Label>
-              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.extraChargesHint}</p>
-              {extraCharges.length > 0 && (
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.mandatoryCharges}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.mandatoryChargesHint}</p>
+              {mandatoryCharges.length > 0 && (
                 <div className="space-y-1.5 mt-2">
-                  {extraCharges.map((charge, i) => (
-                    <div key={i} className="flex items-center gap-2 bg-tertiary/10 rounded-xl px-3 py-2 text-sm">
+                  {mandatoryCharges.map((charge, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-red-50 rounded-xl px-3 py-2 text-sm">
                       <span className="flex-1 font-medium text-foreground">{charge.name}</span>
-                      <span className="text-tertiary font-bold text-xs">${charge.amount}</span>
-                      <button type="button" onClick={() => removeExtraCharge(i)} className="text-muted-foreground hover:text-red-500">
+                      <span className="text-red-600 font-bold text-xs">${charge.amount}</span>
+                      <button type="button" onClick={() => removeMandatoryCharge(i)} className="text-muted-foreground hover:text-red-500">
                         <X className="h-3.5 w-3.5" />
                       </button>
                     </div>
@@ -912,12 +934,41 @@ export function TourForm({ initialData, tourId, tourLimit }: TourFormProps) {
                 </div>
               )}
               <div className="flex gap-2 mt-2">
-                <Input placeholder={t.agencyTours.extraChargeName} value={newChargeName} onChange={(e) => setNewChargeName(e.target.value)} className="flex-1 rounded-xl border-muted bg-surface-container-low h-11" />
+                <Input placeholder={t.agencyTours.extraChargeName} value={newMandatoryName} onChange={(e) => setNewMandatoryName(e.target.value)} className="flex-1 rounded-xl border-muted bg-surface-container-low h-11" />
                 <div className="relative w-28">
-                  <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newChargeAmount} onChange={(e) => setNewChargeAmount(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11 pr-12" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addExtraCharge(); } }} />
+                  <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newMandatoryAmount} onChange={(e) => setNewMandatoryAmount(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11 pr-12" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMandatoryCharge(); } }} />
                   <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
                 </div>
-                <Button type="button" variant="outline" size="icon" onClick={addExtraCharge} className="rounded-xl h-11 w-11 shrink-0">
+                <Button type="button" variant="outline" size="icon" onClick={addMandatoryCharge} className="rounded-xl h-11 w-11 shrink-0">
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Optional Extra Charges */}
+            <div>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.optionalCharges}</Label>
+              <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.optionalChargesHint}</p>
+              {optionalCharges.length > 0 && (
+                <div className="space-y-1.5 mt-2">
+                  {optionalCharges.map((charge, i) => (
+                    <div key={i} className="flex items-center gap-2 bg-tertiary/10 rounded-xl px-3 py-2 text-sm">
+                      <span className="flex-1 font-medium text-foreground">{charge.name}</span>
+                      <span className="text-tertiary font-bold text-xs">${charge.amount}</span>
+                      <button type="button" onClick={() => removeOptionalCharge(i)} className="text-muted-foreground hover:text-red-500">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="flex gap-2 mt-2">
+                <Input placeholder={t.agencyTours.extraChargeName} value={newOptionalName} onChange={(e) => setNewOptionalName(e.target.value)} className="flex-1 rounded-xl border-muted bg-surface-container-low h-11" />
+                <div className="relative w-28">
+                  <Input placeholder={t.agencyTours.extraChargeAmount} type="number" min={0} value={newOptionalAmount} onChange={(e) => setNewOptionalAmount(e.target.value)} className="rounded-xl border-muted bg-surface-container-low h-11 pr-12" onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addOptionalCharge(); } }} />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
+                </div>
+                <Button type="button" variant="outline" size="icon" onClick={addOptionalCharge} className="rounded-xl h-11 w-11 shrink-0">
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>

@@ -113,6 +113,8 @@ export interface Translations {
     route: string;
     airline: string;
     extraCharges: string;
+    mandatoryCharges: string;
+    optionalCharges: string;
     variableCharges: string;
   };
   favorites: {
@@ -340,6 +342,10 @@ export interface Translations {
     airline: string;
     airlinePlaceholder: string;
     extraCharges: string;
+    mandatoryCharges: string;
+    mandatoryChargesHint: string;
+    optionalCharges: string;
+    optionalChargesHint: string;
     addExtraCharge: string;
     extraChargeName: string;
     extraChargeAmount: string;
