@@ -291,20 +291,6 @@ export function AuthScreen() {
         return;
       }
 
-      // Auto-create verification request so admin sees the new agency
-      const { data: agencyData } = await supabase
-        .from('agencies')
-        .select('id')
-        .eq('owner_id', userId)
-        .single();
-
-      if (agencyData) {
-        await supabase.from('verification_requests').insert({
-          agency_id: agencyData.id,
-          certificate_url: certificatePdfUrl || licensePdfUrl || null,
-        });
-      }
-
       router.push('/agency');
     } catch (err) {
       console.error('Agency register error:', err);

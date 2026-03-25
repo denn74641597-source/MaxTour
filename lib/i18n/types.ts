@@ -261,6 +261,11 @@ export interface Translations {
     timeMinAgo: string;
     timeHourAgo: string;
     timeDayAgo: string;
+    profileIncompleteTitle: string;
+    profileIncompleteHint: string;
+    goToProfile: string;
+    profileRequiredForTours: string;
+    profileRequiredForToursHint: string;
   };
   verification: {
     title: string;

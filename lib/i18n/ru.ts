@@ -299,6 +299,11 @@ export const ru: Translations = {
     timeMinAgo: 'мин назад',
     timeHourAgo: 'ч назад',
     timeDayAgo: 'дн назад',
+    profileIncompleteTitle: 'Заполните профиль',
+    profileIncompleteHint: 'Для создания тура сначала полностью заполните профиль: название, описание, телефон, логотип, адрес и город.',
+    goToProfile: 'Перейти к профилю',
+    profileRequiredForTours: 'Необходимо заполнить профиль',
+    profileRequiredForToursHint: 'Для создания нового тура сначала полностью заполните профиль.',
   },
 
   // ─── Verification ───

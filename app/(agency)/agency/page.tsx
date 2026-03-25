@@ -1,5 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { getMyAgency } from '@/features/agencies/queries';
+import { getMyAgency, isAgencyProfileComplete } from '@/features/agencies/queries';
 import { AgencyDashboardContent } from './agency-dashboard-content';
 
 async function getAgencyDashboardData() {
@@ -22,6 +22,7 @@ async function getAgencyDashboardData() {
     featuredTours: featuredRes.count ?? 0,
     profileViews: (agency as any).profile_views ?? 0,
     subscription: subRes.data,
+    isProfileComplete: isAgencyProfileComplete(agency),
   };
 }
 

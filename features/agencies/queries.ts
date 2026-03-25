@@ -22,6 +22,18 @@ export const getMyAgency = cache(async (): Promise<Agency | null> => {
   return data;
 });
 
+/** Check if agency profile is complete enough to create tours */
+export function isAgencyProfileComplete(agency: Agency): boolean {
+  return !!(
+    agency.name &&
+    agency.description &&
+    agency.phone &&
+    agency.logo_url &&
+    agency.address &&
+    agency.city
+  );
+}
+
 /** Fetch a single agency by slug */
 export async function getAgencyBySlug(slug: string): Promise<Agency | null> {
   const supabase = await createServerSupabaseClient();

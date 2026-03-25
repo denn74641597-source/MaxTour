@@ -299,6 +299,11 @@ export const uz: Translations = {
     timeMinAgo: 'min oldin',
     timeHourAgo: 'soat oldin',
     timeDayAgo: 'kun oldin',
+    profileIncompleteTitle: 'Profilingizni to\'ldiring',
+    profileIncompleteHint: 'Tur yaratish uchun avval profilingizni to\'liq to\'ldiring: kompaniya nomi, tavsif, telefon, logotip, manzil va shahar.',
+    goToProfile: 'Profilga o\'tish',
+    profileRequiredForTours: 'Profil to\'ldirilishi kerak',
+    profileRequiredForToursHint: 'Yangi tur yaratish uchun avval profilingizni to\'liq to\'ldiring.',
   },
 
   // ─── Verification ───

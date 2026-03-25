@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { MapPin, Users, Eye, Plus, Settings, Bell, Star } from 'lucide-react';
+import { MapPin, Users, Eye, Plus, Settings, Bell, Star, AlertTriangle } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -17,6 +17,7 @@ interface AgencyDashboardContentProps {
     featuredTours: number;
     profileViews: number;
     subscription: any;
+    isProfileComplete: boolean;
   } | null;
 }
 
@@ -96,6 +97,26 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
         </div>
       </div>
 
+      {/* Profile Completion Banner */}
+      {!data.isProfileComplete && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
+          <div className="flex items-start gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-bold text-amber-800">{t.agency.profileIncompleteTitle}</h3>
+              <p className="text-xs text-amber-700 mt-0.5">{t.agency.profileIncompleteHint}</p>
+              <Link href="/agency/profile">
+                <Button size="sm" className="mt-3 bg-amber-600 hover:bg-amber-700 text-white">
+                  {t.agency.goToProfile}
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Stat Cards — stacked */}
       <div className="space-y-3">
         {statCards.map((stat, i) => (
@@ -143,7 +164,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
       <section>
         <h2 className="text-base font-bold text-foreground mb-4">{t.agency.quickActions}</h2>
         <div className="grid grid-cols-2 gap-3">
-          <Link href="/agency/tours/new" className="flex flex-col items-center gap-2 py-5 bg-surface rounded-[1.5rem] shadow-ambient hover:shadow-ambient-lg transition-all">
+          <Link href={data.isProfileComplete ? '/agency/tours/new' : '/agency/profile'} className={`flex flex-col items-center gap-2 py-5 bg-surface rounded-[1.5rem] shadow-ambient hover:shadow-ambient-lg transition-all ${!data.isProfileComplete ? 'opacity-60' : ''}`}>
             <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center">
               <Plus className="h-5 w-5 text-indigo-600" />
             </div>

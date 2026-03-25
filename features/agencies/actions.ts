@@ -1,7 +1,11 @@
 'use server';
 
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 import { getMyAgency } from './queries';
+
+function isProfilePayloadComplete(payload: { name: string; description: string | null; phone: string | null; logo_url: string | null; address: string | null; city: string | null }) {
+  return !!(payload.name && payload.description && payload.phone && payload.logo_url && payload.address && payload.city);
+}
 
 export async function upsertAgencyProfileAction(payload: {
   name: string;
@@ -38,6 +42,32 @@ export async function upsertAgencyProfileAction(payload: {
       .update({ ...payload, updated_at: new Date().toISOString() })
       .eq('id', existing.id);
     if (error) return { error: error.message };
+
+    // Auto-create verification request when profile becomes complete
+    if (isProfilePayloadComplete(payload)) {
+      const admin = await createAdminClient();
+      const { data: pendingReq } = await admin
+        .from('verification_requests')
+        .select('id')
+        .eq('agency_id', existing.id)
+        .in('status', ['pending', 'approved'])
+        .limit(1)
+        .single();
+
+      if (!pendingReq) {
+        const { data: agency } = await supabase
+          .from('agencies')
+          .select('license_pdf_url, certificate_pdf_url')
+          .eq('id', existing.id)
+          .single();
+
+        await admin.from('verification_requests').insert({
+          agency_id: existing.id,
+          certificate_url: agency?.certificate_pdf_url || agency?.license_pdf_url || null,
+        });
+      }
+    }
+
     return { success: true };
   } else {
     // Insert
@@ -45,6 +75,24 @@ export async function upsertAgencyProfileAction(payload: {
       .from('agencies')
       .insert({ ...payload, owner_id: user.id });
     if (error) return { error: error.message };
+
+    // Auto-create verification request if profile is already complete
+    if (isProfilePayloadComplete(payload)) {
+      const admin = await createAdminClient();
+      const { data: newAgency } = await supabase
+        .from('agencies')
+        .select('id, license_pdf_url, certificate_pdf_url')
+        .eq('owner_id', user.id)
+        .single();
+
+      if (newAgency) {
+        await admin.from('verification_requests').insert({
+          agency_id: newAgency.id,
+          certificate_url: newAgency.certificate_pdf_url || newAgency.license_pdf_url || null,
+        });
+      }
+    }
+
     return { success: true };
   }
 }
