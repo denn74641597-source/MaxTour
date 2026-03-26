@@ -52,7 +52,7 @@ export default function RootLayout({
         {/* Telegram Mini App SDK — loaded after page is interactive */}
         <Script
           src="https://telegram.org/js/telegram-web-app.js"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
       </body>
     </html>

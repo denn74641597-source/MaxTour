@@ -70,6 +70,8 @@ export interface TelegramWebApp {
   openTelegramLink: (url: string) => void;
   disableVerticalSwipes: () => void;
   enableVerticalSwipes: () => void;
+  requestFullscreen?: () => void;
+  isFullscreen?: boolean;
   showPopup: (params: {
     title?: string;
     message: string;
@@ -113,22 +115,44 @@ export function initTelegramApp() {
     document.documentElement.classList.toggle('dark', isDark);
   }
 
+  function forceFullscreen(webapp: TelegramWebApp) {
+    // Try the newer requestFullscreen API first, then fall back to expand
+    try {
+      if (typeof webapp.requestFullscreen === 'function' && !webapp.isFullscreen) {
+        webapp.requestFullscreen();
+      }
+    } catch { /* some clients don't support it yet */ }
+    if (!webapp.isExpanded) {
+      webapp.expand();
+    }
+  }
+
   function init() {
     const webapp = getTelegramWebApp();
     if (webapp) {
       webapp.ready();
-      webapp.expand();
+      forceFullscreen(webapp);
       if (typeof webapp.disableVerticalSwipes === 'function') {
         webapp.disableVerticalSwipes();
       }
       applySafeArea(webapp);
       applyTheme(webapp);
-      // Listen for safe area changes
+
+      // Re-expand whenever viewport changes (covers chat-open scenario)
       if (typeof webapp.onEvent === 'function') {
+        webapp.onEvent('viewportChanged', () => {
+          forceFullscreen(webapp);
+          applySafeArea(webapp);
+        });
         webapp.onEvent('safeAreaChanged', () => applySafeArea(webapp));
         webapp.onEvent('contentSafeAreaChanged', () => applySafeArea(webapp));
         webapp.onEvent('themeChanged', () => applyTheme(webapp));
       }
+
+      // Delayed retry — some clients need a tick before fullscreen works
+      setTimeout(() => forceFullscreen(webapp), 300);
+      setTimeout(() => forceFullscreen(webapp), 1000);
+
       return true;
     }
     return false;
@@ -146,11 +170,11 @@ export function initTelegramApp() {
     });
   }
 
-  // SDK may not be loaded yet — poll until available
+  // SDK may not be loaded yet — poll until available (up to ~15s)
   let attempts = 0;
   const interval = setInterval(() => {
     attempts++;
-    if (init() || attempts > 50) {
+    if (init() || attempts > 150) {
       clearInterval(interval);
     }
   }, 100);
