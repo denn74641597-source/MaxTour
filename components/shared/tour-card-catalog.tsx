@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Star, ShieldAlert } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { placeholderImage } from '@/lib/utils';
+import { placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useFollows } from '@/hooks/use-follows';
@@ -42,18 +42,7 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
     }
     // Combo tour with destinations
     if (tour.destinations && tour.destinations.length > 1) {
-      const parsed = tour.destinations.map(d => {
-        const parts = d.split(' - ');
-        return { country: parts[0], city: parts[1] || '' };
-      });
-      const countries = [...new Set(parsed.map(p => p.country))];
-      const cities = parsed.map(p => p.city).filter(Boolean);
-      if (cities.length > 0) {
-        const countryStr = countries.join(', ');
-        const cityStr = cities.join(', ');
-        return `${cityStr}, ${countryStr}`;
-      }
-      return countries.join(', ');
+      return formatComboDestinations(tour.destinations);
     }
     return [tour.city, tour.country].filter(Boolean).join(', ');
   })();

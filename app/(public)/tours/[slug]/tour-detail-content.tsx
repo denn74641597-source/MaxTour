@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { DOMESTIC_CATEGORIES } from '@/lib/tour-data';
 import { useTranslation } from '@/lib/i18n';
-import { formatDate, placeholderImage } from '@/lib/utils';
+import { formatDate, formatComboDestinations, placeholderImage } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -133,15 +133,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                 {isDomestic
                   ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
                   : tour.destinations && tour.destinations.length > 1
-                    ? (() => {
-                        const parsed: { country: string; city: string }[] = tour.destinations.map((d: string) => { const p = d.split(' - '); return { country: p[0], city: p[1] || '' }; });
-                        const countries = [...new Set(parsed.map(p => p.country))];
-                        const cities = parsed.map(p => p.city).filter(Boolean);
-                        if (countries.length === 1 && cities.length > 0) {
-                          return `${cities.join(' - ')}, ${countries[0]}`;
-                        }
-                        return parsed.map(p => p.city ? `${p.city}, ${p.country}` : p.country).join(' - ');
-                      })()
+                    ? formatComboDestinations(tour.destinations)
                     : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
                 }
               </p>

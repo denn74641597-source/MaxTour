@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { VerifiedBadge } from './verified-badge';
 import { PriceBlock } from './price-block';
-import { formatDate, placeholderImage } from '@/lib/utils';
+import { formatDate, placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
 
@@ -60,7 +60,9 @@ export function TourCard({ tour, compact }: TourCardProps) {
             <span className="truncate">
               {tour.tour_type === 'domestic'
                 ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
-                : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
+                : tour.destinations && tour.destinations.length > 1
+                  ? formatComboDestinations(tour.destinations)
+                  : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
               }
             </span>
           </div>

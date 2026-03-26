@@ -52,7 +52,31 @@ export function truncate(text: string, maxLength: number): string {
   return text.substring(0, maxLength).trimEnd() + '…';
 }
 
+/**
+ * Format combo tour destinations.
+ * Input: ["Indonesia - Bali", "Indonesia - Jakarta"] or ["Indonesia - Bali", "Malaysia - Kuala Lumpur"]
+ * Output:
+ *   Same country:   "Bali - Jakarta, Indonesia"
+ *   Diff countries:  "Bali, Indonesia - Kuala Lumpur, Malaysia"
+ */
+export function formatComboDestinations(destinations: string[]): string {
+  const parsed = destinations.map(d => {
+    const parts = d.split(' - ');
+    return { country: parts[0] || '', city: parts[1] || '' };
+  });
+  const countries = [...new Set(parsed.map(p => p.country).filter(Boolean))];
+  const cities = parsed.map(p => p.city).filter(Boolean);
+
+  if (countries.length === 1 && cities.length > 0) {
+    return `${cities.join(' - ')}, ${countries[0]}`;
+  }
+  return parsed
+    .map(p => (p.city ? `${p.city}, ${p.country}` : p.country))
+    .join(' - ');
+}
+
 /** Placeholder image URL */
+
 export function placeholderImage(width = 400, height = 300, text = 'MaxTour'): string {
   return `https://placehold.co/${width}x${height}/0ea5e9/white?text=${encodeURIComponent(text)}`;
 }
