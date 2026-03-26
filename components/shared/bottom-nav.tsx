@@ -34,7 +34,7 @@ export const BottomNav = memo(function BottomNav() {
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              <Icon className={cn('h-5 w-5', isActive && 'fill-current')} />
+              <Icon className={cn('h-5 w-5', isActive && 'stroke-[2.5px]')} />
               <span className={cn('text-[10px] uppercase tracking-wider', isActive ? 'font-bold' : 'font-medium')}>{label}</span>
             </Link>
           );

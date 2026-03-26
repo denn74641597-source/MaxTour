@@ -375,9 +375,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       return_date: data.return_date || null,
       duration_days: data.duration_days ? Number(data.duration_days) : null,
       duration_nights: data.duration_nights ? Number(data.duration_nights) : null,
-      price: hotels.length > 0
-        ? (Math.min(...hotels.map(h => h.price).filter(p => p > 0)) || Number(data.price))
-        : Number(data.price),
+      price: Number(data.price),
       old_price: data.old_price ? Number(data.old_price) : null,
       currency: tourType === 'domestic' ? 'UZS' : 'USD',
       seats_total: data.seats_total ? Number(data.seats_total) : null,
@@ -831,20 +829,39 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             {/* Row 2: Departure month & Duration */}
             <div className="grid grid-cols-2 gap-3">
               <div className={`transition-opacity duration-200 ${(watch('departure_date') || watch('return_date')) ? 'opacity-40 pointer-events-none' : ''}`}>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureMonth}</Label>
-                <select
-                  value={departureMonth}
-                  onChange={(e) => { setDepartureMonth(e.target.value); if (e.target.value) { setValue('departure_date', ''); setValue('return_date', ''); } }}
-                  className="mt-1.5 w-full h-11 rounded-xl border border-muted bg-surface-container-low px-3 text-sm text-foreground"
-                >
-                  <option value="">{t.agencyTours.departureMonthPlaceholder}</option>
-                  {Object.entries(t.dateFormat.monthNames).map(([key, name]) => (
-                    <option key={key} value={`${new Date().getFullYear()}-${key}`}>{name} {new Date().getFullYear()}</option>
-                  ))}
-                  {Object.entries(t.dateFormat.monthNames).map(([key, name]) => (
-                    <option key={`next-${key}`} value={`${new Date().getFullYear() + 1}-${key}`}>{name} {new Date().getFullYear() + 1}</option>
-                  ))}
-                </select>
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureMonth}</Label>
+                  {departureMonth && (
+                    <button type="button" onClick={() => setDepartureMonth('')} className="text-muted-foreground hover:text-foreground p-0.5">
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                {(() => {
+                  const currentYear = new Date().getFullYear();
+                  const nextYear = currentYear + 1;
+                  const selectedYear = departureMonth ? Number(departureMonth.split('-')[0]) : currentYear;
+                  const displayYear = selectedYear === nextYear ? nextYear : currentYear;
+                  return (
+                    <div className="mt-1.5 space-y-2">
+                      <div className="flex items-center gap-1.5">
+                        <button type="button" onClick={() => { if (departureMonth) { const [, m] = departureMonth.split('-'); setDepartureMonth(`${currentYear}-${m}`); } }} className={`flex-1 text-xs font-semibold py-1 rounded-lg transition-colors ${displayYear === currentYear ? 'bg-primary text-white' : 'bg-surface-container-low text-muted-foreground'}`}>{currentYear}</button>
+                        <button type="button" onClick={() => { if (departureMonth) { const [, m] = departureMonth.split('-'); setDepartureMonth(`${nextYear}-${m}`); } }} className={`flex-1 text-xs font-semibold py-1 rounded-lg transition-colors ${displayYear === nextYear ? 'bg-primary text-white' : 'bg-surface-container-low text-muted-foreground'}`}>{nextYear}</button>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {Object.entries(t.dateFormat.monthNames).map(([key, name]) => {
+                          const val = `${displayYear}-${key}`;
+                          const isSelected = departureMonth === val;
+                          return (
+                            <button key={key} type="button" onClick={() => { setDepartureMonth(isSelected ? '' : val); if (!isSelected) { setValue('departure_date', ''); setValue('return_date', ''); } }} className={`py-1.5 text-[11px] font-medium rounded-lg transition-colors ${isSelected ? 'bg-primary text-white' : 'bg-surface-container-low text-foreground hover:bg-primary/10'}`}>
+                              {(name as string).slice(0, 3)}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
               <div>
                 <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationLabel}</Label>
@@ -1127,15 +1144,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 <div>
                   <Label className="text-xs text-muted-foreground">{t.tours.hotelPrice}</Label>
                   <div className="relative mt-1">
-                    <Input type="number" min={0} step="0.01" placeholder="850" value={hotel.price || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, price: Number(e.target.value) }; setHotels(u); if (hotelIndex === 0) setValue('price', Number(e.target.value)); }} className="mt-0 pr-14 rounded-xl border-muted bg-surface h-10 text-sm" />
+                    <Input type="number" min={0} step="0.01" placeholder="850" value={hotel.price || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, price: Number(e.target.value) }; setHotels(u); }} className="mt-0 pr-14 rounded-xl border-muted bg-surface h-10 text-sm" />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-muted-foreground">USD</span>
                   </div>
                 </div>
 
-                <div>
-                  <Label className="text-xs text-muted-foreground">{t.tours.hotelDescription}</Label>
-                  <Textarea placeholder={t.tours.hotelDescriptionPlaceholder} rows={2} value={hotel.description || ''} onChange={(e) => { const u = [...hotels]; u[hotelIndex] = { ...hotel, description: e.target.value || null }; setHotels(u); }} className="mt-1 rounded-xl border-muted bg-surface text-sm" />
-                </div>
 
                 <div>
                   <Label className="text-xs text-muted-foreground">{t.agencyTours.hotelBookingUrl}</Label>
@@ -1293,9 +1306,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                     </p>
                   )}
                   <p className="text-lg font-bold">
-                    {hotels.length > 0
-                      ? (Math.min(...hotels.map(h => h.price).filter(p => p > 0)) || watch('price') || '0')
-                      : (watch('price') || '0')}
+                    {watch('price') || '0'}
                     <span className="text-xs font-normal ml-1">{isDomestic ? 'UZS' : (watch('currency') || 'USD')}</span>
                   </p>
                 </div>

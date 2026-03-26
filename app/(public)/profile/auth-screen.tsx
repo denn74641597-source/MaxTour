@@ -146,7 +146,7 @@ export function AuthScreen() {
         return;
       }
 
-      router.refresh();
+      router.push('/profile');
     } catch (err) {
       console.error('User register error:', err);
       setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');

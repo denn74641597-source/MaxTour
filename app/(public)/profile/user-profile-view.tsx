@@ -93,7 +93,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
   const handleLogout = async () => {
     setLoggingOut(true);
     await supabase.auth.signOut();
-    router.refresh();
+    window.location.href = '/profile';
   };
 
   const formattedDate = new Date(profile.created_at).toLocaleDateString();

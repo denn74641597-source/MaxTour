@@ -220,7 +220,10 @@ export function AdvertisingContent({
               <h3 className="text-base font-bold text-foreground mb-3">{t.maxcoin.activePromotions}</h3>
               <div className="space-y-2">
                 {initialPromos.map((promo) => {
-                  const daysLeft = Math.max(0, Math.ceil((new Date(promo.ends_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+                  const totalMs = Math.max(0, new Date(promo.ends_at).getTime() - Date.now());
+                  const totalHours = Math.floor(totalMs / (1000 * 60 * 60));
+                  const daysLeft = Math.floor(totalHours / 24);
+                  const hoursLeft = totalHours % 24;
                   return (
                     <div key={promo.id} className="bg-surface rounded-xl p-3 shadow-ambient flex items-center gap-3">
                       <div className="bg-primary/10 rounded-full p-2">{placementIcons[promo.placement]}</div>
@@ -229,7 +232,7 @@ export function AdvertisingContent({
                         <p className="text-xs text-muted-foreground">{placementLabels[promo.placement]}</p>
                       </div>
                       <div className="text-right shrink-0">
-                        <p className="text-xs font-bold text-primary">{daysLeft} {t.maxcoin.daysLeft}</p>
+                        <p className="text-xs font-bold text-primary">{daysLeft} kun {hoursLeft} soat</p>
                         <p className="text-[10px] text-muted-foreground">{promo.cost_coins} MC</p>
                       </div>
                     </div>

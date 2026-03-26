@@ -439,11 +439,6 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                       <p className="text-primary text-base font-bold">${hotel.price.toLocaleString()}</p>
                       <p className="text-muted-foreground text-[10px]">{t.common.perPerson}</p>
                     </div>
-                    {hotel.description && (
-                      <p className="text-xs text-muted-foreground leading-snug mt-1.5 line-clamp-2">
-                        {hotel.description}
-                      </p>
-                    )}
                     <div className="mt-auto pt-1.5">
                       {hotel.booking_url && (
                         <a

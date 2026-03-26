@@ -51,7 +51,7 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-bold">{t.agencyTours.title}</h1>
-          <p className="text-sm text-muted-foreground">{tours.length} {t.nav.tours.toLowerCase()}</p>
+          <p className="text-sm text-muted-foreground">{tours.length} ta tur</p>
         </div>
         <Link href="/agency/tours/new">
           <Button size="sm">
