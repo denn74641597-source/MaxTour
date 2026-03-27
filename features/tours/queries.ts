@@ -213,6 +213,24 @@ export async function getActivePromotedTourIds(): Promise<string[]> {
   return (data ?? []).map(p => p.tour_id);
 }
 
+/** Fetch all active promotion tour IDs grouped by placement */
+export async function getActivePromotionsByType(): Promise<{ featured: string[]; hotDeals: string[]; hotTours: string[] }> {
+  const supabase = await createServerSupabaseClient();
+  const now = new Date().toISOString();
+  const { data } = await supabase
+    .from('tour_promotions')
+    .select('tour_id, placement')
+    .eq('is_active', true)
+    .gte('ends_at', now);
+  const result = { featured: [] as string[], hotDeals: [] as string[], hotTours: [] as string[] };
+  for (const p of data ?? []) {
+    if (p.placement === 'featured') result.featured.push(p.tour_id);
+    else if (p.placement === 'hot_deals') result.hotDeals.push(p.tour_id);
+    else if (p.placement === 'hot_tours') result.hotTours.push(p.tour_id);
+  }
+  return result;
+}
+
 /** Fetch promoted tours for a given placement (featured / hot_deals / hot_tours) */
 export async function getPromotedTours(placement: string, limit = 50): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();

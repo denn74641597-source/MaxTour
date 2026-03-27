@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Star, MapPin } from 'lucide-react';
+import { Heart, Star, MapPin, Zap, Flame } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -13,6 +13,8 @@ import type { Tour, TourHotel } from '@/types';
 interface TourCardCatalogProps {
   tour: Tour;
   isPromoted?: boolean;
+  isHotDeal?: boolean;
+  isHotTour?: boolean;
 }
 
 function getMaxHotelStars(tour: Tour): number | null {
@@ -24,7 +26,7 @@ function getMaxHotelStars(tour: Tour): number | null {
   return tour.hotel_stars ?? null;
 }
 
-export function TourCardCatalog({ tour, isPromoted }: TourCardCatalogProps) {
+export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: TourCardCatalogProps) {
   const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isFollowing, toggleFollow } = useFollows();
@@ -99,6 +101,22 @@ export function TourCardCatalog({ tour, isPromoted }: TourCardCatalogProps) {
           <div className="absolute top-3 right-3">
             <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-amber-400 to-yellow-500 backdrop-blur rounded-full shadow-lg">
               <Star className="h-4 w-4 text-white fill-white" />
+            </span>
+          </div>
+        )}
+        {/* Hot deal lightning badge */}
+        {isHotDeal && !tour.is_featured && !isPromoted && (
+          <div className="absolute top-3 right-3">
+            <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-blue-400 to-indigo-500 backdrop-blur rounded-full shadow-lg">
+              <Zap className="h-4 w-4 text-white fill-white" />
+            </span>
+          </div>
+        )}
+        {/* Hot tour fire badge */}
+        {isHotTour && !isHotDeal && !tour.is_featured && !isPromoted && (
+          <div className="absolute top-3 right-3">
+            <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-orange-400 to-red-500 backdrop-blur rounded-full shadow-lg">
+              <Flame className="h-4 w-4 text-white fill-white" />
             </span>
           </div>
         )}

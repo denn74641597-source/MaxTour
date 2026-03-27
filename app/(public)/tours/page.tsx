@@ -1,4 +1,4 @@
-import { getTours, getActivePromotedTourIds } from '@/features/tours/queries';
+import { getTours, getActivePromotionsByType } from '@/features/tours/queries';
 import { ToursContent } from './tours-content';
 import type { TourFilters } from '@/types';
 
@@ -22,15 +22,15 @@ export default async function ToursPage({ searchParams }: Props) {
   };
 
   let tours: Awaited<ReturnType<typeof getTours>> = [];
-  let promotedIds: string[] = [];
+  let promotions: { featured: string[]; hotDeals: string[]; hotTours: string[] } = { featured: [], hotDeals: [], hotTours: [] };
   try {
-    [tours, promotedIds] = await Promise.all([
+    [tours, promotions] = await Promise.all([
       getTours(filters),
-      getActivePromotedTourIds(),
+      getActivePromotionsByType(),
     ]);
   } catch (error) {
     console.error('ToursPage data fetch error:', error);
   }
 
-  return <ToursContent tours={tours} promotedTourIds={promotedIds} />;
+  return <ToursContent tours={tours} promotions={promotions} />;
 }

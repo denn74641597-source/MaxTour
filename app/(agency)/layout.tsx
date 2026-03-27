@@ -19,7 +19,7 @@ export default function AgencyLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col">
-      <div className="md:hidden">
+      <div className="md:hidden sticky top-0 z-50">
         <AppHeader rightSlot={<DashboardMenuTrigger type="agency" />} />
       </div>
       <div className="flex-1 flex flex-col md:flex-row">

@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Star, MapPin, Heart } from 'lucide-react';
+import { Star, MapPin, Heart, Zap, Flame } from 'lucide-react';
 import { SearchBar } from '@/components/shared/search-bar';
 import { AgencyCard } from '@/components/shared/agency-card';
 import { HeroBanner } from '@/components/shared/hero-banner';
@@ -384,14 +384,20 @@ function HotDealCard({ tour }: { tour: Tour }) {
   return (
     <Link href={`/tours/${tour.slug}`} className="block">
       <div className="rounded-2xl overflow-hidden bg-surface shadow-ambient">
-        <div className="relative aspect-[4/5]">
+        <div className="relative aspect-square">
           <Image
-            src={tour.cover_image_url || placeholderImage(400, 500, tour.title)}
+            src={tour.cover_image_url || placeholderImage(400, 400, tour.title)}
             alt={tour.title}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 45vw, 200px"
           />
+          {/* Lightning icon */}
+          <div className="absolute top-2 right-2">
+            <span className="inline-flex items-center justify-center p-1 bg-gradient-to-br from-blue-400 to-indigo-500 backdrop-blur rounded-full shadow-lg">
+              <Zap className="h-3 w-3 text-white fill-white" />
+            </span>
+          </div>
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
@@ -427,14 +433,20 @@ function HotTourCard({ tour }: { tour: Tour }) {
   return (
     <Link href={`/tours/${tour.slug}`} className="block">
       <div className="rounded-2xl overflow-hidden bg-surface shadow-ambient">
-        <div className="relative aspect-[4/5]">
+        <div className="relative aspect-square">
           <Image
-            src={tour.cover_image_url || placeholderImage(400, 500, tour.title)}
+            src={tour.cover_image_url || placeholderImage(400, 400, tour.title)}
             alt={tour.title}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 45vw, 200px"
           />
+          {/* Fire icon */}
+          <div className="absolute top-2 right-2">
+            <span className="inline-flex items-center justify-center p-1 bg-gradient-to-br from-orange-400 to-red-500 backdrop-blur rounded-full shadow-lg">
+              <Flame className="h-3 w-3 text-white fill-white" />
+            </span>
+          </div>
           {/* Price overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
             <p className="text-white text-lg font-bold">${tour.price.toLocaleString()}</p>
