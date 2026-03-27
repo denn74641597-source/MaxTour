@@ -838,20 +838,36 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                   )}
                 </div>
                 {(() => {
-                  const fixedYear = 2026;
+                  const currentMonth = departureMonth ? departureMonth.split('-')[1] : '';
+                  const currentYear = departureMonth ? departureMonth.split('-')[0] : '';
+                  const years = [2025, 2026, 2027, 2028];
+                  const selectMonth = (m: string) => {
+                    if (currentMonth === m) { setDepartureMonth(''); return; }
+                    const y = currentYear || String(new Date().getFullYear());
+                    setDepartureMonth(`${y}-${m}`);
+                    setValue('departure_date', ''); setValue('return_date', '');
+                  };
+                  const selectYear = (y: string) => {
+                    if (currentYear === y && !currentMonth) { setDepartureMonth(''); return; }
+                    const m = currentMonth || '01';
+                    setDepartureMonth(`${y}-${m}`);
+                    setValue('departure_date', ''); setValue('return_date', '');
+                  };
                   return (
                     <div className="mt-1.5 space-y-2">
-                      <div className="text-xs font-semibold text-muted-foreground text-center">{fixedYear}</div>
                       <div className="grid grid-cols-4 gap-1">
-                        {Object.entries(t.dateFormat.monthNames).map(([key, name]) => {
-                          const val = `${fixedYear}-${key}`;
-                          const isSelected = departureMonth === val;
-                          return (
-                            <button key={key} type="button" onClick={() => { setDepartureMonth(isSelected ? '' : val); if (!isSelected) { setValue('departure_date', ''); setValue('return_date', ''); } }} className={`py-1.5 text-[11px] font-medium rounded-lg transition-colors ${isSelected ? 'bg-primary text-white' : 'bg-surface-container-low text-foreground hover:bg-primary/10'}`}>
-                              {(name as string).slice(0, 3)}
-                            </button>
-                          );
-                        })}
+                        {Object.entries(t.dateFormat.monthNames).map(([key, name]) => (
+                          <button key={key} type="button" onClick={() => selectMonth(key)} className={`py-1.5 text-[11px] font-medium rounded-lg transition-colors ${currentMonth === key ? 'bg-primary text-white' : 'bg-surface-container-low text-foreground hover:bg-primary/10'}`}>
+                            {(name as string).slice(0, 3)}
+                          </button>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {years.map((y) => (
+                          <button key={y} type="button" onClick={() => selectYear(String(y))} className={`py-1.5 text-[11px] font-medium rounded-lg transition-colors ${currentYear === String(y) ? 'bg-primary text-white' : 'bg-surface-container-low text-foreground hover:bg-primary/10'}`}>
+                            {y}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   );

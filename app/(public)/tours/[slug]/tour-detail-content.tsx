@@ -488,11 +488,9 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           <h2 className="text-lg font-bold text-foreground mb-3">
             {t.similarTours?.title ?? "O'xshash turlar"}
           </h2>
-          <div className="flex gap-3 overflow-x-auto pb-3 -mx-3 px-3 snap-x snap-mandatory scrollbar-hide">
+          <div className="grid grid-cols-2 gap-3">
             {similarTours.map((st) => (
-              <div key={st.id} className="min-w-[180px] max-w-[180px] snap-start">
-                <TourCard tour={st} compact />
-              </div>
+              <TourCard key={st.id} tour={st} />
             ))}
           </div>
         </section>
