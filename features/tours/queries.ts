@@ -200,6 +200,19 @@ export async function incrementTourViewCount(tourId: string): Promise<void> {
   }
 }
 
+/** Fetch IDs of tours with an active 'featured' promotion (for star badge display) */
+export async function getActivePromotedTourIds(): Promise<string[]> {
+  const supabase = await createServerSupabaseClient();
+  const now = new Date().toISOString();
+  const { data } = await supabase
+    .from('tour_promotions')
+    .select('tour_id')
+    .eq('placement', 'featured')
+    .eq('is_active', true)
+    .gte('ends_at', now);
+  return (data ?? []).map(p => p.tour_id);
+}
+
 /** Fetch promoted tours for a given placement (featured / hot_deals / hot_tours) */
 export async function getPromotedTours(placement: string, limit = 50): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();

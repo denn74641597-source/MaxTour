@@ -392,11 +392,6 @@ function HotDealCard({ tour }: { tour: Tour }) {
             className="object-cover"
             sizes="(max-width: 768px) 45vw, 200px"
           />
-          <div className="absolute top-2 right-2">
-            <span className="inline-flex items-center justify-center p-1 bg-tertiary/90 backdrop-blur rounded-full">
-              <Star className="h-3 w-3 text-white fill-white" />
-            </span>
-          </div>
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
@@ -443,11 +438,6 @@ function HotTourCard({ tour }: { tour: Tour }) {
           {/* Price overlay */}
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
             <p className="text-white text-lg font-bold">${tour.price.toLocaleString()}</p>
-          </div>
-          <div className="absolute top-2 right-2">
-            <span className="inline-flex items-center justify-center p-1 bg-tertiary/90 backdrop-blur rounded-full">
-              <Star className="h-3 w-3 text-white fill-white" />
-            </span>
           </div>
         </div>
         <div className="p-2.5">

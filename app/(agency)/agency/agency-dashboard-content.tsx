@@ -133,7 +133,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
       </div>
 
       {/* MaxCoin Balance + Tour Promotion */}
-      <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-2xl p-4 text-white relative overflow-hidden">
+      <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 rounded-2xl p-4 text-white relative overflow-hidden">
         <div className="absolute top-2 right-2 opacity-20">
           <Coins className="h-14 w-14" />
         </div>
@@ -167,7 +167,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
                 </div>
               </div>
               <Link href="/agency/advertising">
-                <button className="mt-2 w-full bg-white text-amber-700 font-bold text-xs py-2 rounded-lg hover:bg-white/90 transition-colors">
+                <button className="mt-2 w-full bg-white text-indigo-700 font-bold text-xs py-2 rounded-lg hover:bg-white/90 transition-colors">
                   {t.agency.promoteTour}
                 </button>
               </Link>

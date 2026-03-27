@@ -47,7 +47,7 @@ export function TourCard({ tour, compact }: TourCardProps) {
           )}
           {tour.is_featured && (
             <div className="absolute top-2 right-2">
-              <span className="inline-flex items-center justify-center p-1 bg-tertiary/90 backdrop-blur rounded-full">
+              <span className="inline-flex items-center justify-center p-1 bg-gradient-to-br from-amber-400 to-yellow-500 backdrop-blur rounded-full shadow-lg">
                 <Star className="h-3.5 w-3.5 text-white fill-white" />
               </span>
             </div>

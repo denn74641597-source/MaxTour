@@ -12,9 +12,10 @@ import type { Tour } from '@/types';
 
 interface ToursContentProps {
   tours: Tour[];
+  promotedTourIds?: string[];
 }
 
-export function ToursContent({ tours }: ToursContentProps) {
+export function ToursContent({ tours, promotedTourIds = [] }: ToursContentProps) {
   const { t } = useTranslation();
 
   return (
@@ -50,7 +51,7 @@ export function ToursContent({ tours }: ToursContentProps) {
       <div className="p-4 space-y-6">
         {tours.length > 0 ? (
           tours.map((tour) => (
-            <TourCardCatalog key={tour.id} tour={tour} />
+            <TourCardCatalog key={tour.id} tour={tour} isPromoted={promotedTourIds.includes(tour.id)} />
           ))
         ) : (
           <EmptyState

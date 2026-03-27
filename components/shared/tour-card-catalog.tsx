@@ -12,6 +12,7 @@ import type { Tour, TourHotel } from '@/types';
 
 interface TourCardCatalogProps {
   tour: Tour;
+  isPromoted?: boolean;
 }
 
 function getMaxHotelStars(tour: Tour): number | null {
@@ -23,7 +24,7 @@ function getMaxHotelStars(tour: Tour): number | null {
   return tour.hotel_stars ?? null;
 }
 
-export function TourCardCatalog({ tour }: TourCardCatalogProps) {
+export function TourCardCatalog({ tour, isPromoted }: TourCardCatalogProps) {
   const { t } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isFollowing, toggleFollow } = useFollows();
@@ -93,10 +94,10 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
           sizes="(max-width: 768px) 100vw, 480px"
         />
 
-        {/* Featured star badge */}
-        {tour.is_featured && (
+        {/* Promoted/featured star badge */}
+        {(tour.is_featured || isPromoted) && (
           <div className="absolute top-3 right-3">
-            <span className="inline-flex items-center justify-center p-1.5 bg-tertiary/90 backdrop-blur rounded-full shadow-ambient">
+            <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-amber-400 to-yellow-500 backdrop-blur rounded-full shadow-lg">
               <Star className="h-4 w-4 text-white fill-white" />
             </span>
           </div>
