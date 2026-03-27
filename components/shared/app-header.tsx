@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Compass } from 'lucide-react';
 import { LanguageSwitcher } from './language-switcher';
 
-export function AppHeader() {
+export function AppHeader({ rightSlot }: { rightSlot?: React.ReactNode }) {
   return (
     <header className="sticky top-0 z-50 glass-nav px-6 py-3" style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 12px)' }}>
       <div className="mx-auto flex items-center justify-between max-w-2xl">
@@ -14,6 +14,7 @@ export function AppHeader() {
         </Link>
         <div className="flex items-center gap-2">
           <LanguageSwitcher variant="dropdown" />
+          {rightSlot}
         </div>
       </div>
     </header>

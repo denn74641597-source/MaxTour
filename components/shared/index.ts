@@ -17,4 +17,4 @@ export { DashboardStatCard } from './dashboard-stat-card';
 export { StatusBadge } from './status-badge';
 export { ImageUploader } from './image-uploader';
 export { LeadForm } from './lead-form';
-export { DashboardNav } from './dashboard-nav';
+export { DashboardNav, DashboardMenuTrigger } from './dashboard-nav';

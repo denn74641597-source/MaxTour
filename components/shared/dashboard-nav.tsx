@@ -108,57 +108,99 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
         </nav>
       </aside>
 
-      {/* Mobile hamburger menu */}
-      <div className="md:hidden fixed top-0 right-0 z-40" style={{ top: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 12px)' }}>
-        <div className="px-4 py-3">
-          <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger className="p-2 rounded-xl hover:bg-muted/80 transition-colors bg-background/60 backdrop-blur-sm shadow-sm border border-border/50">
-              <Menu className="h-5 w-5 text-foreground" />
-            </SheetTrigger>
-            <SheetContent side="right" className="w-72 p-0" style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 8px)' }}>
-              <SheetHeader className="px-4 py-4">
-                <SheetTitle className="text-base font-semibold">
-                  {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
-                </SheetTitle>
-              </SheetHeader>
-              <nav className="flex flex-col gap-1 p-3">
-                {mobileItems.map(({ href, label, icon: Icon }) => {
-                  const isActive = isItemActive(href);
-                  return (
-                    <SheetClose key={href} render={<span />}>
-                      <Link
-                        href={href}
-                        onClick={() => setOpen(false)}
-                        className={cn(
-                          'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors',
-                          isActive
-                            ? 'bg-primary/10 text-primary font-medium'
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'
-                        )}
-                      >
-                        <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
-                        <span>{label}</span>
-                      </Link>
-                    </SheetClose>
-                  );
-                })}
-              </nav>
-              <div className="mt-auto p-4 space-y-3">
-                <LanguageSwitcher variant="dropdown" />
-                {type === 'agency' && (
-                  <button
-                    onClick={() => { setOpen(false); handleLogout(); }}
-                    className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
-                  >
-                    <LogOut className="h-5 w-5 shrink-0" />
-                    <span>{t.auth.logout}</span>
-                  </button>
-                )}
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </div>
+      {/* Mobile hamburger menu — rendered via AgencyHeader, not standalone */}
     </>
+  );
+}
+
+export function DashboardMenuTrigger({ type = 'agency' }: { type?: 'agency' | 'admin' }) {
+  return <DashboardMenuTriggerInner type={type} />;
+}
+
+function DashboardMenuTriggerInner({ type }: { type: 'agency' | 'admin' }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { t } = useTranslation();
+  const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
+  const agencyMobileNav = [
+    { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
+    { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
+    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
+    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
+    { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
+    { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
+    { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
+  ];
+
+  const adminItems = [
+    { href: '/admin', label: t.nav.overview, icon: LayoutDashboard },
+    { href: '/admin/agencies', label: t.nav.agencies, icon: Building2 },
+    { href: '/admin/tours', label: t.nav.tours, icon: MapPin },
+    { href: '/admin/verification', label: t.nav.verification, icon: ShieldCheck },
+    { href: '/admin/coin-requests', label: t.nav.coinRequests, icon: Coins },
+    { href: '/admin/featured', label: t.nav.featured, icon: CreditCard },
+    { href: '/admin/subscriptions', label: t.nav.subscriptions, icon: Users },
+  ];
+
+  const mobileItems = type === 'admin' ? adminItems : agencyMobileNav;
+
+  const isItemActive = (href: string) =>
+    href === pathname || (href !== '/agency' && href !== '/admin' && pathname.startsWith(href));
+
+  return (
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger className="p-2 rounded-xl hover:bg-muted transition-colors">
+        <Menu className="h-5 w-5 text-foreground" />
+      </SheetTrigger>
+      <SheetContent side="right" className="w-72 p-0" style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 8px)' }}>
+        <SheetHeader className="px-4 py-4">
+          <SheetTitle className="text-base font-semibold">
+            {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
+          </SheetTitle>
+        </SheetHeader>
+        <nav className="flex flex-col gap-1 p-3">
+          {mobileItems.map(({ href, label, icon: Icon }) => {
+            const isActive = isItemActive(href);
+            return (
+              <SheetClose key={href} render={<span />}>
+                <Link
+                  href={href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors',
+                    isActive
+                      ? 'bg-primary/10 text-primary font-medium'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  )}
+                >
+                  <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
+                  <span>{label}</span>
+                </Link>
+              </SheetClose>
+            );
+          })}
+        </nav>
+        <div className="mt-auto p-4 space-y-3">
+          <LanguageSwitcher variant="dropdown" />
+          {type === 'agency' && (
+            <button
+              onClick={() => { setOpen(false); handleLogout(); }}
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="h-5 w-5 shrink-0" />
+              <span>{t.auth.logout}</span>
+            </button>
+          )}
+        </div>
+      </SheetContent>
+    </Sheet>
   );
 }

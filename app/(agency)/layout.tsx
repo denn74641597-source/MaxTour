@@ -1,4 +1,4 @@
-import { DashboardNav } from '@/components/shared/dashboard-nav';
+import { DashboardNav, DashboardMenuTrigger } from '@/components/shared/dashboard-nav';
 import { AppHeader } from '@/components/shared/app-header';
 import { BottomNav } from '@/components/shared/bottom-nav';
 import { Suspense } from 'react';
@@ -20,7 +20,7 @@ export default function AgencyLayout({
   return (
     <div className="min-h-screen flex flex-col">
       <div className="md:hidden">
-        <AppHeader />
+        <AppHeader rightSlot={<DashboardMenuTrigger type="agency" />} />
       </div>
       <div className="flex-1 flex flex-col md:flex-row">
         <DashboardNav type="agency" />
