@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { Building2, User, ArrowRight, Phone, Lock, Loader2, Eye, EyeOff, Upload, FileText, X } from 'lucide-react';
+import { Building2, User, ArrowRight, Phone, Lock, Loader2, Eye, EyeOff, Upload, FileText, X, Mail } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
@@ -13,7 +13,9 @@ import { uploadPdfAction } from '@/features/upload/actions';
 import { slugify } from '@/lib/utils';
 import type { UserRole } from '@/types';
 
-type AuthStep = 'role-select' | 'register-form' | 'agency-login';
+type AuthStep = 'role-select' | 'register-form' | 'otp-verify' | 'agency-login';
+
+const OTP_COOLDOWN = 60; // seconds
 
 export function AuthScreen() {
   const { t } = useTranslation();
@@ -21,12 +23,15 @@ export function AuthScreen() {
 
   const [step, setStep] = useState<AuthStep>('role-select');
   const [selectedRole, setSelectedRole] = useState<UserRole>('user');
+  const [email, setEmail] = useState('');
+  const [otpCode, setOtpCode] = useState('');
   const [phone, setPhone] = useState('');
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [cooldown, setCooldown] = useState(0);
 
   // Agency registration fields
   const [agencyName, setAgencyName] = useState('');
@@ -38,10 +43,36 @@ export function AuthScreen() {
   const licenseInputRef = useRef<HTMLInputElement>(null);
   const certificateInputRef = useRef<HTMLInputElement>(null);
 
+  // Pending data to save after OTP verification
+  const pendingDataRef = useRef<{
+    role: UserRole;
+    fullName: string;
+    phone: string;
+    password: string;
+    // agency-specific
+    agencyName?: string;
+    inn?: string;
+    address?: string;
+    responsiblePerson?: string;
+    licensePdfUrl?: string | null;
+    certificatePdfUrl?: string | null;
+  } | null>(null);
+
   const supabase = createClient();
+
+  // Cooldown timer
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setInterval(() => {
+      setCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [cooldown]);
 
   const resetForm = () => {
     setError('');
+    setEmail('');
+    setOtpCode('');
     setPhone('');
     setFullName('');
     setPassword('');
@@ -52,6 +83,7 @@ export function AuthScreen() {
     setResponsiblePerson('');
     setLicensePdf(null);
     setCertificatePdf(null);
+    pendingDataRef.current = null;
   };
 
   const handleRoleSelect = (role: UserRole) => {
@@ -65,106 +97,25 @@ export function AuthScreen() {
     setStep('agency-login');
   };
 
-  // Normalize phone to E.164 for use as a fake email identifier
-  const phoneToEmail = (rawPhone: string) => {
-    const digits = rawPhone.replace(/\D/g, '');
-    return `${digits}@maxtour.local`;
-  };
+  // Send OTP to email via Supabase signInWithOtp
+  const sendOtp = useCallback(async (targetEmail: string) => {
+    const { error: otpError } = await supabase.auth.signInWithOtp({
+      email: targetEmail,
+      options: {
+        shouldCreateUser: true,
+      },
+    });
+    if (otpError) throw otpError;
+    setCooldown(OTP_COOLDOWN);
+  }, [supabase.auth]);
 
-  // Register user (phone + name only, no SMS)
-  const handleUserRegister = async () => {
-    const trimmedPhone = phone.trim();
+  // Step: user fills form → send OTP
+  const handleUserSendOtp = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
     const trimmedName = fullName.trim();
-    if (!trimmedPhone || !trimmedName) return;
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const email = phoneToEmail(trimmedPhone);
-      // Use a deterministic auto-password so the user never needs to know it
-      const autoPassword = `user_${trimmedPhone.replace(/\D/g, '')}_maxtour`;
-
-      // Try sign up first
-      const { data: signUpData, error: signUpError } =
-        await supabase.auth.signUp({
-          email,
-          password: autoPassword,
-          options: { data: { phone: trimmedPhone, full_name: trimmedName } },
-        });
-
-      let userId: string | undefined;
-
-      if (signUpError) {
-        // If user already exists, try sign in
-        if (
-          signUpError.message?.toLowerCase().includes('already') ||
-          signUpError.message?.toLowerCase().includes('registered')
-        ) {
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInWithPassword({ email, password: autoPassword });
-          if (signInError) {
-            setError(t.auth.phoneAlreadyRegistered);
-            return;
-          }
-          userId = signInData.user?.id;
-        } else {
-          setError(signUpError.message);
-          return;
-        }
-      } else {
-        // If email confirmation is enabled, user might be returned but not confirmed
-        userId = signUpData.user?.id;
-        if (!userId) {
-          // Sign up returned no user — try sign in (user may already exist)
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInWithPassword({ email, password: autoPassword });
-          if (signInError) {
-            setError(t.auth.phoneAlreadyRegistered);
-            return;
-          }
-          userId = signInData.user?.id;
-        }
-      }
-
-      if (!userId) {
-        setError('Xatolik yuz berdi');
-        return;
-      }
-
-      // Upsert profile
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: userId,
-        role: 'user' as const,
-        full_name: trimmedName,
-        phone: trimmedPhone,
-        updated_at: new Date().toISOString(),
-      });
-
-      if (profileError) {
-        setError(profileError.message);
-        return;
-      }
-
-      router.push('/profile');
-    } catch (err) {
-      console.error('User register error:', err);
-      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Register agency (all fields)
-  const handleAgencyRegister = async () => {
     const trimmedPhone = phone.trim();
     const trimmedPassword = password.trim();
-    const trimmedName = agencyName.trim();
-    const trimmedInn = inn.trim();
-    const trimmedAddress = agencyAddress.trim();
-    const trimmedPerson = responsiblePerson.trim();
-
-    if (!trimmedPhone || !trimmedPassword || !trimmedName || !trimmedInn || !trimmedAddress || !trimmedPerson) return;
+    if (!trimmedEmail || !trimmedName || !trimmedPhone || !trimmedPassword) return;
 
     if (trimmedPassword.length < 6) {
       setError(t.auth.passwordTooShort);
@@ -175,7 +126,44 @@ export function AuthScreen() {
     setError('');
 
     try {
-      // Upload PDFs if provided
+      await sendOtp(trimmedEmail);
+      pendingDataRef.current = {
+        role: 'user',
+        fullName: trimmedName,
+        phone: trimmedPhone,
+        password: trimmedPassword,
+      };
+      setStep('otp-verify');
+    } catch (err) {
+      console.error('Send OTP error:', err);
+      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Step: agency fills form → send OTP
+  const handleAgencySendOtp = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPhone = phone.trim();
+    const trimmedPassword = password.trim();
+    const trimmedName = agencyName.trim();
+    const trimmedInn = inn.trim();
+    const trimmedAddress = agencyAddress.trim();
+    const trimmedPerson = responsiblePerson.trim();
+
+    if (!trimmedEmail || !trimmedPhone || !trimmedPassword || !trimmedName || !trimmedInn || !trimmedAddress || !trimmedPerson) return;
+
+    if (trimmedPassword.length < 6) {
+      setError(t.auth.passwordTooShort);
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Upload PDFs before OTP so we don't lose them
       let licensePdfUrl: string | null = null;
       let certificatePdfUrl: string | null = null;
 
@@ -184,10 +172,7 @@ export function AuthScreen() {
         formData.append('file', licensePdf);
         formData.append('folder', 'licenses');
         const result = await uploadPdfAction(formData);
-        if (result.error) {
-          setError(result.error);
-          return;
-        }
+        if (result.error) { setError(result.error); return; }
         licensePdfUrl = result.url ?? null;
       }
 
@@ -196,124 +181,168 @@ export function AuthScreen() {
         formData.append('file', certificatePdf);
         formData.append('folder', 'certificates');
         const result = await uploadPdfAction(formData);
-        if (result.error) {
-          setError(result.error);
-          return;
-        }
+        if (result.error) { setError(result.error); return; }
         certificatePdfUrl = result.url ?? null;
       }
 
-      const email = phoneToEmail(trimmedPhone);
+      await sendOtp(trimmedEmail);
 
-      const { data: signUpData, error: signUpError } =
-        await supabase.auth.signUp({
-          email,
-          password: trimmedPassword,
-          options: { data: { phone: trimmedPhone } },
-        });
-
-      let userId: string | undefined;
-
-      if (signUpError) {
-        if (
-          signUpError.message?.toLowerCase().includes('already') ||
-          signUpError.message?.toLowerCase().includes('registered')
-        ) {
-          // Try logging in with the password
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInWithPassword({
-              email,
-              password: trimmedPassword,
-            });
-          if (signInError) {
-            setError(t.auth.wrongPassword);
-            return;
-          }
-          userId = signInData.user?.id;
-        } else {
-          setError(signUpError.message);
-          return;
-        }
-      } else {
-        userId = signUpData.user?.id;
-        if (!userId) {
-          const { data: signInData, error: signInError } =
-            await supabase.auth.signInWithPassword({
-              email,
-              password: trimmedPassword,
-            });
-          if (signInError) {
-            setError(t.auth.wrongPassword);
-            return;
-          }
-          userId = signInData.user?.id;
-        }
-      }
-
-      if (!userId) {
-        setError('Xatolik yuz berdi');
-        return;
-      }
-
-      // Upsert profile as agency_manager
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: userId,
-        role: 'agency_manager' as const,
-        full_name: trimmedPerson,
+      pendingDataRef.current = {
+        role: 'agency_manager',
+        fullName: trimmedPerson,
         phone: trimmedPhone,
-        updated_at: new Date().toISOString(),
-      });
-
-      if (profileError) {
-        setError(profileError.message);
-        return;
-      }
-
-      // Generate slug from agency name
-      const slug = slugify(trimmedName) || `agency-${userId.slice(0, 8)}`;
-
-      // Create agency record with all fields
-      const { error: agencyError } = await supabase.from('agencies').upsert({
-        owner_id: userId,
-        name: trimmedName,
-        slug,
-        phone: trimmedPhone,
-        address: trimmedAddress,
+        password: trimmedPassword,
+        agencyName: trimmedName,
         inn: trimmedInn,
-        responsible_person: trimmedPerson,
-        license_pdf_url: licensePdfUrl,
-        certificate_pdf_url: certificatePdfUrl,
-        country: 'Uzbekistan',
-      });
-
-      if (agencyError) {
-        setError(agencyError.message);
-        return;
-      }
-
-      router.push('/agency');
+        address: trimmedAddress,
+        responsiblePerson: trimmedPerson,
+        licensePdfUrl,
+        certificatePdfUrl,
+      };
+      setStep('otp-verify');
     } catch (err) {
-      console.error('Agency register error:', err);
+      console.error('Agency send OTP error:', err);
       setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
     } finally {
       setLoading(false);
     }
   };
 
-  // Login existing agency (phone + password)
-  const handleAgencyLogin = async () => {
-    const trimmedPhone = phone.trim();
-    const trimmedPassword = password.trim();
-    if (!trimmedPhone || !trimmedPassword) return;
+  // Verify OTP and complete registration
+  const handleVerifyOtp = async () => {
+    const trimmedCode = otpCode.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedCode || !trimmedEmail) return;
 
     setLoading(true);
     setError('');
 
     try {
-      const email = phoneToEmail(trimmedPhone);
+      const { data: verifyData, error: verifyError } =
+        await supabase.auth.verifyOtp({
+          email: trimmedEmail,
+          token: trimmedCode,
+          type: 'email',
+        });
 
+      if (verifyError) {
+        if (verifyError.message?.toLowerCase().includes('expired')) {
+          setError(t.auth.otpExpired);
+        } else {
+          setError(t.auth.otpInvalid);
+        }
+        return;
+      }
+
+      const userId = verifyData.user?.id;
+      if (!userId) {
+        setError('Xatolik yuz berdi');
+        return;
+      }
+
+      const pending = pendingDataRef.current;
+      if (!pending) {
+        setError('Xatolik yuz berdi');
+        return;
+      }
+
+      // Set password so user can login with email+password later
+      await supabase.auth.updateUser({ password: pending.password });
+
+      if (pending.role === 'user') {
+        // Upsert user profile
+        const { error: profileError } = await supabase.from('profiles').upsert({
+          id: userId,
+          role: 'user' as const,
+          full_name: pending.fullName,
+          phone: pending.phone,
+          updated_at: new Date().toISOString(),
+        });
+
+        if (profileError) {
+          setError(profileError.message);
+          return;
+        }
+
+        router.push('/');
+      } else {
+        // Upsert agency_manager profile
+        const { error: profileError } = await supabase.from('profiles').upsert({
+          id: userId,
+          role: 'agency_manager' as const,
+          full_name: pending.responsiblePerson || null,
+          phone: pending.phone,
+          updated_at: new Date().toISOString(),
+        });
+
+        if (profileError) {
+          setError(profileError.message);
+          return;
+        }
+
+        // Generate slug
+        const slug = slugify(pending.agencyName || '') || `agency-${userId.slice(0, 8)}`;
+
+        // Create agency record
+        const { error: agencyError } = await supabase.from('agencies').upsert({
+          owner_id: userId,
+          name: pending.agencyName,
+          slug,
+          phone: pending.phone,
+          address: pending.address || null,
+          inn: pending.inn || null,
+          responsible_person: pending.responsiblePerson || null,
+          license_pdf_url: pending.licensePdfUrl || null,
+          certificate_pdf_url: pending.certificatePdfUrl || null,
+          country: 'Uzbekistan',
+        });
+
+        if (agencyError) {
+          setError(agencyError.message);
+          return;
+        }
+
+        router.push('/agency');
+      }
+    } catch (err) {
+      console.error('Verify OTP error:', err);
+      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Resend OTP
+  const handleResendOtp = async () => {
+    if (cooldown > 0) return;
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
+      await sendOtp(trimmedEmail);
+    } catch (err) {
+      console.error('Resend OTP error:', err);
+      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Login existing agency (email + password)
+  const handleAgencyLogin = async () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
+    if (!trimmedEmail || !trimmedPassword) return;
+
+    setLoading(true);
+    setError('');
+
+    try {
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: trimmedEmail,
         password: trimmedPassword,
       });
 
@@ -333,16 +362,16 @@ export function AuthScreen() {
 
   const handleSubmit = () => {
     if (selectedRole === 'user') {
-      handleUserRegister();
+      handleUserSendOtp();
     } else {
-      handleAgencyRegister();
+      handleAgencySendOtp();
     }
   };
 
   const isFormValid =
     selectedRole === 'user'
-      ? phone.trim() && fullName.trim()
-      : phone.trim() && password.trim() && agencyName.trim() && inn.trim() && agencyAddress.trim() && responsiblePerson.trim();
+      ? email.trim() && fullName.trim() && phone.trim() && password.trim()
+      : email.trim() && phone.trim() && password.trim() && agencyName.trim() && inn.trim() && agencyAddress.trim() && responsiblePerson.trim();
 
   return (
     <div className="px-4 py-8">
@@ -451,39 +480,114 @@ export function AuthScreen() {
           </div>
 
           <div className="space-y-4">
-            {/* Phone — always shown */}
-            <div className="space-y-2">
-              <Label htmlFor="phone">{t.auth.phone}</Label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder={t.auth.phonePlaceholder}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="pl-10 h-12 text-lg"
-                />
-              </div>
-            </div>
-
-            {/* User: Name field */}
+            {/* User: fullName, email, phone, password — all required */}
             {selectedRole === 'user' && (
-              <div className="space-y-2">
-                <Label htmlFor="fullName">{t.auth.fullName}</Label>
-                <Input
-                  id="fullName"
-                  placeholder={t.auth.fullNamePlaceholder}
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  className="h-12"
-                />
-              </div>
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fullName">{t.auth.fullName} *</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="fullName"
+                      placeholder={t.auth.fullNamePlaceholder}
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="pl-10 h-12"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">{t.auth.email} *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={t.auth.emailPlaceholder}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 h-12"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{t.auth.phone} *</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder={t.auth.phonePlaceholder}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="pl-10 h-12"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">{t.auth.password} *</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder={t.auth.passwordPlaceholder}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10 pr-10 h-12"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted-foreground">{t.auth.passwordHint}</p>
+                </div>
+              </>
             )}
 
             {/* Agency: All registration fields */}
             {selectedRole === 'agency_manager' && (
               <>
+                {/* Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email">{t.auth.email} *</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder={t.auth.emailPlaceholder}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10 h-12"
+                    />
+                  </div>
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone">{t.auth.phone} *</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder={t.auth.phonePlaceholder}
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="pl-10 h-12"
+                    />
+                  </div>
+                </div>
+
                 {/* Agency Name (Latin) */}
                 <div className="space-y-2">
                   <Label htmlFor="agencyName">{t.auth.agencyName} *</Label>
@@ -645,10 +749,10 @@ export function AuthScreen() {
               {loading ? (
                 <>
                   <Loader2 className="h-5 w-5 animate-spin mr-2" />
-                  {t.auth.registering}
+                  {t.auth.sendingOtp}
                 </>
               ) : (
-                t.auth.register
+                t.auth.sendOtp
               )}
             </Button>
 
@@ -665,7 +769,91 @@ export function AuthScreen() {
         </div>
       )}
 
-      {/* Step 3: Agency Login */}
+      {/* Step 3: OTP Verification */}
+      {step === 'otp-verify' && (
+        <div className="space-y-6">
+          <div className="text-center space-y-2">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mx-auto">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <h1 className="text-xl font-bold text-foreground">
+              {t.auth.otpCode}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {t.auth.otpSentTo}
+            </p>
+            <p className="text-sm font-medium text-foreground">
+              {email.trim().toLowerCase()}
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="otpCode">{t.auth.otpCode}</Label>
+              <Input
+                id="otpCode"
+                type="text"
+                inputMode="numeric"
+                placeholder={t.auth.otpCodePlaceholder}
+                value={otpCode}
+                onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onKeyDown={(e) => e.key === 'Enter' && otpCode.length === 6 && handleVerifyOtp()}
+                className="h-14 text-center text-2xl tracking-[0.5em] font-mono"
+                maxLength={6}
+                autoFocus
+              />
+            </div>
+
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+
+            <Button
+              onClick={handleVerifyOtp}
+              disabled={otpCode.length !== 6 || loading}
+              className="w-full h-12 text-base"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                  {t.auth.verifyingOtp}
+                </>
+              ) : (
+                t.auth.verifyOtp
+              )}
+            </Button>
+
+            <div className="flex items-center justify-center gap-2">
+              {cooldown > 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t.auth.resendIn} {cooldown}s
+                </p>
+              ) : (
+                <button
+                  onClick={handleResendOtp}
+                  disabled={loading}
+                  className="text-sm text-primary hover:underline"
+                >
+                  {t.auth.resendCode}
+                </button>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                setOtpCode('');
+                setError('');
+                setStep('register-form');
+              }}
+              className="w-full text-sm text-muted-foreground hover:text-foreground"
+            >
+              {t.auth.changeEmail}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 4: Agency Login */}
       {step === 'agency-login' && (
         <div className="space-y-6">
           <div className="text-center space-y-2">
@@ -682,15 +870,15 @@ export function AuthScreen() {
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="loginPhone">{t.auth.phone}</Label>
+              <Label htmlFor="loginEmail">{t.auth.email}</Label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="loginPhone"
-                  type="tel"
-                  placeholder={t.auth.phonePlaceholder}
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  id="loginEmail"
+                  type="email"
+                  placeholder={t.auth.emailPlaceholder}
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 h-12 text-lg"
                 />
               </div>
@@ -725,7 +913,7 @@ export function AuthScreen() {
 
             <Button
               onClick={handleAgencyLogin}
-              disabled={!phone.trim() || !password.trim() || loading}
+              disabled={!email.trim() || !password.trim() || loading}
               className="w-full h-12 text-base"
             >
               {loading ? (

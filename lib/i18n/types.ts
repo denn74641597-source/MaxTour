@@ -583,6 +583,20 @@ export interface Translations {
     responsiblePersonPlaceholder: string;
     uploadLicense: string;
     uploadCertificate: string;
+    email: string;
+    emailPlaceholder: string;
+    otpCode: string;
+    otpCodePlaceholder: string;
+    sendOtp: string;
+    sendingOtp: string;
+    verifyOtp: string;
+    verifyingOtp: string;
+    otpSentTo: string;
+    otpInvalid: string;
+    otpExpired: string;
+    resendCode: string;
+    resendIn: string;
+    changeEmail: string;
   };
   analytics: {
     title: string;
