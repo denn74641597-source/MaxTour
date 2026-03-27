@@ -1,28 +1,57 @@
 'use client';
 
 import Image from 'next/image';
-import { MapPin, Users, Eye, Plus, Settings, Bell, Star, AlertTriangle } from 'lucide-react';
+import { MapPin, Users, Eye, Plus, Settings, Bell, AlertTriangle, Building2, Coins } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
 
+type DashboardAgency = {
+  name: string;
+  logo_url: string | null;
+};
+
+type DashboardLead = {
+  id: string;
+  full_name: string;
+  status: string;
+  created_at: string;
+  tour?: { title: string | null } | null;
+};
+
+type ActiveTourPromo = {
+  id: string;
+  title: string;
+  cover_image_url: string | null;
+  price: number;
+  currency?: string | null;
+  country?: string | null;
+  city?: string | null;
+};
+
 interface AgencyDashboardContentProps {
   data: {
-    agency: any;
+    agency: DashboardAgency;
     activeTours: number;
     totalLeads: number;
-    recentLeads: any[];
-    featuredTours: number;
-    profileViews: number;
-    subscription: any;
+    recentLeads: DashboardLead[];
+    totalViews: number;
+    activeToursList: ActiveTourPromo[];
+    maxCoinBalance: number;
     isProfileComplete: boolean;
   } | null;
 }
 
 export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
   const { t } = useTranslation();
+
+  const randomTour = data?.activeToursList.length
+    ? data.activeToursList[
+      Math.abs((data.agency.name ?? '').split('').reduce((sum, char) => sum + char.charCodeAt(0), 0)) % data.activeToursList.length
+    ]
+    : null;
 
   if (!data) {
     return (
@@ -36,46 +65,13 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
     );
   }
 
-  const sub = data.subscription as any;
-  const planName = sub?.plan?.name;
-  const endDate = sub?.end_date ? new Date(sub.end_date) : null;
-  const daysLeft = endDate ? Math.max(0, Math.ceil((endDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : 0;
-
   // Format lead time ago
   const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const mins = Math.floor(diff / 60000);
-    if (mins < 60) return `${mins} ${t.agency.timeMinAgo}`;
-    const hrs = Math.floor(mins / 60);
-    if (hrs < 24) return `${hrs} ${t.agency.timeHourAgo}`;
-    const days = Math.floor(hrs / 24);
-    return `${days} ${t.agency.timeDayAgo}`;
+    return new Date(dateStr).toLocaleDateString();
   };
-
-  const statCards = [
-    {
-      icon: <div className="h-10 w-10 rounded-xl bg-indigo-50 flex items-center justify-center"><MapPin className="h-5 w-5 text-indigo-600" /></div>,
-      label: t.agency.activeTours,
-      value: data.activeTours,
-      color: 'text-emerald-500',
-    },
-    {
-      icon: <div className="h-10 w-10 rounded-xl bg-violet-50 flex items-center justify-center"><Eye className="h-5 w-5 text-violet-600" /></div>,
-      label: t.agency.totalViews,
-      value: data.profileViews,
-      color: 'text-emerald-500',
-    },
-    {
-      icon: <div className="h-10 w-10 rounded-xl bg-sky-50 flex items-center justify-center"><Users className="h-5 w-5 text-sky-600" /></div>,
-      label: t.agency.totalLeads,
-      value: data.totalLeads,
-      color: data.totalLeads > 0 ? 'text-emerald-500' : 'text-red-500',
-    },
-  ];
 
   return (
     <div className="space-y-6 pb-6">
-
 
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -117,46 +113,68 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
         </div>
       )}
 
-      {/* Stat Cards — stacked */}
-      <div className="space-y-3">
-        {statCards.map((stat, i) => (
-          <div key={i} className="bg-surface rounded-[1.5rem] shadow-ambient p-4">
-            <div className="flex items-center justify-between mb-1">
-              {stat.icon}
-              <span className={`text-xs font-semibold ${stat.color}`}>
-                {stat.color.includes('emerald') ? '+' : '-'}{Math.floor(Math.random() * 15 + 1)}%
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">{stat.label}</p>
-            <p className="text-2xl font-bold text-foreground">{stat.value}</p>
-          </div>
-        ))}
+      {/* Stat Cards — horizontal compact row */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="bg-surface rounded-2xl shadow-ambient p-3 text-center">
+          <MapPin className="h-4 w-4 text-indigo-600 mx-auto mb-1" />
+          <p className="text-lg font-bold text-foreground">{data.activeTours}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">{t.agency.activeTours}</p>
+        </div>
+        <div className="bg-surface rounded-2xl shadow-ambient p-3 text-center">
+          <Eye className="h-4 w-4 text-violet-600 mx-auto mb-1" />
+          <p className="text-lg font-bold text-foreground">{data.totalViews}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">{t.agency.totalViews}</p>
+        </div>
+        <div className="bg-surface rounded-2xl shadow-ambient p-3 text-center">
+          <Users className="h-4 w-4 text-sky-600 mx-auto mb-1" />
+          <p className="text-lg font-bold text-foreground">{data.totalLeads}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">{t.agency.totalLeads}</p>
+        </div>
       </div>
 
-      {/* Subscription Card */}
-      <div className="bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 rounded-2xl p-5 text-white relative overflow-hidden">
-        <div className="absolute top-3 right-3 opacity-20">
-          <Star className="h-16 w-16" />
+      {/* MaxCoin Balance + Tour Promotion */}
+      <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-2xl p-4 text-white relative overflow-hidden">
+        <div className="absolute top-2 right-2 opacity-20">
+          <Coins className="h-14 w-14" />
         </div>
         <div className="relative z-10">
-          <div className="flex items-center gap-1.5 mb-2">
-            <div className="h-4 w-4 rounded-full bg-white/20 flex items-center justify-center">
-              <Star className="h-2.5 w-2.5 text-white" />
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider opacity-80">{t.agency.maxCoinBalance}</p>
+              <p className="text-2xl font-bold">{data.maxCoinBalance.toLocaleString()} MC</p>
             </div>
-            <span className="text-[10px] font-bold tracking-wider uppercase opacity-80">{t.agency.premiumPlan}</span>
+            <Link href="/agency/advertising">
+              <button className="bg-white/20 backdrop-blur text-white text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-white/30 transition-colors">
+                {t.maxcoin.buyCoins}
+              </button>
+            </Link>
           </div>
-          <h3 className="text-lg font-bold">{t.agency.subscriptionActive}</h3>
-          <p className="text-xs text-white/70 mt-0.5">
-            {endDate
-              ? `${t.agency.renewsIn} ${daysLeft} ${t.agency.days} • ${endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`
-              : planName ?? t.common.free
-            }
-          </p>
-          <Link href="/agency/subscription">
-            <button className="mt-3 w-full bg-card text-indigo-700 dark:text-indigo-300 font-bold text-sm py-2.5 rounded-xl hover:bg-surface transition-colors">
-              {t.agency.upgrade}
-            </button>
-          </Link>
+          {randomTour ? (
+            <div className="bg-black/15 backdrop-blur rounded-xl p-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-lg overflow-hidden bg-white/10 shrink-0">
+                  <Image
+                    src={randomTour.cover_image_url || placeholderImage(96, 96, randomTour.title)}
+                    alt={randomTour.title}
+                    width={48}
+                    height={48}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold truncate">{randomTour.title}</p>
+                  <p className="text-[10px] opacity-80">{t.agency.promoteTourHint}</p>
+                </div>
+              </div>
+              <Link href="/agency/advertising">
+                <button className="mt-2 w-full bg-white text-amber-700 font-bold text-xs py-2 rounded-lg hover:bg-white/90 transition-colors">
+                  {t.agency.promoteTour}
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <p className="text-xs opacity-70">{t.agency.noActiveToursToPush}</p>
+          )}
         </div>
       </div>
 
@@ -182,6 +200,12 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
             </div>
             <span className="text-xs font-semibold text-foreground">{t.agency.viewLeads}</span>
           </Link>
+          <Link href="/agency/profile" className="flex flex-col items-center gap-2 py-5 bg-surface rounded-[1.5rem] shadow-ambient hover:shadow-ambient-lg transition-all">
+            <div className="h-12 w-12 rounded-full bg-emerald-50 flex items-center justify-center">
+              <Building2 className="h-5 w-5 text-emerald-600" />
+            </div>
+            <span className="text-xs font-semibold text-foreground">{t.agency.editProfile}</span>
+          </Link>
         </div>
       </section>
 
@@ -197,7 +221,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
         </div>
         {data.recentLeads.length > 0 ? (
           <div className="space-y-2.5">
-            {data.recentLeads.map((lead: any) => (
+            {data.recentLeads.map((lead) => (
               <div key={lead.id} className="flex items-center gap-3 bg-surface rounded-[1.5rem] shadow-ambient p-3.5">
                 <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
                   <Users className="h-4 w-4 text-muted-foreground" />

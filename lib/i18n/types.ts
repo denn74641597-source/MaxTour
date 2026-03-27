@@ -267,6 +267,10 @@ export interface Translations {
     goToProfile: string;
     profileRequiredForTours: string;
     profileRequiredForToursHint: string;
+    maxCoinBalance: string;
+    promoteTourHint: string;
+    promoteTour: string;
+    noActiveToursToPush: string;
   };
   verification: {
     title: string;

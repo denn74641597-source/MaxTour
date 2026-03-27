@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Building2, MapPin, Users, CreditCard,
-  Menu, MessageSquareText, UserCheck, BarChart3, Home, ShieldCheck, Megaphone, Coins
+  Menu, MessageSquareText, UserCheck, BarChart3, Home, ShieldCheck, Megaphone, Coins, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -13,11 +13,19 @@ import { LanguageSwitcher } from './language-switcher';
 import {
   Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose,
 } from '@/components/ui/sheet';
+import { createClient } from '@/lib/supabase/client';
 
 export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' }) {
   const pathname = usePathname();
+  const router = useRouter();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   const agencyMobileNav = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
@@ -27,7 +35,6 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
     { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
     { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
-    { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
 
@@ -39,7 +46,6 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
     { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
     { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
-    { href: '/agency/subscription', label: t.nav.subscription, icon: CreditCard },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
 
@@ -90,6 +96,15 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
               </Link>
             );
           })}
+          {type === 'agency' && (
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors text-red-500 hover:bg-red-50 hover:text-red-600 mt-2"
+            >
+              <LogOut className="h-4 w-4 shrink-0" />
+              <span>{t.auth.logout}</span>
+            </button>
+          )}
         </nav>
       </aside>
 
@@ -134,8 +149,17 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
                   );
                 })}
               </nav>
-              <div className="mt-auto p-4">
+              <div className="mt-auto p-4 space-y-3">
                 <LanguageSwitcher variant="dropdown" />
+                {type === 'agency' && (
+                  <button
+                    onClick={() => { setOpen(false); handleLogout(); }}
+                    className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <LogOut className="h-5 w-5 shrink-0" />
+                    <span>{t.auth.logout}</span>
+                  </button>
+                )}
               </div>
             </SheetContent>
           </Sheet>

@@ -305,6 +305,10 @@ export const uz: Translations = {
     goToProfile: 'Profilga o\'tish',
     profileRequiredForTours: 'Profil to\'ldirilishi kerak',
     profileRequiredForToursHint: 'Yangi tur yaratish uchun avval profilingizni to\'liq to\'ldiring.',
+    maxCoinBalance: 'MaxCoin balans',
+    promoteTourHint: 'Bu turni ko\'proq odamlarga ko\'rsatish uchun reklama qiling',
+    promoteTour: 'Reklama qilish',
+    noActiveToursToPush: 'Reklama uchun faol turlar yo\'q',
   },
 
   // ─── Verification ───

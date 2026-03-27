@@ -1,5 +1,6 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { getMyAgency, isAgencyProfileComplete } from '@/features/agencies/queries';
+import { getMaxCoinBalance } from '@/features/maxcoin/queries';
 import { AgencyDashboardContent } from './agency-dashboard-content';
 
 async function getAgencyDashboardData() {
@@ -7,21 +8,28 @@ async function getAgencyDashboardData() {
   if (!agency) return null;
 
   const supabase = await createServerSupabaseClient();
-  const [toursRes, leadsRes, featuredRes, subRes] = await Promise.all([
+  const [toursRes, leadsRes, leadsAllCountRes, viewsRes, activeToursList, maxCoinBalance] = await Promise.all([
     supabase.from('tours').select('id', { count: 'exact', head: true }).eq('agency_id', agency.id).eq('status', 'published'),
     supabase.from('leads').select('*, tour:tours(title)').eq('agency_id', agency.id).order('created_at', { ascending: false }).limit(5),
-    supabase.from('tours').select('id', { count: 'exact', head: true }).eq('agency_id', agency.id).eq('is_featured', true),
-    supabase.from('agency_subscriptions').select('*, plan:subscription_plans(name)').eq('agency_id', agency.id).eq('status', 'active').limit(1).single(),
+    supabase.from('leads').select('id', { count: 'exact', head: true }).eq('agency_id', agency.id),
+    supabase.from('tours').select('view_count').eq('agency_id', agency.id).eq('status', 'published'),
+    supabase.from('tours').select('id, title, cover_image_url, price, currency, country, city').eq('agency_id', agency.id).eq('status', 'published').limit(20),
+    getMaxCoinBalance(agency.id),
   ]);
+
+  const totalViews = (viewsRes.data ?? []).reduce((sum, t) => {
+    const value = typeof t.view_count === 'number' ? t.view_count : 0;
+    return sum + value;
+  }, 0);
 
   return {
     agency,
     activeTours: toursRes.count ?? 0,
-    totalLeads: leadsRes.data?.length ?? 0,
+    totalLeads: leadsAllCountRes.count ?? 0,
     recentLeads: leadsRes.data ?? [],
-    featuredTours: featuredRes.count ?? 0,
-    profileViews: (agency as any).profile_views ?? 0,
-    subscription: subRes.data,
+    totalViews,
+    activeToursList: activeToursList.data ?? [],
+    maxCoinBalance,
     isProfileComplete: isAgencyProfileComplete(agency),
   };
 }

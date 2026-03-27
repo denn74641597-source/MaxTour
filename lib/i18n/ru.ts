@@ -305,6 +305,10 @@ export const ru: Translations = {
     goToProfile: 'Перейти к профилю',
     profileRequiredForTours: 'Необходимо заполнить профиль',
     profileRequiredForToursHint: 'Для создания нового тура сначала полностью заполните профиль.',
+    maxCoinBalance: 'MaxCoin баланс',
+    promoteTourHint: 'Продвигайте этот тур для большего охвата',
+    promoteTour: 'Продвинуть',
+    noActiveToursToPush: 'Нет активных туров для продвижения',
   },
 
   // ─── Verification ───

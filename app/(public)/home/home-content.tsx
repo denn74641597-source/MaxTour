@@ -12,6 +12,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
+import { hapticFeedback } from '@/lib/telegram';
 import { TOUR_CATEGORIES } from '@/types';
 import type { Tour, Agency } from '@/types';
 
@@ -48,11 +49,50 @@ function pickRandom(all: Tour[], limit: number, ownAgencyId?: string): Tour[] {
 
 export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [], popularTours = [], hotDeals = [], hotTours = [], currentAgencyId }: HomeContentProps) {
   const { t } = useTranslation();
-
   const heroTour = featuredTours[0] ?? recentTours[0];
 
+  // Pull-to-refresh state
+  const [pullY, setPullY] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
+  const pullStart = useRef(0);
+  const PULL_THRESHOLD = 80;
+
+  const onPullStart = (e: React.TouchEvent) => {
+    if (window.scrollY === 0) pullStart.current = e.touches[0].clientY;
+    else pullStart.current = 0;
+  };
+  const onPullMove = (e: React.TouchEvent) => {
+    if (!pullStart.current || refreshing) return;
+    const delta = Math.max(0, e.touches[0].clientY - pullStart.current);
+    setPullY(Math.min(delta * 0.4, 100));
+  };
+  const onPullEnd = () => {
+    if (pullY >= PULL_THRESHOLD && !refreshing) {
+      setRefreshing(true);
+      hapticFeedback('medium');
+      window.location.reload();
+    } else {
+      setPullY(0);
+    }
+    pullStart.current = 0;
+  };
+
   return (
-    <div className="px-6 pb-8">
+    <div
+      className="px-6 pb-8"
+      onTouchStart={onPullStart}
+      onTouchMove={onPullMove}
+      onTouchEnd={onPullEnd}
+    >
+      {/* Pull-to-refresh indicator */}
+      {pullY > 0 && (
+        <div
+          className="flex justify-center items-center transition-all duration-150 overflow-hidden"
+          style={{ height: pullY }}
+        >
+          <div className={`w-6 h-6 rounded-full border-2 border-primary border-t-transparent ${pullY >= PULL_THRESHOLD ? 'animate-spin' : ''}`} />
+        </div>
+      )}
       {/* Search Bar */}
       <div className="mt-4 mb-5">
         <Suspense>
@@ -199,6 +239,7 @@ function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgency
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = touchStart.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
+      hapticFeedback('light');
       if (diff > 0) goNext(); else goPrev();
       resetTimer();
     }
@@ -293,6 +334,7 @@ function RotatingGrid({
   const handleTouchEnd = (e: React.TouchEvent) => {
     const diff = touchStart.current - e.changedTouches[0].clientX;
     if (Math.abs(diff) > 50) {
+      hapticFeedback('light');
       if (diff > 0) goNext(); else goPrev();
       resetTimer();
     }
@@ -350,13 +392,11 @@ function HotDealCard({ tour }: { tour: Tour }) {
             className="object-cover"
             sizes="(max-width: 768px) 45vw, 200px"
           />
-          {tour.is_featured && (
-            <div className="absolute top-2 right-2">
-              <span className="inline-flex items-center justify-center p-1 bg-tertiary/90 backdrop-blur rounded-full">
-                <Star className="h-3 w-3 text-white fill-white" />
-              </span>
-            </div>
-          )}
+          <div className="absolute top-2 right-2">
+            <span className="inline-flex items-center justify-center p-1 bg-tertiary/90 backdrop-blur rounded-full">
+              <Star className="h-3 w-3 text-white fill-white" />
+            </span>
+          </div>
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
@@ -404,13 +444,11 @@ function HotTourCard({ tour }: { tour: Tour }) {
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
             <p className="text-white text-lg font-bold">${tour.price.toLocaleString()}</p>
           </div>
-          {tour.is_featured && (
-            <div className="absolute top-2 right-2">
-              <span className="inline-flex items-center justify-center p-1 bg-tertiary/90 backdrop-blur rounded-full">
-                <Star className="h-3 w-3 text-white fill-white" />
-              </span>
-            </div>
-          )}
+          <div className="absolute top-2 right-2">
+            <span className="inline-flex items-center justify-center p-1 bg-tertiary/90 backdrop-blur rounded-full">
+              <Star className="h-3 w-3 text-white fill-white" />
+            </span>
+          </div>
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
