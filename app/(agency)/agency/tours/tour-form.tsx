@@ -840,7 +840,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 {(() => {
                   const currentMonth = departureMonth ? departureMonth.split('-')[1] : '';
                   const currentYear = departureMonth ? departureMonth.split('-')[0] : '';
-                  const years = [2025, 2026, 2027, 2028];
+                  const years = [2026, 2027, 2028, 2029, 2030];
+                  const monthKeys = ['01','02','03','04','05','06','07','08','09','10','11','12'] as const;
                   const handleMonthChange = (m: string) => {
                     if (!m) { setDepartureMonth(''); return; }
                     const y = currentYear || String(new Date().getFullYear());
@@ -861,8 +862,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                         className="flex-1 h-11 rounded-xl border border-muted bg-surface-container-low px-3 text-sm text-foreground appearance-none cursor-pointer"
                       >
                         <option value="">{t.agencyTours.departureMonth}</option>
-                        {Object.entries(t.dateFormat.monthNames).map(([key, name]) => (
-                          <option key={key} value={key}>{name as string}</option>
+                        {monthKeys.map((key) => (
+                          <option key={key} value={key}>{t.dateFormat.monthNames[key]}</option>
                         ))}
                       </select>
                       <select
