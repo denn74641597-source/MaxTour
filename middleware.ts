@@ -3,11 +3,24 @@ import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const mode = request.nextUrl.searchParams.get('mode');
+
+  // Any URL with ?mode=admin that is NOT an admin route → redirect to admin panel
+  if (mode === 'admin' && !pathname.startsWith('/admin')) {
+    const adminAuth = request.cookies.get('admin_authenticated')?.value;
+    if (adminAuth === 'true') {
+      const dashUrl = new URL('/admin', request.nextUrl);
+      dashUrl.searchParams.set('mode', 'admin');
+      return NextResponse.redirect(dashUrl);
+    } else {
+      const loginUrl = new URL('/admin/login', request.nextUrl);
+      loginUrl.searchParams.set('mode', 'admin');
+      return NextResponse.redirect(loginUrl);
+    }
+  }
 
   // Admin panel: only accessible via ?mode=admin query parameter
   if (pathname.startsWith('/admin')) {
-    const mode = request.nextUrl.searchParams.get('mode');
-
     // Admin login page — always accessible if ?mode=admin
     if (pathname === '/admin/login' && mode === 'admin') {
       return NextResponse.next();

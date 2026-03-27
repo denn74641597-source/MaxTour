@@ -1,12 +1,20 @@
-import { AdminSidebar } from './admin-sidebar';
+'use client';
 
-export const dynamic = 'force-dynamic';
+import { usePathname } from 'next/navigation';
+import { AdminSidebar } from './admin-sidebar';
 
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+  const isLoginPage = pathname === '/admin/login';
+
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen flex bg-slate-50">
       <AdminSidebar />
