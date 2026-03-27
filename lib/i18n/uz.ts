@@ -82,6 +82,7 @@ export const uz: Translations = {
     topRated: 'Eng yaxshi baholanganlar',
     viewAgency: 'KO\'RISH',
     categories: 'Kategoriyalar',
+    recommendedTours: 'Tavsiya etilgan turlar',
   },
 
   // ─── Search ───

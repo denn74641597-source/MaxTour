@@ -553,7 +553,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
           <div className="space-y-4">
             <div>
               <Label htmlFor="title" className="text-sm font-medium text-foreground">{t.agencyTours.titleLabel}</Label>
-              <Input id="title" placeholder={t.agencyTours.titlePlaceholder} {...register('title')} onBlur={autoSlug} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
+              <Input id="title" placeholder={t.agencyTours.titlePlaceholder} maxLength={60} {...register('title')} onBlur={autoSlug} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               {errors.title && <p className="text-xs text-destructive mt-1">{errors.title.message}</p>}
             </div>
 
@@ -838,19 +838,13 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                   )}
                 </div>
                 {(() => {
-                  const currentYear = new Date().getFullYear();
-                  const nextYear = currentYear + 1;
-                  const selectedYear = departureMonth ? Number(departureMonth.split('-')[0]) : currentYear;
-                  const displayYear = selectedYear === nextYear ? nextYear : currentYear;
+                  const fixedYear = 2026;
                   return (
                     <div className="mt-1.5 space-y-2">
-                      <div className="flex items-center gap-1.5">
-                        <button type="button" onClick={() => { if (departureMonth) { const [, m] = departureMonth.split('-'); setDepartureMonth(`${currentYear}-${m}`); } }} className={`flex-1 text-xs font-semibold py-1 rounded-lg transition-colors ${displayYear === currentYear ? 'bg-primary text-white' : 'bg-surface-container-low text-muted-foreground'}`}>{currentYear}</button>
-                        <button type="button" onClick={() => { if (departureMonth) { const [, m] = departureMonth.split('-'); setDepartureMonth(`${nextYear}-${m}`); } }} className={`flex-1 text-xs font-semibold py-1 rounded-lg transition-colors ${displayYear === nextYear ? 'bg-primary text-white' : 'bg-surface-container-low text-muted-foreground'}`}>{nextYear}</button>
-                      </div>
+                      <div className="text-xs font-semibold text-muted-foreground text-center">{fixedYear}</div>
                       <div className="grid grid-cols-4 gap-1">
                         {Object.entries(t.dateFormat.monthNames).map(([key, name]) => {
-                          const val = `${displayYear}-${key}`;
+                          const val = `${fixedYear}-${key}`;
                           const isSelected = departureMonth === val;
                           return (
                             <button key={key} type="button" onClick={() => { setDepartureMonth(isSelected ? '' : val); if (!isSelected) { setValue('departure_date', ''); setValue('return_date', ''); } }} className={`py-1.5 text-[11px] font-medium rounded-lg transition-colors ${isSelected ? 'bg-primary text-white' : 'bg-surface-container-low text-foreground hover:bg-primary/10'}`}>

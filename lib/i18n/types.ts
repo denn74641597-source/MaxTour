@@ -75,6 +75,7 @@ export interface Translations {
     topRated: string;
     viewAgency: string;
     categories: string;
+    recommendedTours: string;
   };
   search: {
     title: string;

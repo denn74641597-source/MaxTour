@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, Star, ShieldAlert } from 'lucide-react';
+import { Heart, Star, MapPin } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -84,47 +84,20 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
       </div>
 
       {/* Image */}
-      <div className="relative aspect-[16/9] w-full overflow-hidden">
+      <div className="relative aspect-[4/5] w-full overflow-hidden">
         <Image
-          src={tour.cover_image_url || placeholderImage(800, 450, tour.title)}
+          src={tour.cover_image_url || placeholderImage(800, 1000, tour.title)}
           alt={tour.title}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, 480px"
         />
 
-        {/* Favorite button */}
-        <div className="absolute top-3 right-3">
-          <button
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
-            className="p-2 bg-surface/90 backdrop-blur rounded-full text-foreground shadow-ambient hover:bg-surface transition-colors"
-          >
-            <Heart className={`h-5 w-5 ${liked ? 'text-red-500 fill-red-500' : ''}`} />
-          </button>
-        </div>
-
-        {/* Verified / Unverified badge */}
-        {isVerified && (
-          <div className="absolute top-3 left-3">
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-500/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
-              <VerifiedBadge size="sm" className="text-white h-3 w-3" />
-              {t.common.verified}
-            </span>
-          </div>
-        )}
-        {!isVerified && isApproved && (
-          <div className="absolute top-3 left-3">
-            <span className="inline-flex items-center gap-1 px-2 py-1 bg-tertiary/90 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
-              <ShieldAlert className="h-3 w-3" />
-            </span>
-          </div>
-        )}
-
-        {/* Featured badge */}
+        {/* Featured star badge */}
         {tour.is_featured && (
-          <div className="absolute bottom-3 left-3">
-            <span className="px-2.5 py-1 bg-primary text-white text-[10px] font-bold uppercase tracking-wider rounded-md">
-              {t.common.premiumSelection}
+          <div className="absolute top-3 right-3">
+            <span className="inline-flex items-center justify-center p-1.5 bg-tertiary/90 backdrop-blur rounded-full shadow-ambient">
+              <Star className="h-4 w-4 text-white fill-white" />
             </span>
           </div>
         )}
@@ -132,18 +105,25 @@ export function TourCardCatalog({ tour }: TourCardCatalogProps) {
 
       {/* Content */}
       <Link href={`/tours/${tour.slug}`} className="block p-4">
-        {/* Title */}
-        <div className="mb-1">
+        {/* Title + Favorites */}
+        <div className="flex items-start justify-between gap-2 mb-1">
           <h3 className="text-lg font-bold text-foreground leading-tight line-clamp-2">
             {tour.title}
           </h3>
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
+            className="shrink-0 mt-0.5"
+          >
+            <Heart className={`h-5 w-5 ${liked ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
+          </button>
         </div>
 
         {/* Location + Duration */}
-        <p className="text-muted-foreground text-sm mb-3">
-          {location}
-          {nightsText ? ` • ${nightsText}` : ''}
-        </p>
+        <div className="flex items-center gap-1 text-muted-foreground text-sm mb-3">
+          <MapPin className="h-3.5 w-3.5 shrink-0" />
+          <span className="truncate">{location}</span>
+          {nightsText ? <span className="shrink-0"> • {nightsText}</span> : null}
+        </div>
 
         {/* Price + CTA */}
         <div className="flex items-center justify-between pt-3">

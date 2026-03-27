@@ -30,12 +30,12 @@ export function PopularDestinations({ tours }: PopularDestinationsProps) {
             href={`/tours/${tour.slug}`}
             className="shrink-0"
           >
-            <div className="w-28 h-28 rounded-[1.5rem] overflow-hidden mb-2 bg-surface-container-low shadow-ambient">
+            <div className="w-28 aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-2 bg-surface-container-low shadow-ambient">
               <Image
-                src={tour.cover_image_url || placeholderImage(200, 200, tour.title)}
+                src={tour.cover_image_url || placeholderImage(200, 250, tour.title)}
                 alt={tour.title}
                 width={112}
-                height={112}
+                height={140}
                 className="w-full h-full object-cover"
               />
             </div>

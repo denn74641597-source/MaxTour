@@ -37,7 +37,7 @@ export const tourHotelSchema = z.object({
 export type TourHotelFormData = z.infer<typeof tourHotelSchema>;
 
 export const tourSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters'),
+  title: z.string().min(3, 'Title must be at least 3 characters').max(60, 'Title must be at most 60 characters'),
   slug: z
     .string()
     .min(2)
