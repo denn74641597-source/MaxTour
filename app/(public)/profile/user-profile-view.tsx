@@ -249,26 +249,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
         </Link>
       )}
 
-      {profile.role === 'admin' && (
-        <Link href="/admin">
-          <Card className="cursor-pointer hover:bg-muted transition-colors">
-            <CardContent className="flex items-center gap-4 p-4">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-purple-100">
-                <Shield className="h-5 w-5 text-purple-600" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-foreground">
-                  {t.auth.goToAdminDashboard}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {t.nav.adminPanel}
-                </p>
-              </div>
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
-            </CardContent>
-          </Card>
-        </Link>
-      )}
+
 
       {/* Logout Button */}
       <Button
