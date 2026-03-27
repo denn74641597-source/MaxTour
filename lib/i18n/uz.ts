@@ -518,6 +518,25 @@ export const uz: Translations = {
     statusLost: 'Yo\'qotildi',
   },
 
+  statusLabels: {
+    new: 'Yangi',
+    contacted: 'Bog\'lanildi',
+    closed: 'Yopildi',
+    won: 'Yutildi',
+    lost: 'Yo\'qotildi',
+    published: 'Faol',
+    draft: 'Qoralama',
+    pending: 'Kutilmoqda',
+    archived: 'Arxivlangan',
+    active: 'Faol',
+    expired: 'Muddati o\'tgan',
+    cancelled: 'Bekor qilingan',
+    approved: 'Tasdiqlangan',
+    rejected: 'Rad etilgan',
+    verified: 'Tasdiqlangan',
+    trial: 'Sinov',
+  },
+
   // ─── Agency Profile Form ───
   agencyProfileForm: {
     title: 'Agentlik profili',

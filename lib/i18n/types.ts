@@ -469,6 +469,24 @@ export interface Translations {
     statusWon: string;
     statusLost: string;
   };
+  statusLabels: {
+    new: string;
+    contacted: string;
+    closed: string;
+    won: string;
+    lost: string;
+    published: string;
+    draft: string;
+    pending: string;
+    archived: string;
+    active: string;
+    expired: string;
+    cancelled: string;
+    approved: string;
+    rejected: string;
+    verified: string;
+    trial: string;
+  };
   agencyProfileForm: {
     title: string;
     subtitle: string;

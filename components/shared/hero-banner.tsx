@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { MapPin } from 'lucide-react';
+import { MapPin, Star } from 'lucide-react';
 import { formatPrice, placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
@@ -39,6 +39,15 @@ export function HeroBanner({ tour }: HeroBannerProps) {
           <MapPin className="h-3.5 w-3.5" />
           <span className="label-meta text-[10px] font-semibold">{locationLabel}</span>
         </div>
+
+        {/* Featured star badge */}
+        {tour.is_featured && (
+          <div className="absolute top-4 right-4">
+            <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-amber-400 to-yellow-500 backdrop-blur rounded-full shadow-lg">
+              <Star className="h-4 w-4 text-white fill-white" />
+            </span>
+          </div>
+        )}
 
         {/* Content */}
         <div className="absolute bottom-0 left-0 right-0 p-6">

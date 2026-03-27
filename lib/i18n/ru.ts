@@ -518,6 +518,25 @@ export const ru: Translations = {
     statusLost: 'Потеряна',
   },
 
+  statusLabels: {
+    new: 'Новая',
+    contacted: 'Связались',
+    closed: 'Закрыта',
+    won: 'Выиграна',
+    lost: 'Потеряна',
+    published: 'Опубликован',
+    draft: 'Черновик',
+    pending: 'Ожидание',
+    archived: 'Архив',
+    active: 'Активный',
+    expired: 'Истёк',
+    cancelled: 'Отменён',
+    approved: 'Одобрен',
+    rejected: 'Отклонён',
+    verified: 'Проверен',
+    trial: 'Пробный',
+  },
+
   // ─── Agency Profile Form ───
   agencyProfileForm: {
     title: 'Профиль агентства',

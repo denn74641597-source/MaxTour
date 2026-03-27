@@ -1,5 +1,8 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
 
 type StatusVariant = 'success' | 'warning' | 'error' | 'info' | 'default';
 
@@ -43,6 +46,10 @@ interface StatusBadgeProps {
 
 export function StatusBadge({ status, label, className }: StatusBadgeProps) {
   const variant = STATUS_MAP[status.toLowerCase()] ?? 'default';
+  const { t } = useTranslation();
+
+  const key = status.toLowerCase() as keyof typeof t.statusLabels;
+  const displayLabel = label ?? t.statusLabels[key] ?? status;
 
   return (
     <Badge
@@ -53,7 +60,7 @@ export function StatusBadge({ status, label, className }: StatusBadgeProps) {
         className
       )}
     >
-      {label ?? status}
+      {displayLabel}
     </Badge>
   );
 }

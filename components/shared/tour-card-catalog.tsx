@@ -87,7 +87,7 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
       </div>
 
       {/* Image */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden">
+      <div className="relative aspect-square w-full overflow-hidden">
         <Image
           src={tour.cover_image_url || placeholderImage(800, 1000, tour.title)}
           alt={tour.title}
