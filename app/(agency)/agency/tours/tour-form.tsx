@@ -841,34 +841,40 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                   const currentMonth = departureMonth ? departureMonth.split('-')[1] : '';
                   const currentYear = departureMonth ? departureMonth.split('-')[0] : '';
                   const years = [2025, 2026, 2027, 2028];
-                  const selectMonth = (m: string) => {
-                    if (currentMonth === m) { setDepartureMonth(''); return; }
+                  const handleMonthChange = (m: string) => {
+                    if (!m) { setDepartureMonth(''); return; }
                     const y = currentYear || String(new Date().getFullYear());
                     setDepartureMonth(`${y}-${m}`);
                     setValue('departure_date', ''); setValue('return_date', '');
                   };
-                  const selectYear = (y: string) => {
-                    if (currentYear === y && !currentMonth) { setDepartureMonth(''); return; }
+                  const handleYearChange = (y: string) => {
+                    if (!y) { setDepartureMonth(''); return; }
                     const m = currentMonth || '01';
                     setDepartureMonth(`${y}-${m}`);
                     setValue('departure_date', ''); setValue('return_date', '');
                   };
                   return (
-                    <div className="mt-1.5 space-y-2">
-                      <div className="grid grid-cols-4 gap-1">
+                    <div className="mt-1.5 flex gap-2">
+                      <select
+                        value={currentMonth}
+                        onChange={(e) => handleMonthChange(e.target.value)}
+                        className="flex-1 h-11 rounded-xl border border-muted bg-surface-container-low px-3 text-sm text-foreground appearance-none cursor-pointer"
+                      >
+                        <option value="">{t.agencyTours.departureMonth}</option>
                         {Object.entries(t.dateFormat.monthNames).map(([key, name]) => (
-                          <button key={key} type="button" onClick={() => selectMonth(key)} className={`py-1.5 text-[11px] font-medium rounded-lg transition-colors ${currentMonth === key ? 'bg-primary text-white' : 'bg-surface-container-low text-foreground hover:bg-primary/10'}`}>
-                            {(name as string).slice(0, 3)}
-                          </button>
+                          <option key={key} value={key}>{name as string}</option>
                         ))}
-                      </div>
-                      <div className="grid grid-cols-4 gap-1">
+                      </select>
+                      <select
+                        value={currentYear}
+                        onChange={(e) => handleYearChange(e.target.value)}
+                        className="w-24 h-11 rounded-xl border border-muted bg-surface-container-low px-3 text-sm text-foreground appearance-none cursor-pointer"
+                      >
+                        <option value="">{t.agencyTours.yearLabel}</option>
                         {years.map((y) => (
-                          <button key={y} type="button" onClick={() => selectYear(String(y))} className={`py-1.5 text-[11px] font-medium rounded-lg transition-colors ${currentYear === String(y) ? 'bg-primary text-white' : 'bg-surface-container-low text-foreground hover:bg-primary/10'}`}>
-                            {y}
-                          </button>
+                          <option key={y} value={String(y)}>{y}</option>
                         ))}
-                      </div>
+                      </select>
                     </div>
                   );
                 })()}

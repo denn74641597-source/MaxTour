@@ -361,6 +361,7 @@ export const ru: Translations = {
     departureDate: 'Дата вылета',
     departureMonth: 'Месяц вылета',
     departureMonthPlaceholder: 'Выберите месяц',
+    yearLabel: 'Год',
     returnDate: 'Дата возвращения',
     durationDays: 'Длительность (дней)',
     durationNights: 'Длительность (ночей)',

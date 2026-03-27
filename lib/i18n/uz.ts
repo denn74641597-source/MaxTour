@@ -361,6 +361,7 @@ export const uz: Translations = {
     departureDate: 'Jo\'nash sanasi',
     departureMonth: 'Jo\'nash oyi',
     departureMonthPlaceholder: 'Oyni tanlang',
+    yearLabel: 'Yil',
     returnDate: 'Qaytish sanasi',
     durationDays: 'Davomiyligi (kun)',
     durationNights: 'Davomiyligi (kecha)',

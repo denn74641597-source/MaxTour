@@ -321,6 +321,7 @@ export interface Translations {
     departureDate: string;
     departureMonth: string;
     departureMonthPlaceholder: string;
+    yearLabel: string;
     returnDate: string;
     durationDays: string;
     durationNights: string;

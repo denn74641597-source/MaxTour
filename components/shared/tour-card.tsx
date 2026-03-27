@@ -39,7 +39,7 @@ export function TourCard({ tour }: TourCardProps) {
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
-            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2">{tour.title}</h4>
+            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1">{tour.title}</h4>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
               className="shrink-0 mt-0.5"
