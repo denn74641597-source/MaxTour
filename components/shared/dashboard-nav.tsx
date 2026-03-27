@@ -108,20 +108,14 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
         </nav>
       </aside>
 
-      {/* Mobile top header with hamburger menu */}
-      <div className="md:hidden sticky top-0 z-50 glass-nav" style={{ paddingTop: 'var(--tg-safe-top, env(safe-area-inset-top, 0px))' }}>
-        <div className="flex items-center justify-between px-6 py-3">
-          <div className="flex items-center gap-2">
-            <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5">
-              <Home className="h-4 w-4" />
-              {t.nav.home}
-            </Link>
-          </div>
+      {/* Mobile hamburger menu */}
+      <div className="md:hidden fixed top-0 right-0 z-40" style={{ top: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 12px)' }}>
+        <div className="px-4 py-3">
           <Sheet open={open} onOpenChange={setOpen}>
-            <SheetTrigger className="p-2 -mr-2 rounded-xl hover:bg-muted transition-colors">
+            <SheetTrigger className="p-2 rounded-xl hover:bg-muted/80 transition-colors bg-background/60 backdrop-blur-sm shadow-sm border border-border/50">
               <Menu className="h-5 w-5 text-foreground" />
             </SheetTrigger>
-            <SheetContent side="right" className="w-72 p-0" style={{ paddingTop: 'var(--tg-safe-top, env(safe-area-inset-top, 0px))' }}>
+            <SheetContent side="right" className="w-72 p-0" style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 8px)' }}>
               <SheetHeader className="px-4 py-4">
                 <SheetTitle className="text-base font-semibold">
                   {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
