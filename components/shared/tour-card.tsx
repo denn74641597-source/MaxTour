@@ -27,12 +27,12 @@ export function TourCard({ tour, compact }: TourCardProps) {
     <Card
       className={
         compact
-          ? 'min-w-[260px] snap-start overflow-hidden'
-          : 'overflow-hidden'
+          ? 'min-w-[260px] snap-start overflow-hidden !pt-0'
+          : 'overflow-hidden !pt-0'
       }
     >
       <Link href={`/tours/${tour.slug}`}>
-        <div className="relative aspect-[4/5] w-full overflow-hidden">
+        <div className="relative aspect-square w-full overflow-hidden">
           <Image
             src={tour.cover_image_url || placeholderImage(400, 500, tour.title)}
             alt={tour.title}

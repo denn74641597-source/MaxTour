@@ -9,9 +9,11 @@ import type { Tour } from '@/types';
 
 interface HeroBannerProps {
   tour: Tour;
+  /** Force-show the featured star badge (e.g. in RotatingHero) */
+  featured?: boolean;
 }
 
-export function HeroBanner({ tour }: HeroBannerProps) {
+export function HeroBanner({ tour, featured }: HeroBannerProps) {
   const { t } = useTranslation();
 
   const locationLabel = tour.tour_type === 'domestic'
@@ -41,7 +43,7 @@ export function HeroBanner({ tour }: HeroBannerProps) {
         </div>
 
         {/* Featured star badge */}
-        {tour.is_featured && (
+        {(featured || tour.is_featured) && (
           <div className="absolute top-4 right-4">
             <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-amber-400 to-yellow-500 backdrop-blur rounded-full shadow-lg">
               <Star className="h-4 w-4 text-white fill-white" />

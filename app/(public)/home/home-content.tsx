@@ -223,14 +223,14 @@ function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgency
 
   // Auto-rotate
   useEffect(() => {
-    autoTimer.current = setInterval(goNext, 3000);
+    autoTimer.current = setInterval(goNext, 5000);
     return () => { if (autoTimer.current) clearInterval(autoTimer.current); };
   }, [goNext]);
 
   // Reset timer on manual interaction
   const resetTimer = useCallback(() => {
     if (autoTimer.current) clearInterval(autoTimer.current);
-    autoTimer.current = setInterval(goNext, 3000);
+    autoTimer.current = setInterval(goNext, 5000);
   }, [goNext]);
 
   const handleTouchStart = (e: React.TouchEvent) => {
@@ -254,7 +254,7 @@ function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgency
       onTouchEnd={handleTouchEnd}
     >
       <div className={`transition-opacity duration-300 ${fading ? 'opacity-0' : 'opacity-100'}`}>
-        <HeroBanner tour={tour} />
+        <HeroBanner tour={tour} featured />
       </div>
       {/* Dots indicator */}
       {current.length > 1 && (
@@ -420,7 +420,7 @@ function HotDealCard({ tour }: { tour: Tour }) {
   );
 }
 
-/** Hot Tour Card — price focused */
+/** Hot Tour Card — same layout as HotDealCard, only icon differs */
 function HotTourCard({ tour }: { tour: Tour }) {
   const { isFavorite, toggleFavorite } = useFavorites();
   const liked = isFavorite(tour.id);
@@ -447,10 +447,6 @@ function HotTourCard({ tour }: { tour: Tour }) {
               <Flame className="h-3 w-3 text-white fill-white" />
             </span>
           </div>
-          {/* Price overlay */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2.5">
-            <p className="text-white text-lg font-bold">${tour.price.toLocaleString()}</p>
-          </div>
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
@@ -466,9 +462,7 @@ function HotTourCard({ tour }: { tour: Tour }) {
             <MapPin className="h-2.5 w-2.5 shrink-0" />
             <span className="truncate">{location}</span>
           </p>
-          {tour.old_price && (
-            <p className="text-xs text-muted-foreground line-through mt-0.5">${tour.old_price.toLocaleString()}</p>
-          )}
+          <p className="text-sm font-bold text-primary mt-1">${tour.price.toLocaleString()}</p>
         </div>
       </div>
     </Link>
