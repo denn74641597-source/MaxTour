@@ -1,12 +1,14 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
-import { Upload, X, ImageIcon, Loader2 } from 'lucide-react';
+import { useRef, useState, useEffect, useCallback } from 'react';
+import { X, ImageIcon, Loader2, Check } from 'lucide-react';
+import Cropper from 'react-easy-crop';
+import type { Area } from 'react-easy-crop';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { uploadImageAction } from '@/features/upload/actions';
-import { compressImage, validateImageFile } from '@/lib/image-utils';
+import { compressImage, validateImageFile, getCroppedImage } from '@/lib/image-utils';
 import { toast } from 'sonner';
 
 interface ImageUploaderProps {
@@ -30,20 +32,28 @@ export function ImageUploader({
   const [uploading, setUploading] = useState(false);
   const objectUrlRef = useRef<string | null>(null);
 
+  // Crop state
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+
   const displayLabel = label ?? t.imageUploader.uploadImage;
 
-  // Cleanup object URL on unmount
   useEffect(() => {
     return () => {
       if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     };
   }, []);
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
+  const onCropComplete = useCallback((_: Area, croppedPixels: Area) => {
+    setCroppedAreaPixels(croppedPixels);
+  }, []);
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate
     const error = validateImageFile(file);
     if (error) {
       toast.error(error);
@@ -51,17 +61,38 @@ export function ImageUploader({
       return;
     }
 
-    // Show local preview immediately
+    // Show crop UI
     if (objectUrlRef.current) URL.revokeObjectURL(objectUrlRef.current);
     const localUrl = URL.createObjectURL(file);
     objectUrlRef.current = localUrl;
-    setPreview(localUrl);
+    setCropSrc(localUrl);
+    setCrop({ x: 0, y: 0 });
+    setZoom(1);
+  }
+
+  function cancelCrop() {
+    setCropSrc(null);
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+    if (inputRef.current) inputRef.current.value = '';
+  }
+
+  async function confirmCrop() {
+    if (!cropSrc || !croppedAreaPixels) return;
+
     setUploading(true);
+    setCropSrc(null);
 
     try {
-      // Compress before upload
-      const compressed = await compressImage(file);
+      const croppedFile = await getCroppedImage(cropSrc, croppedAreaPixels);
 
+      // Show local preview
+      const localPreview = URL.createObjectURL(croppedFile);
+      setPreview(localPreview);
+
+      const compressed = await compressImage(croppedFile);
       const formData = new FormData();
       formData.append('file', compressed);
       formData.append('folder', folder);
@@ -74,7 +105,7 @@ export function ImageUploader({
         return;
       }
 
-      // Revoke object URL and set server URL
+      URL.revokeObjectURL(localPreview);
       if (objectUrlRef.current) {
         URL.revokeObjectURL(objectUrlRef.current);
         objectUrlRef.current = null;
@@ -87,6 +118,7 @@ export function ImageUploader({
       setPreview(null);
     } finally {
       setUploading(false);
+      if (inputRef.current) inputRef.current.value = '';
     }
   }
 
@@ -101,10 +133,47 @@ export function ImageUploader({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
-        onChange={handleFile}
+        accept="image/jpeg,image/png"
+        onChange={handleFileSelect}
         className="hidden"
       />
+
+      {/* Crop Modal */}
+      {cropSrc && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex flex-col">
+          <div className="relative flex-1">
+            <Cropper
+              image={cropSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={16 / 9}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+          <div className="bg-black/90 p-4 flex items-center justify-between">
+            <Button type="button" variant="ghost" onClick={cancelCrop} className="text-white hover:bg-white/10">
+              <X className="h-5 w-5 mr-1" />
+              {t.common.cancel}
+            </Button>
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={0.1}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="w-32 accent-primary"
+            />
+            <Button type="button" onClick={confirmCrop} className="bg-primary text-white hover:bg-primary/90">
+              <Check className="h-5 w-5 mr-1" />
+              {t.common.confirm}
+            </Button>
+          </div>
+        </div>
+      )}
+
       {preview ? (
         <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}

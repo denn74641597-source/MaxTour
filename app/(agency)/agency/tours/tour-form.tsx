@@ -348,6 +348,12 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   }
 
   async function onSubmit(data: TourFormData) {
+    // Combo tours must have at least 2 destinations
+    if (isCombo && comboDestinations.length < 2) {
+      toast.error(t.agencyTours.comboMinCountries);
+      return;
+    }
+
     const supabase = createClient();
 
     const { data: { user } } = await supabase.auth.getUser();
@@ -1435,6 +1441,10 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             disabled={isSubmitting}
             onClick={() => {
               ensureSlug();
+              if (isCombo && comboDestinations.length < 2) {
+                toast.error(t.agencyTours.comboMinCountries);
+                return;
+              }
               setPendingStatus('pending');
               handleSubmit(() => setShowPreview(true), onValidationError)();
             }}
@@ -1449,6 +1459,10 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             disabled={isSubmitting}
             onClick={() => {
               ensureSlug();
+              if (isCombo && comboDestinations.length < 2) {
+                toast.error(t.agencyTours.comboMinCountries);
+                return;
+              }
               setPendingStatus('draft');
               handleSubmit(() => setShowPreview(true), onValidationError)();
             }}

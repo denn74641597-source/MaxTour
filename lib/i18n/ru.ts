@@ -44,6 +44,7 @@ export const ru: Translations = {
     upgrade: 'Улучшить',
     switchTo: 'Перейти',
     close: 'Закрыть',
+    confirm: 'Подтвердить',
   },
 
   // ─── Navigation ───
@@ -443,10 +444,9 @@ export const ru: Translations = {
     tourCategoryHint: 'Выберите подходящие категории для тура (до 5)',
     additionalInfo: 'Дополнительная информация',
     additionalInfoPlaceholder: 'Авиабилет: Ташкент - Куала Лумпур - Сингапур - Бали - Куала Лумпур - Ташкент\n - UzAirways: багаж 20кг + 8 кг',
-    coverImageHint: 'Максимальный размер: 10MB (автосжатие). Рекомендация: соотношение 16:9. Загружается изображение любого размера.',
+    coverImageHint: 'Макс. 2MB · JPG, PNG',
     comboCountries: 'Дополнительные страны и города',
-    comboCountriesHint: 'Добавьте до 5 стран и городов для комби-тура',
-    primaryHotel: 'Основной',
+    comboCountriesHint: 'Добавьте до 5 стран и городов для комби-тура',    comboMinCountries: 'Для комбо-тура необходимо добавить минимум 2 страны',    primaryHotel: 'Основной',
     previewAndPublish: 'Просмотр и публикация',
     fixErrors: 'Пожалуйста, заполните все обязательные поля',
     accommodation: 'Проживание',

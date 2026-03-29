@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { MapPin, Heart, Star } from 'lucide-react';
 import { PriceBlock } from './price-block';
-import { placeholderImage, formatComboDestinations } from '@/lib/utils';
+import { placeholderImage, formatComboCities } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import type { Tour } from '@/types';
@@ -53,8 +53,8 @@ export function TourCard({ tour }: TourCardProps) {
               {tour.tour_type === 'domestic'
                 ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
                 : tour.destinations && tour.destinations.length > 1
-                  ? formatComboDestinations(tour.destinations)
-                  : `${tour.city ? `${tour.city}, ` : ''}${tour.country}`
+                  ? formatComboCities(tour.destinations)
+                  : tour.city || tour.country
               }
             </span>
           </p>

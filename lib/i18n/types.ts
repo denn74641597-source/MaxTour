@@ -41,6 +41,7 @@ export interface Translations {
     upgrade: string;
     switchTo: string;
     close: string;
+    confirm: string;
   };
   nav: {
     explore: string;
@@ -406,6 +407,7 @@ export interface Translations {
     coverImageHint: string;
     comboCountries: string;
     comboCountriesHint: string;
+    comboMinCountries: string;
     primaryHotel: string;
     previewAndPublish: string;
     fixErrors: string;

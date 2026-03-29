@@ -12,8 +12,6 @@ export type Currency = 'USD' | 'UZS' | 'EUR';
 export type TourCategoryTag =
   | 'family'
   | 'all_inclusive'
-  | 'passive'
-  | 'active'
   | 'honeymoon'
   | 'umrah'
   | 'shopping'
@@ -22,7 +20,6 @@ export type TourCategoryTag =
   | 'sanatorium'
   | 'medical'
   | 'aquapark'
-  | 'visa_free'
   | 'cruise'
   | 'combo'
   | 'beach'
@@ -293,8 +290,6 @@ export interface TourFilters {
 export const TOUR_CATEGORIES = [
   'family',
   'all_inclusive',
-  'passive',
-  'active',
   'honeymoon',
   'umrah',
   'shopping',
@@ -303,7 +298,6 @@ export const TOUR_CATEGORIES = [
   'sanatorium',
   'medical',
   'aquapark',
-  'visa_free',
   'cruise',
   'combo',
   'beach',

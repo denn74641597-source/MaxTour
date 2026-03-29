@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Star, MapPin, Zap, Flame } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { placeholderImage, formatComboDestinations } from '@/lib/utils';
+import { placeholderImage, formatComboCities } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useFollows } from '@/hooks/use-follows';
@@ -45,9 +45,9 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
     }
     // Combo tour with destinations
     if (tour.destinations && tour.destinations.length > 1) {
-      return formatComboDestinations(tour.destinations);
+      return formatComboCities(tour.destinations);
     }
-    return [tour.city, tour.country].filter(Boolean).join(', ');
+    return tour.city || tour.country;
   })();
   const maxStars = getMaxHotelStars(tour);
   const liked = isFavorite(tour.id);

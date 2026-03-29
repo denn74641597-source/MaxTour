@@ -88,14 +88,10 @@ export async function compressImage(
 const ALLOWED_TYPES = [
   'image/jpeg',
   'image/png',
-  'image/webp',
-  'image/gif',
-  'image/svg+xml',
-  'image/avif',
 ];
 
-/** Max file size: 10MB before compression */
-const MAX_FILE_SIZE = 10 * 1024 * 1024;
+/** Max file size: 2MB before compression */
+const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 /**
  * Validate an image file before upload.
@@ -103,10 +99,58 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
  */
 export function validateImageFile(file: File): string | null {
   if (!ALLOWED_TYPES.includes(file.type)) {
-    return `Fayl turi qo'llab-quvvatlanmaydi: ${file.type}. Ruxsat etilgan: JPEG, PNG, WebP, GIF, SVG, AVIF`;
+    return `Faqat JPG va PNG formatlar qabul qilinadi`;
   }
   if (file.size > MAX_FILE_SIZE) {
-    return `Fayl hajmi juda katta: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maksimal: 10MB`;
+    return `Fayl hajmi juda katta: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maksimal: 2MB`;
   }
   return null;
+}
+
+/**
+ * Create a cropped image from source and crop area.
+ * Returns a File object with the cropped image.
+ */
+export function getCroppedImage(
+  imageSrc: string,
+  crop: { x: number; y: number; width: number; height: number }
+): Promise<File> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = crop.width;
+      canvas.height = crop.height;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        reject(new Error('Canvas context not available'));
+        return;
+      }
+      ctx.drawImage(
+        img,
+        crop.x,
+        crop.y,
+        crop.width,
+        crop.height,
+        0,
+        0,
+        crop.width,
+        crop.height
+      );
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            reject(new Error('Failed to create blob'));
+            return;
+          }
+          resolve(new File([blob], 'cropped.jpg', { type: 'image/jpeg', lastModified: Date.now() }));
+        },
+        'image/jpeg',
+        0.92
+      );
+    };
+    img.onerror = () => reject(new Error('Failed to load image'));
+    img.src = imageSrc;
+  });
 }

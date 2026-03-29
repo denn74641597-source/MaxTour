@@ -531,7 +531,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                   {/* Right: info */}
                   <div className="flex-1 p-3 min-w-0 flex flex-col">
                     <div className="min-w-0">
-                      <h4 className="font-bold text-sm text-foreground leading-tight">{hotel.name}</h4>
+                      <h4 className="font-bold text-sm text-foreground leading-tight truncate">{hotel.name}</h4>
                       {hotel.stars && (
                         <div className="flex items-center gap-0.5 mt-0.5">
                           {Array.from({ length: hotel.stars }).map((_: unknown, i: number) => (
@@ -581,7 +581,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                 )}
               </div>
               <div className="flex-1 p-3 min-w-0 flex flex-col">
-                <h4 className="font-bold text-sm text-foreground">{tour.hotel_name}</h4>
+                <h4 className="font-bold text-sm text-foreground truncate">{tour.hotel_name}</h4>
                 {tour.hotel_stars && (
                   <div className="flex items-center gap-0.5 mt-0.5">
                     {Array.from({ length: tour.hotel_stars }).map((_: any, i: number) => (

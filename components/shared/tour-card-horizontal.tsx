@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { CalendarDays, ArrowRight } from 'lucide-react';
-import { formatPrice, formatDate, placeholderImage, formatComboDestinations } from '@/lib/utils';
+import { CalendarDays, ArrowRight, MapPin } from 'lucide-react';
+import { formatPrice, formatDate, placeholderImage, formatComboCities } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import type { Tour } from '@/types';
 
@@ -33,11 +33,14 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
           <h4 className="font-bold text-sm leading-tight line-clamp-2 text-foreground">
             {tour.title}
           </h4>
-          {tour.destinations && tour.destinations.length > 1 && (
-            <p className="text-xs text-muted-foreground mt-1 truncate">
-              {formatComboDestinations(tour.destinations)}
-            </p>
-          )}
+          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-0.5 truncate">
+            <MapPin className="h-3 w-3 shrink-0" />
+            <span className="truncate">
+              {tour.destinations && tour.destinations.length > 1
+                ? formatComboCities(tour.destinations)
+                : tour.city || tour.country}
+            </span>
+          </p>
           {tour.departure_date && (
             <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
               <CalendarDays className="h-3 w-3 shrink-0" />

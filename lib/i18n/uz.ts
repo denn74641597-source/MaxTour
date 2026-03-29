@@ -44,6 +44,7 @@ export const uz: Translations = {
     upgrade: 'Yangilash',
     switchTo: 'O\'tish',
     close: 'Yopish',
+    confirm: 'Tasdiqlash',
   },
 
   // ─── Navigation ───
@@ -443,9 +444,10 @@ export const uz: Translations = {
     tourCategoryHint: 'Turga mos kategoriyalarni tanlang (5 tagacha)',
     additionalInfo: 'Qo\'shimcha ma\'lumot',
     additionalInfoPlaceholder: 'Avviabilet: Toshkent - Kuala Lumpur - Singapur - Bali - Kuala Lumpur - Toshkent\n - UzAirways: bagaj 20kg + 8 kg',
-    coverImageHint: 'Maksimal hajm: 10MB (avtomatik siqiladi). Tavsiya: 16:9 nisbat. Istalgan o\'lchamdagi rasm yuklanadi.',
+    coverImageHint: 'Maks. 2MB · JPG, PNG',
     comboCountries: 'Qo\'shimcha mamlakatlar va shaharlar',
     comboCountriesHint: 'Kombi tur uchun 5 tagacha qo\'shimcha mamlakat va shahar qo\'shing',
+    comboMinCountries: 'Kombi tur uchun kamida 2 ta davlat qo\'shish kerak',
     primaryHotel: 'Asosiy',
     previewAndPublish: 'Ko\'rish hamda e\'lon berish',
     fixErrors: 'Iltimos, barcha majburiy maydonlarni to\'ldiring',

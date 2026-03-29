@@ -75,6 +75,17 @@ export function formatComboDestinations(destinations: string[]): string {
     .join(' - ');
 }
 
+/** Format combo destinations showing only city names, comma-separated */
+export function formatComboCities(destinations: string[]): string {
+  const cities = destinations
+    .map(d => {
+      const parts = d.split(' - ');
+      return parts[1] || parts[0] || '';
+    })
+    .filter(Boolean);
+  return cities.join(', ');
+}
+
 /** Placeholder image URL */
 
 export function placeholderImage(width = 400, height = 300, text = 'MaxTour'): string {
