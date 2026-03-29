@@ -5,7 +5,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import type { TourFormData } from '@/lib/validators';
-import type { TourHotel } from '@/types';
+import type { TourHotel, ComboHotelVariant } from '@/types';
 interface EditTourContentProps {
   tourId: string;
   tourTitle: string;
@@ -13,9 +13,24 @@ interface EditTourContentProps {
     cover_image_url?: string | null;
     hotel_images?: string[];
     hotels?: TourHotel[];
+    combo_hotels?: ComboHotelVariant[];
     destinations?: string[];
     airline?: string | null;
-    extra_charges?: { name: string; amount: number }[];
+    extra_charges?: { name: string; amount: number; required?: boolean }[];
+    variable_charges?: { name: string; min_amount: number; max_amount: number; required?: boolean }[];
+    operator_telegram_username?: string | null;
+    operator_phone?: string | null;
+    category?: string | null;
+    additional_info?: string | null;
+    tour_type?: string;
+    domestic_category?: string | null;
+    region?: string | null;
+    district?: string | null;
+    meeting_point?: string | null;
+    what_to_bring?: string[];
+    guide_name?: string | null;
+    guide_phone?: string | null;
+    departure_month?: string | null;
   };
 }
 

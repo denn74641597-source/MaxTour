@@ -99,6 +99,17 @@ export interface Translations {
     hotelDescriptionPlaceholder: string;
     hotelPrice: string;
     removeHotel: string;
+    comboHotels: string;
+    addComboVariant: string;
+    removeComboVariant: string;
+    comboVariantLabel: string;
+    comboHotelName: string;
+    comboHotelBookingUrl: string;
+    comboHotelImage: string;
+    comboHotelPrice: string;
+    comboTotalPrice: string;
+    comboDetails: string;
+    comboHotelsTitle: string;
     duration: string;
     departure: string;
     leaveRequest: string;

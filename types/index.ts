@@ -106,6 +106,18 @@ export interface AgencySubscription {
   plan?: SubscriptionPlan;
 }
 
+export interface ComboHotelEntry {
+  city: string;
+  name: string;
+  booking_url: string | null;
+  image_url: string | null;
+}
+
+export interface ComboHotelVariant {
+  price: number;
+  hotels: ComboHotelEntry[];
+}
+
 export interface TourHotel {
   name: string;
   stars: number | null;
@@ -139,6 +151,7 @@ export interface Tour {
   hotel_booking_url: string | null;
   hotel_images: string[];
   hotels: TourHotel[];
+  combo_hotels: ComboHotelVariant[];
   destinations: string[];
   airline: string | null;
   extra_charges: { name: string; amount: number; required?: boolean }[];

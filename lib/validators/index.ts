@@ -38,6 +38,20 @@ export const tourHotelSchema = z.object({
 
 export type TourHotelFormData = z.infer<typeof tourHotelSchema>;
 
+export const comboHotelEntrySchema = z.object({
+  city: z.string().min(1, 'City is required'),
+  name: z.string().min(1, 'Hotel name is required'),
+  booking_url: z.string().url().optional().or(z.literal('')).transform(v => v || null),
+  image_url: z.string().optional().or(z.literal('')).transform(v => v || null),
+});
+
+export const comboHotelVariantSchema = z.object({
+  price: z.coerce.number().positive('Price must be greater than 0'),
+  hotels: z.array(comboHotelEntrySchema).min(1),
+});
+
+export type ComboHotelVariantFormData = z.infer<typeof comboHotelVariantSchema>;
+
 export const tourSchema = z.object({
   title: z.string().min(3, 'Title must be at least 3 characters').max(60, 'Title must be at most 60 characters'),
   slug: z
@@ -64,6 +78,7 @@ export const tourSchema = z.object({
   hotel_booking_url: z.string().url().optional().or(z.literal('')),
   hotel_images: z.array(z.string()).default([]),
   hotels: z.array(tourHotelSchema).default([]),
+  combo_hotels: z.array(comboHotelVariantSchema).default([]),
   destinations: z.array(z.string()).default([]),
   airline: z.string().optional().or(z.literal('')),
   extra_charges: z.array(z.object({ name: z.string(), amount: z.coerce.number(), required: z.boolean().default(true) })).default([]),

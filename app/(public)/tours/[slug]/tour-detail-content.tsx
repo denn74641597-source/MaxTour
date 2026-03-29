@@ -19,7 +19,7 @@ import { useFavorites } from '@/hooks/use-favorites';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { LeadForm } from '@/components/shared/lead-form';
 import { TourCard } from '@/components/shared/tour-card';
-import type { Tour, TourHotel } from '@/types';
+import type { Tour, TourHotel, ComboHotelVariant } from '@/types';
 
 interface TourDetailContentProps {
   tour: any;
@@ -50,8 +50,11 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   const mandatoryVarCharges = allVarCharges.filter(c => c.required !== false);
   const optionalVarCharges = allVarCharges.filter(c => c.required === false);
   const hotels = (tour.hotels as TourHotel[]) ?? [];
+  const comboHotels = (tour.combo_hotels as ComboHotelVariant[]) ?? [];
   const whatToBring = (tour.what_to_bring as string[]) ?? [];
   const isDomestic = tour.tour_type === 'domestic';
+  const isCombo = tour.category?.split(',').includes('combo');
+  const [showComboDetails, setShowComboDetails] = useState<number | null>(null);
 
   const categoryIcons: Record<string, React.ReactNode> = {
     excursion: <Compass className="h-3.5 w-3.5" />,
@@ -392,8 +395,118 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           </section>
         )}
 
-        {/* Hotels */}
-        {hotels.length > 0 ? (
+        {/* Combo Hotels - for combo tours */}
+        {isCombo && comboHotels.length > 0 && (
+          <section>
+            <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.comboHotelsTitle}</h3>
+            <div className="space-y-3">
+              {comboHotels.map((variant, varIdx) => {
+                // Collect all images from this variant's hotels
+                const variantImages = variant.hotels
+                  .filter(h => h.image_url)
+                  .map(h => h.image_url as string);
+                // Rotate image every 3 days based on current date
+                const dayIndex = Math.floor(Date.now() / (3 * 24 * 60 * 60 * 1000));
+                const activeImage = variantImages.length > 0
+                  ? variantImages[dayIndex % variantImages.length]
+                  : null;
+
+                return (
+                  <div key={varIdx} className="rounded-2xl overflow-hidden shadow-ambient bg-surface flex min-h-[120px]">
+                    {/* Left: rotating image */}
+                    <div className="w-36 shrink-0 relative bg-muted">
+                      {activeImage ? (
+                        <Image
+                          src={activeImage}
+                          alt={`${varIdx + 1}-variant`}
+                          fill
+                          className="object-cover"
+                          sizes="144px"
+                        />
+                      ) : (
+                        <div className="h-full flex items-center justify-center">
+                          <Hotel className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    {/* Right: city hotel names + price + details */}
+                    <div className="flex-1 p-3 min-w-0 flex flex-col">
+                      <div className="space-y-0.5 min-w-0">
+                        {variant.hotels.map((entry, eIdx) => (
+                          <p key={eIdx} className="text-xs text-foreground leading-tight truncate">
+                            <span className="font-bold">{entry.city}:</span>{' '}
+                            <span>{entry.name}</span>
+                          </p>
+                        ))}
+                      </div>
+                      <div className="mt-1.5">
+                        <p className="text-primary text-base font-bold">${variant.price.toLocaleString()}</p>
+                        <p className="text-muted-foreground text-[10px]">{t.tours.comboTotalPrice}</p>
+                      </div>
+                      <div className="mt-auto pt-1.5">
+                        <button
+                          onClick={() => setShowComboDetails(varIdx)}
+                          className="text-[11px] font-semibold text-primary hover:underline"
+                        >
+                          {t.tours.comboDetails} →
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Combo Hotel Details Sheet */}
+        {showComboDetails !== null && comboHotels[showComboDetails] && (
+          <Sheet open={showComboDetails !== null} onOpenChange={() => setShowComboDetails(null)}>
+            <SheetContent side="bottom" className="rounded-t-2xl max-h-[85vh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle>{t.tours.comboHotelsTitle}</SheetTitle>
+              </SheetHeader>
+              <div className="py-4 space-y-3">
+                {comboHotels[showComboDetails].hotels.map((entry, eIdx) => (
+                  <div key={eIdx} className="rounded-2xl overflow-hidden shadow-ambient bg-surface flex min-h-[100px]">
+                    <div className="w-28 shrink-0 relative bg-muted">
+                      {entry.image_url ? (
+                        <Image
+                          src={entry.image_url}
+                          alt={entry.name}
+                          fill
+                          className="object-cover"
+                          sizes="112px"
+                        />
+                      ) : (
+                        <div className="h-full flex items-center justify-center">
+                          <Hotel className="h-6 w-6 text-muted-foreground" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 p-3 min-w-0 flex flex-col">
+                      <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">{entry.city}</p>
+                      <h4 className="font-bold text-sm text-foreground leading-tight mt-0.5">{entry.name}</h4>
+                      {entry.booking_url && (
+                        <a
+                          href={entry.booking_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-auto pt-1.5 text-[11px] font-semibold text-primary hover:underline inline-block"
+                        >
+                          {t.tours.hotelInfo} →
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SheetContent>
+          </Sheet>
+        )}
+
+        {/* Hotels (non-combo) */}
+        {!isCombo && hotels.length > 0 ? (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.hotels}</h3>
             <div className="space-y-3">
