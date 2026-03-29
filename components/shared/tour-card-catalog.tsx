@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Star, MapPin, Zap, Flame } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { placeholderImage, formatComboCities } from '@/lib/utils';
+import { placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useFollows } from '@/hooks/use-follows';
@@ -43,11 +43,9 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
     if (tour.tour_type === 'domestic') {
       return [tour.district, tour.region || 'O\'zbekiston'].filter(Boolean).join(', ');
     }
-    // Combo tour with destinations
-    if (tour.destinations && tour.destinations.length > 1) {
-      return formatComboCities(tour.destinations);
-    }
-    return tour.city || tour.country;
+    const parts = [tour.city, ...(tour.destinations ?? [])].filter((c): c is string => Boolean(c));
+    const unique = [...new Set(parts.map(p => p.includes(' - ') ? p.split(' - ')[1] || p : p))];
+    return unique.length > 0 ? unique.join(', ') : (tour.country || '');
   })();
   const maxStars = getMaxHotelStars(tour);
   const liked = isFavorite(tour.id);

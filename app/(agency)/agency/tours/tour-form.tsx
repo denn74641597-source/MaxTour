@@ -203,11 +203,16 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   const [coverKey, setCoverKey] = useState(0);
   // Combo tour: extra country+city pairs
   const [comboDestinations, setComboDestinations] = useState<{ country: string; city: string }[]>(() => {
-    // Parse from destinations if editing (stored as "Country - City")
+    // Parse from destinations if editing (now stored as plain city names)
     const dests = initialData?.destinations ?? [];
-    return dests
-      .filter(d => d.includes(' - '))
-      .map(d => { const [country, ...rest] = d.split(' - '); return { country, city: rest.join(' - ') }; });
+    // Legacy format "Country - City" or new format (just city name)
+    return dests.map(d => {
+      if (d.includes(' - ')) {
+        const [country, ...rest] = d.split(' - ');
+        return { country, city: rest.join(' - ') };
+      }
+      return { country: '', city: d };
+    });
   });
 
   const isEditing = !!tourId;
@@ -399,7 +404,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       hotels: hotels,
       combo_hotels: isCombo ? comboHotels : [],
       destinations: isCombo
-        ? comboDestinations.filter(d => d.country).map(d => `${d.country} - ${d.city || ''}`.replace(/ - $/, ''))
+        ? comboDestinations.filter(d => d.city).map(d => d.city)
         : destinations,
       airline: tourType === 'international' ? (data.airline || null) : null,
       extra_charges: [
@@ -1137,14 +1142,16 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                   <button
                     type="button"
                     onClick={() => {
-                      const cities = comboDestinations.filter(d => d.city).map(d => d.city);
-                      if (cities.length === 0) {
+                      const mainCity = watch('city');
+                      const extraCities = comboDestinations.filter(d => d.city).map(d => d.city);
+                      const allCities = [mainCity, ...extraCities].filter((c): c is string => Boolean(c));
+                      if (allCities.length === 0) {
                         toast.error('Avval shaharlarni tanlang');
                         return;
                       }
                       setComboHotels((prev) => [...prev, {
                         price: 0,
-                        hotels: cities.map(city => ({ city, name: '', booking_url: null, image_url: null })),
+                        hotels: allCities.map(city => ({ city, name: '', booking_url: null, image_url: null })),
                       }]);
                     }}
                     className="text-xs text-primary font-semibold flex items-center gap-1 hover:underline"

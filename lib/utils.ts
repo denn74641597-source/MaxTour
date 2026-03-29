@@ -75,12 +75,16 @@ export function formatComboDestinations(destinations: string[]): string {
     .join(' - ');
 }
 
-/** Format combo destinations showing only city names, comma-separated */
+/** Format combo destinations showing only city names, comma-separated.
+ * Supports both legacy "Country - City" format and new plain city name format. */
 export function formatComboCities(destinations: string[]): string {
   const cities = destinations
     .map(d => {
-      const parts = d.split(' - ');
-      return parts[1] || parts[0] || '';
+      if (d.includes(' - ')) {
+        const parts = d.split(' - ');
+        return parts[1] || parts[0] || '';
+      }
+      return d;
     })
     .filter(Boolean);
   return cities.join(', ');
