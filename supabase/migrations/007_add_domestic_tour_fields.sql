@@ -14,12 +14,36 @@ ALTER TABLE public.tours ADD COLUMN IF NOT EXISTS guide_phone text;
 -- country is already nullable in most setups, but ensure it stays that way
 
 -- Add check constraint for tour_type
-ALTER TABLE public.tours ADD CONSTRAINT tours_tour_type_check
-  CHECK (tour_type IN ('international', 'domestic'));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'tours_tour_type_check'
+      AND conrelid = 'public.tours'::regclass
+  ) THEN
+    ALTER TABLE public.tours
+      ADD CONSTRAINT tours_tour_type_check
+      CHECK (tour_type IN ('international', 'domestic'));
+  END IF;
+END
+$$;
 
 -- Add check constraint for domestic_category
-ALTER TABLE public.tours ADD CONSTRAINT tours_domestic_category_check
-  CHECK (domestic_category IS NULL OR domestic_category IN ('excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure'));
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'tours_domestic_category_check'
+      AND conrelid = 'public.tours'::regclass
+  ) THEN
+    ALTER TABLE public.tours
+      ADD CONSTRAINT tours_domestic_category_check
+      CHECK (domestic_category IS NULL OR domestic_category IN ('excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure'));
+  END IF;
+END
+$$;
 
 COMMENT ON COLUMN public.tours.tour_type IS 'Type of tour: international or domestic (ichki turizm)';
 COMMENT ON COLUMN public.tours.domestic_category IS 'Category for domestic tours: excursion, nature, historical, pilgrimage, recreation, adventure';
