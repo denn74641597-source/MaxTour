@@ -515,6 +515,13 @@ export interface Translations {
     googleMapsUrlPlaceholder: string;
     saveProfile: string;
     profileSaved: string;
+    legalInfo: string;
+    inn: string;
+    innPlaceholder: string;
+    responsiblePerson: string;
+    responsiblePersonPlaceholder: string;
+    uploadGuvohnoma: string;
+    uploadLitsenziya: string;
   };
   agencyView: {
     approved: string;
@@ -616,6 +623,14 @@ export interface Translations {
     resendCode: string;
     resendIn: string;
     changeEmail: string;
+    loginHint: string;
+    emailOrPhone: string;
+    emailOrPhonePlaceholder: string;
+    tabUser: string;
+    tabAgency: string;
+    registerHint: string;
+    profileIncomplete: string;
+    profileIncompleteHint: string;
   };
   analytics: {
     title: string;

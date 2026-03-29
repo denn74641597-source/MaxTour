@@ -566,6 +566,13 @@ export const uz: Translations = {
     googleMapsUrlPlaceholder: 'https://maps.google.com/...',
     saveProfile: 'Profilni saqlash',
     profileSaved: 'Profil muvaffaqiyatli saqlandi',
+    legalInfo: 'Yuridik ma\'lumotlar',
+    inn: 'INN (soliq raqami)',
+    innPlaceholder: 'Masalan: 123456789',
+    responsiblePerson: 'Mas\'ul shaxs (F.I.O.)',
+    responsiblePersonPlaceholder: 'To\'liq ism-sharif',
+    uploadGuvohnoma: 'Guvohnoma (PDF)',
+    uploadLitsenziya: 'Litsenziya (PDF)',
   },
 
   agencyView: {
@@ -659,7 +666,7 @@ export const uz: Translations = {
     responsiblePerson: 'Mas\'ul shaxs (F.I.O.)',
     responsiblePersonPlaceholder: 'To\'liq ism-sharif',
     uploadLicense: 'Litsenziya (PDF)',
-    uploadCertificate: 'Sertifikat (PDF)',
+    uploadCertificate: 'Guvohnoma (PDF)',
     email: 'Email manzil',
     emailPlaceholder: 'example@mail.com',
     otpCode: 'Tasdiqlash kodi',
@@ -674,6 +681,14 @@ export const uz: Translations = {
     resendCode: 'Kodni qayta yuborish',
     resendIn: 'Qayta yuborish:',
     changeEmail: 'Emailni o\'zgartirish',
+    loginHint: 'Hisobingizga kirish uchun telefon yoki email va parolingizni kiriting',
+    emailOrPhone: 'Email yoki telefon',
+    emailOrPhonePlaceholder: 'Email yoki telefon raqamingiz',
+    tabUser: 'Foydalanuvchi',
+    tabAgency: 'Agentlik',
+    registerHint: 'Foydalanuvchi yoki agentlik sifatida ro\'yxatdan o\'ting',
+    profileIncomplete: 'Profilni to\'ldiring',
+    profileIncompleteHint: 'Tur yaratish uchun avval profilni oxirigacha to\'ldiring',
   },
 
   // ─── Metadata ───

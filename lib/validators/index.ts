@@ -21,6 +21,8 @@ export const agencyProfileSchema = z.object({
   city: z.string().optional(),
   country: z.string().optional(),
   google_maps_url: z.string().url('Enter a valid URL').optional().or(z.literal('')),
+  inn: z.string().optional(),
+  responsible_person: z.string().optional(),
 });
 
 export type AgencyProfileData = z.infer<typeof agencyProfileSchema>;

@@ -3,8 +3,8 @@
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 import { getMyAgency } from './queries';
 
-function isProfilePayloadComplete(payload: { name: string; description: string | null; phone: string | null; logo_url: string | null; address: string | null; city: string | null }) {
-  return !!(payload.name && payload.description && payload.phone && payload.logo_url && payload.address && payload.city);
+function isProfilePayloadComplete(payload: { name: string; description: string | null; phone: string | null; logo_url: string | null; address: string | null; city: string | null; inn: string | null; responsible_person: string | null }) {
+  return !!(payload.name && payload.description && payload.phone && payload.logo_url && payload.address && payload.city && payload.inn && payload.responsible_person);
 }
 
 export async function upsertAgencyProfileAction(payload: {
@@ -20,6 +20,10 @@ export async function upsertAgencyProfileAction(payload: {
   city: string | null;
   country: string;
   google_maps_url: string | null;
+  inn: string | null;
+  responsible_person: string | null;
+  license_pdf_url: string | null;
+  certificate_pdf_url: string | null;
 }) {
   const supabase = await createServerSupabaseClient();
 

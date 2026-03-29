@@ -566,6 +566,13 @@ export const ru: Translations = {
     googleMapsUrlPlaceholder: 'https://maps.google.com/...',
     saveProfile: 'Сохранить профиль',
     profileSaved: 'Профиль успешно сохранён',
+    legalInfo: 'Юридическая информация',
+    inn: 'ИНН (налоговый номер)',
+    innPlaceholder: 'Например: 123456789',
+    responsiblePerson: 'Ответственное лицо (Ф.И.О.)',
+    responsiblePersonPlaceholder: 'Полное имя',
+    uploadGuvohnoma: 'Свидетельство (PDF)',
+    uploadLitsenziya: 'Лицензия (PDF)',
   },
 
   agencyView: {
@@ -659,7 +666,7 @@ export const ru: Translations = {
     responsiblePerson: 'Ответственное лицо (Ф.И.О.)',
     responsiblePersonPlaceholder: 'Полное имя',
     uploadLicense: 'Лицензия (PDF)',
-    uploadCertificate: 'Сертификат (PDF)',
+    uploadCertificate: 'Свидетельство (PDF)',
     email: 'Электронная почта',
     emailPlaceholder: 'example@mail.com',
     otpCode: 'Код подтверждения',
@@ -674,6 +681,14 @@ export const ru: Translations = {
     resendCode: 'Отправить код повторно',
     resendIn: 'Повторная отправка:',
     changeEmail: 'Изменить email',
+    loginHint: 'Введите телефон или email и пароль для входа',
+    emailOrPhone: 'Email или телефон',
+    emailOrPhonePlaceholder: 'Ваш email или номер телефона',
+    tabUser: 'Пользователь',
+    tabAgency: 'Агентство',
+    registerHint: 'Зарегистрируйтесь как пользователь или агентство',
+    profileIncomplete: 'Заполните профиль',
+    profileIncompleteHint: 'Для создания тура необходимо сначала заполнить профиль',
   },
 
   // ─── Metadata ───

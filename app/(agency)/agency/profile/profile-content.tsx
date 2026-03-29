@@ -22,11 +22,14 @@ import {
   ShieldCheck,
   X,
   ExternalLink,
+  FileText,
+  Upload,
 } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from '@/lib/i18n';
 import { upsertAgencyProfileAction, getMyAgencyAction } from '@/features/agencies/actions';
+import { uploadPdfAction } from '@/features/upload/actions';
 import Image from 'next/image';
 import { placeholderImage, slugify } from '@/lib/utils';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
@@ -40,6 +43,8 @@ interface AgencyProfileContentProps {
 
 export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProps) {
   const [logoUrl, setLogoUrl] = useState(initialAgency?.logo_url ?? '');
+  const [certificatePdfUrl, setCertificatePdfUrl] = useState(initialAgency?.certificate_pdf_url ?? '');
+  const [licensePdfUrl, setLicensePdfUrl] = useState(initialAgency?.license_pdf_url ?? '');
   const [mode, setMode] = useState<PageMode>(initialAgency ? 'view' : 'form');
   const [agency, setAgency] = useState<Agency | null>(initialAgency);
   const { t } = useTranslation();
@@ -56,6 +61,8 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
         city: agency.city ?? '',
         country: agency.country ?? 'Uzbekistan',
         google_maps_url: agency.google_maps_url ?? '',
+        inn: agency.inn ?? '',
+        responsible_person: agency.responsible_person ?? '',
       }
     : { country: 'Uzbekistan' };
 
@@ -75,6 +82,8 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
     if (data) {
       setAgency(data as Agency);
       setLogoUrl(data.logo_url ?? '');
+      setCertificatePdfUrl(data.certificate_pdf_url ?? '');
+      setLicensePdfUrl(data.license_pdf_url ?? '');
       reset({
         name: data.name,
         description: data.description ?? '',
@@ -86,6 +95,8 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
         city: data.city ?? '',
         country: data.country ?? 'Uzbekistan',
         google_maps_url: data.google_maps_url ?? '',
+        inn: data.inn ?? '',
+        responsible_person: data.responsible_person ?? '',
       });
       setMode('view');
     } else {
@@ -106,8 +117,12 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
         city: agency.city ?? '',
         country: agency.country ?? 'Uzbekistan',
         google_maps_url: agency.google_maps_url ?? '',
+        inn: agency.inn ?? '',
+        responsible_person: agency.responsible_person ?? '',
       });
       setLogoUrl(agency.logo_url ?? '');
+      setCertificatePdfUrl(agency.certificate_pdf_url ?? '');
+      setLicensePdfUrl(agency.license_pdf_url ?? '');
     }
     setMode('form');
   }
@@ -127,6 +142,10 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
       city: data.city || null,
       country: data.country || 'Uzbekistan',
       google_maps_url: data.google_maps_url || null,
+      inn: data.inn || null,
+      responsible_person: data.responsible_person || null,
+      license_pdf_url: licensePdfUrl || null,
+      certificate_pdf_url: certificatePdfUrl || null,
     });
     if (result.error) {
       toast.error(result.error);
@@ -339,6 +358,56 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
           </Card>
         )}
 
+        {/* Legal Info */}
+        {(agency.inn || agency.responsible_person || agency.certificate_pdf_url || agency.license_pdf_url) && (
+          <Card className="overflow-hidden">
+            <CardContent className="p-4">
+              <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                <FileText className="h-4 w-4 text-primary" />
+                {t.agencyProfileForm.legalInfo}
+              </h3>
+              <div className="space-y-2.5">
+                {agency.inn && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-container-low">
+                    <span className="text-xs text-muted-foreground w-20 shrink-0">{t.agencyProfileForm.inn}</span>
+                    <span className="text-sm font-medium">{agency.inn}</span>
+                  </div>
+                )}
+                {agency.responsible_person && (
+                  <div className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-container-low">
+                    <span className="text-xs text-muted-foreground w-20 shrink-0">{t.agencyProfileForm.responsiblePerson}</span>
+                    <span className="text-sm font-medium">{agency.responsible_person}</span>
+                  </div>
+                )}
+                {agency.certificate_pdf_url && (
+                  <a
+                    href={agency.certificate_pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl bg-surface-container-low hover:bg-muted transition-colors"
+                  >
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium">{t.agencyProfileForm.uploadGuvohnoma}</span>
+                    <ExternalLink className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
+                  </a>
+                )}
+                {agency.license_pdf_url && (
+                  <a
+                    href={agency.license_pdf_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 p-2.5 rounded-xl bg-surface-container-low hover:bg-muted transition-colors"
+                  >
+                    <FileText className="h-4 w-4 text-primary" />
+                    <span className="text-xs font-medium">{t.agencyProfileForm.uploadLitsenziya}</span>
+                    <ExternalLink className="h-3.5 w-3.5 ml-auto text-muted-foreground" />
+                  </a>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Meta Info */}
         <Card className="overflow-hidden">
           <CardContent className="p-4">
@@ -459,6 +528,95 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
             <div className="space-y-2">
               <Label htmlFor="google_maps_url">{t.agencyProfileForm.googleMapsUrl}</Label>
               <Input id="google_maps_url" placeholder={t.agencyProfileForm.googleMapsUrlPlaceholder} {...register('google_maps_url')} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Legal Info */}
+        <Card>
+          <CardContent className="p-4 space-y-4">
+            <h2 className="font-semibold text-sm">{t.agencyProfileForm.legalInfo}</h2>
+
+            <div className="space-y-2">
+              <Label htmlFor="inn">{t.agencyProfileForm.inn}</Label>
+              <Input id="inn" placeholder={t.agencyProfileForm.innPlaceholder} {...register('inn')} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="responsible_person">{t.agencyProfileForm.responsiblePerson}</Label>
+              <Input id="responsible_person" placeholder={t.agencyProfileForm.responsiblePersonPlaceholder} {...register('responsible_person')} />
+            </div>
+
+            {/* Guvohnoma (Certificate) PDF */}
+            <div className="space-y-2">
+              <Label>{t.agencyProfileForm.uploadGuvohnoma}</Label>
+              {certificatePdfUrl ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-surface-container-low">
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
+                  <a href={certificatePdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate flex-1">
+                    {t.agencyProfileForm.uploadGuvohnoma}
+                  </a>
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setCertificatePdfUrl('')}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary/50 transition-colors">
+                  <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                  <span className="text-xs text-muted-foreground">PDF</span>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const fd = new FormData();
+                      fd.append('file', file);
+                      fd.append('folder', 'certificates');
+                      const res = await uploadPdfAction(fd);
+                      if (res.url) setCertificatePdfUrl(res.url);
+                      else toast.error(res.error || 'Upload failed');
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+
+            {/* Litsenziya (License) PDF */}
+            <div className="space-y-2">
+              <Label>{t.agencyProfileForm.uploadLitsenziya}</Label>
+              {licensePdfUrl ? (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-surface-container-low">
+                  <FileText className="h-4 w-4 text-primary shrink-0" />
+                  <a href={licensePdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline truncate flex-1">
+                    {t.agencyProfileForm.uploadLitsenziya}
+                  </a>
+                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setLicensePdfUrl('')}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center border-2 border-dashed rounded-lg p-4 cursor-pointer hover:border-primary/50 transition-colors">
+                  <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                  <span className="text-xs text-muted-foreground">PDF</span>
+                  <input
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const fd = new FormData();
+                      fd.append('file', file);
+                      fd.append('folder', 'licenses');
+                      const res = await uploadPdfAction(fd);
+                      if (res.url) setLicensePdfUrl(res.url);
+                      else toast.error(res.error || 'Upload failed');
+                    }}
+                  />
+                </label>
+              )}
             </div>
           </CardContent>
         </Card>

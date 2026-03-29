@@ -30,7 +30,9 @@ export function isAgencyProfileComplete(agency: Agency): boolean {
     agency.phone &&
     agency.logo_url &&
     agency.address &&
-    agency.city
+    agency.city &&
+    agency.inn &&
+    agency.responsible_person
   );
 }
 
