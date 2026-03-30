@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { leadFormSchema } from '@/lib/validators';
 
 export async function POST(request: NextRequest) {
@@ -37,11 +38,13 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Lead API error:', error);
+      await notifySystemError({ source: 'API: /api/leads', message: error.message });
       return NextResponse.json({ error: 'Failed to create lead' }, { status: 500 });
     }
 
     return NextResponse.json({ success: true }, { status: 201 });
-  } catch {
+  } catch (e) {
+    await notifySystemError({ source: 'API: /api/leads', message: e instanceof Error ? e.message : 'Unknown error' });
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

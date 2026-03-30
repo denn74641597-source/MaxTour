@@ -1,6 +1,7 @@
 import { getFeaturedTours, getTours, getPopularTours, getPromotedTours } from '@/features/tours/queries';
 import { getVerifiedAgencies, getTopRatedAgencies } from '@/features/agencies/queries';
 import { getMyAgency } from '@/features/agencies/queries';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { HomeContent } from './home/home-content';
 import type { Tour } from '@/types';
 
@@ -30,6 +31,7 @@ export default async function HomePage() {
     currentAgencyId = myAgency?.id;
   } catch (error) {
     console.error('HomePage data fetch error:', error);
+    await notifySystemError({ source: 'Page: HomePage', message: error instanceof Error ? error.message : 'Data fetch error' });
   }
 
   return (

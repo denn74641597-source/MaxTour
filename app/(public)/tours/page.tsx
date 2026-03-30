@@ -1,4 +1,5 @@
 import { getTours, getActivePromotionsByType } from '@/features/tours/queries';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { ToursContent } from './tours-content';
 import type { TourFilters } from '@/types';
 
@@ -30,6 +31,7 @@ export default async function ToursPage({ searchParams }: Props) {
     ]);
   } catch (error) {
     console.error('ToursPage data fetch error:', error);
+    await notifySystemError({ source: 'Page: ToursPage', message: error instanceof Error ? error.message : 'Data fetch error' });
   }
 
   return <ToursContent tours={tours} promotions={promotions} />;

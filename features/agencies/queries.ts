@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import type { Agency, Review } from '@/types';
 
 /**
@@ -48,6 +49,7 @@ export async function getAgencyBySlug(slug: string): Promise<Agency | null> {
 
   if (error) {
     console.error('getAgencyBySlug error:', error);
+    await notifySystemError({ source: 'Query: getAgencyBySlug', message: error.message, extra: `Slug: ${slug}` });
     return null;
   }
   return data;
@@ -66,6 +68,7 @@ export async function getVerifiedAgencies(limit = 10): Promise<Agency[]> {
 
   if (error) {
     console.error('getVerifiedAgencies error:', error);
+    await notifySystemError({ source: 'Query: getVerifiedAgencies', message: error.message });
     return [];
   }
   return data ?? [];
@@ -81,6 +84,7 @@ export async function getAgencyFollowersCount(agencyId: string): Promise<number>
 
   if (error) {
     console.error('getAgencyFollowersCount error:', error);
+    await notifySystemError({ source: 'Query: getAgencyFollowersCount', message: error.message, extra: `Agency: ${agencyId}` });
     return 0;
   }
   return count ?? 0;
@@ -100,6 +104,7 @@ export async function getTopRatedAgencies(limit = 10): Promise<Agency[]> {
 
   if (error) {
     console.error('getTopRatedAgencies error:', error);
+    await notifySystemError({ source: 'Query: getTopRatedAgencies', message: error.message });
     return [];
   }
   return data ?? [];
@@ -117,6 +122,7 @@ export async function getAgencyReviews(agencyId: string): Promise<Review[]> {
 
   if (error) {
     console.error('getAgencyReviews error:', error);
+    await notifySystemError({ source: 'Query: getAgencyReviews', message: error.message, extra: `Agency: ${agencyId}` });
     return [];
   }
   return data ?? [];

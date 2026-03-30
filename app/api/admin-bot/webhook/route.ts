@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
-import { editCallbackMessage } from '@/lib/telegram/admin-bot';
+import { editCallbackMessage, notifySystemError } from '@/lib/telegram/admin-bot';
 
 /**
  * Telegram Bot Webhook — handles inline button callbacks from admin.
@@ -168,6 +168,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (err) {
     console.error('Admin bot webhook error:', err);
+    await notifySystemError({ source: 'API: /api/admin-bot/webhook', message: err instanceof Error ? err.message : 'Unknown error' });
     return NextResponse.json({ ok: true });
   }
 }

@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { getMyAgency } from './queries';
 
 function isProfilePayloadComplete(payload: { name: string; description: string | null; phone: string | null; logo_url: string | null; address: string | null; city: string | null; inn: string | null; responsible_person: string | null }) {
@@ -45,7 +46,10 @@ export async function upsertAgencyProfileAction(payload: {
       .from('agencies')
       .update({ ...payload, updated_at: new Date().toISOString() })
       .eq('id', existing.id);
-    if (error) return { error: error.message };
+    if (error) {
+      await notifySystemError({ source: 'Action: upsertAgencyProfileAction (update)', message: error.message });
+      return { error: error.message };
+    }
 
     // Auto-create verification request when profile becomes complete
     if (isProfilePayloadComplete(payload)) {
@@ -78,7 +82,10 @@ export async function upsertAgencyProfileAction(payload: {
     const { error } = await supabase
       .from('agencies')
       .insert({ ...payload, owner_id: user.id });
-    if (error) return { error: error.message };
+    if (error) {
+      await notifySystemError({ source: 'Action: upsertAgencyProfileAction (insert)', message: error.message });
+      return { error: error.message };
+    }
 
     // Auto-create verification request if profile is already complete
     if (isProfilePayloadComplete(payload)) {
@@ -148,6 +155,7 @@ export async function submitReview(agencyId: string, rating: number, comment: st
 
   if (error) {
     console.error('Review submission error:', error);
+    await notifySystemError({ source: 'Action: submitReview', message: error.message, extra: `Agency: ${agencyId}` });
     return { success: false, error: 'Failed to submit review' };
   }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,12 +20,14 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error('Track insert error:', error);
+      await notifySystemError({ source: 'API: /api/track', message: error.message });
       return NextResponse.json({ error: 'Failed to track' }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true });
   } catch (e) {
     console.error('Track API error:', e);
+    await notifySystemError({ source: 'API: /api/track', message: e instanceof Error ? e.message : 'Unknown error' });
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }

@@ -16,6 +16,28 @@ interface InlineButton {
   callback_data: string;
 }
 
+// ─── Error deduplication (in-memory, 1 hour TTL) ───
+const sentErrors = new Map<string, number>();
+const DEDUPE_TTL = 60 * 60 * 1000; // 1 hour
+
+function makeErrorKey(source: string, message: string): string {
+  return `${source}::${message.slice(0, 200)}`;
+}
+
+function isDuplicate(key: string): boolean {
+  const lastSent = sentErrors.get(key);
+  if (lastSent && Date.now() - lastSent < DEDUPE_TTL) return true;
+  sentErrors.set(key, Date.now());
+  // Cleanup old keys to avoid memory leak
+  if (sentErrors.size > 500) {
+    const now = Date.now();
+    for (const [k, v] of sentErrors) {
+      if (now - v > DEDUPE_TTL) sentErrors.delete(k);
+    }
+  }
+  return false;
+}
+
 async function sendMessage(
   chatId: string,
   text: string,
@@ -356,4 +378,48 @@ export async function editCallbackMessage(
     : '\n\n❌ <b>RAD ETILDI</b>';
 
   await editMessageText(chatId, messageId, originalText + statusLine);
+}
+
+// ─── System error notification (with deduplication) ───
+
+function sanitize(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+/**
+ * Send a system error notification to admin via Telegram.
+ * Same error (by source + message) is sent only once per hour.
+ * Never throws — safe to call anywhere.
+ */
+export async function notifySystemError(opts: {
+  source: string;       // e.g. "API /api/leads", "Action submitLead", "Client /tours"
+  message: string;      // error message
+  stack?: string;       // optional stack trace (truncated)
+  userId?: string;      // optional user ID
+  extra?: string;       // optional additional context
+}) {
+  try {
+    const key = makeErrorKey(opts.source, opts.message);
+    if (isDuplicate(key)) return;
+
+    let text = `🚨 <b>Xatolik!</b>\n\n`;
+    text += `📍 <b>${sanitize(opts.source)}</b>\n`;
+    text += `❌ ${sanitize(opts.message)}\n`;
+    if (opts.userId) text += `👤 User: <code>${sanitize(opts.userId)}</code>\n`;
+    if (opts.extra) text += `📋 ${sanitize(opts.extra)}\n`;
+    if (opts.stack) {
+      const shortStack = opts.stack.split('\n').slice(0, 4).join('\n');
+      text += `\n<pre>${sanitize(shortStack)}</pre>`;
+    }
+
+    // Trim to Telegram max (4096 chars)
+    if (text.length > 4000) text = text.slice(0, 4000) + '\n...';
+
+    await sendMessage(getAdminChatId(), text);
+  } catch {
+    // Never crash the app because of error reporting
+  }
 }

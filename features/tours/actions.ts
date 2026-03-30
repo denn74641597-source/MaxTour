@@ -1,7 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
-import { notifyTourPending } from '@/lib/telegram/admin-bot';
+import { notifyTourPending, notifySystemError } from '@/lib/telegram/admin-bot';
 
 function extractStoragePath(url: string): string | null {
   const marker = '/storage/v1/object/public/images/';
@@ -82,7 +82,10 @@ export async function deleteTourAction(tourId: string) {
 
   // Delete the tour itself
   const { error } = await supabase.from('tours').delete().eq('id', tourId);
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: deleteTourAction', message: error.message, extra: `Tour: ${tourId}` });
+    return { error: error.message };
+  }
 
   return { success: true };
 }

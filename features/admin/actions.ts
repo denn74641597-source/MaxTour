@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 
 export async function updateTourStatusAction(tourId: string, status: string) {
   const validStatuses = ['draft', 'pending', 'published', 'archived'];
@@ -15,6 +16,7 @@ export async function updateTourStatusAction(tourId: string, status: string) {
     .eq('id', tourId);
 
   if (error) {
+    await notifySystemError({ source: 'Action: updateTourStatusAction', message: error.message, extra: `Tour: ${tourId}, Status: ${status}` });
     return { error: error.message };
   }
 
@@ -29,6 +31,7 @@ export async function updateAgencyApprovalAction(agencyId: string, approved: boo
     .eq('id', agencyId);
 
   if (error) {
+    await notifySystemError({ source: 'Action: updateAgencyApprovalAction', message: error.message, extra: `Agency: ${agencyId}` });
     return { error: error.message };
   }
 
@@ -60,7 +63,10 @@ export async function approveCoinRequest(requestId: string) {
     .from('agencies')
     .update({ maxcoin_balance: currentBalance + req.coins })
     .eq('id', req.agency_id);
-  if (balanceError) return { error: balanceError.message };
+  if (balanceError) {
+    await notifySystemError({ source: 'Action: approveCoinRequest', message: balanceError.message, extra: `Request: ${requestId}` });
+    return { error: balanceError.message };
+  }
 
   // Mark request approved
   await supabase
@@ -88,6 +94,9 @@ export async function rejectCoinRequest(requestId: string) {
     .update({ status: 'rejected', resolved_at: new Date().toISOString() })
     .eq('id', requestId);
 
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: rejectCoinRequest', message: error.message, extra: `Request: ${requestId}` });
+    return { error: error.message };
+  }
   return { success: true };
 }

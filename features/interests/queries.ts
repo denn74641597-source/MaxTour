@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import type { TourInterest } from '@/types';
 
 /** Fetch interests (favorites) for an agency with tour & profile info */
@@ -12,6 +13,7 @@ export async function getInterestsByAgency(agencyId: string): Promise<TourIntere
 
   if (error) {
     console.error('getInterestsByAgency error:', error);
+    await notifySystemError({ source: 'Query: getInterestsByAgency', message: error.message, extra: `Agency: ${agencyId}` });
     return [];
   }
   return data ?? [];

@@ -1,7 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
-import { notifyCoinRequest } from '@/lib/telegram/admin-bot';
+import { notifyCoinRequest, notifySystemError } from '@/lib/telegram/admin-bot';
 import type { PromotionPlacement } from '@/types';
 
 const COIN_PRICE_UZS = 15000; // UZS per coin
@@ -31,7 +31,10 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
     price_uzs: priceUzs,
     status: 'pending',
   }).select('id').single();
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: purchaseMaxCoins', message: error.message, extra: `Agency: ${agencyId}` });
+    return { error: error.message };
+  }
 
   // Notify admin via Telegram bot
   try {
@@ -109,7 +112,10 @@ export async function promoteTour(agencyId: string, tourId: string, tierId: stri
     .from('agencies')
     .update({ maxcoin_balance: balance - tier.coins })
     .eq('id', agencyId);
-  if (balanceError) return { error: balanceError.message };
+  if (balanceError) {
+    await notifySystemError({ source: 'Action: promoteTour', message: balanceError.message, extra: `Agency: ${agencyId}, Tour: ${tourId}` });
+    return { error: balanceError.message };
+  }
 
   const { error: promoError } = await admin.from('tour_promotions').insert({
     tour_id: tourId,
@@ -119,7 +125,10 @@ export async function promoteTour(agencyId: string, tourId: string, tierId: stri
     starts_at: now.toISOString(),
     ends_at: endsAt.toISOString(),
   });
-  if (promoError) return { error: promoError.message };
+  if (promoError) {
+    await notifySystemError({ source: 'Action: promoteTour', message: promoError.message, extra: `Agency: ${agencyId}, Tour: ${tourId}` });
+    return { error: promoError.message };
+  }
 
   const typeMap: Record<PromotionPlacement, string> = {
     featured: 'spend_featured',

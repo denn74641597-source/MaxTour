@@ -1,6 +1,7 @@
 'use server';
 
 import { createAdminClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 
 const ALLOWED_IMAGE_TYPES = [
   'image/jpeg',
@@ -55,7 +56,10 @@ export async function uploadImageAction(formData: FormData) {
       upsert: true,
     });
 
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: uploadImageAction', message: error.message, extra: `File: ${fileName}` });
+    return { error: error.message };
+  }
 
   const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
   return { url: urlData.publicUrl };
@@ -89,7 +93,10 @@ export async function uploadPdfAction(formData: FormData) {
       upsert: true,
     });
 
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: uploadPdfAction', message: error.message, extra: `File: ${fileName}` });
+    return { error: error.message };
+  }
 
   const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
   return { url: urlData.publicUrl };

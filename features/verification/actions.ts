@@ -1,7 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
-import { notifyVerificationRequest } from '@/lib/telegram/admin-bot';
+import { notifyVerificationRequest, notifySystemError } from '@/lib/telegram/admin-bot';
 
 export async function uploadCertificateAction(formData: FormData) {
   const file = formData.get('file') as File;
@@ -28,7 +28,10 @@ export async function uploadCertificateAction(formData: FormData) {
       upsert: true,
     });
 
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: uploadCertificateAction', message: error.message });
+    return { error: error.message };
+  }
 
   const { data: urlData } = supabase.storage.from('images').getPublicUrl(fileName);
   return { url: urlData.publicUrl };
@@ -64,7 +67,10 @@ export async function submitVerificationRequest(agencyId: string, certificateUrl
     .from('verification_requests')
     .insert({ agency_id: agencyId, certificate_url: certificateUrl });
 
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: submitVerificationRequest', message: error.message, extra: `Agency: ${agencyId}` });
+    return { error: error.message };
+  }
   return { success: true };
 }
 
@@ -119,7 +125,10 @@ export async function submitVerificationFormRequest(
     .select('id')
     .single();
 
-  if (error) return { error: error.message };
+  if (error) {
+    await notifySystemError({ source: 'Action: submitVerificationFormRequest', message: error.message, extra: `Agency: ${agencyId}` });
+    return { error: error.message };
+  }
 
   // Notify admin via Telegram bot
   try {
@@ -156,7 +165,10 @@ export async function approveVerificationAction(requestId: string, agencyId: str
     .update({ status: 'approved', updated_at: new Date().toISOString() })
     .eq('id', requestId);
 
-  if (reqError) return { error: reqError.message };
+  if (reqError) {
+    await notifySystemError({ source: 'Action: approveVerificationAction', message: reqError.message, extra: `Request: ${requestId}` });
+    return { error: reqError.message };
+  }
 
   // Only set is_verified (document check). is_approved is managed separately.
   const { error: agencyError } = await admin
@@ -164,7 +176,10 @@ export async function approveVerificationAction(requestId: string, agencyId: str
     .update({ is_verified: true, updated_at: new Date().toISOString() })
     .eq('id', agencyId);
 
-  if (agencyError) return { error: agencyError.message };
+  if (agencyError) {
+    await notifySystemError({ source: 'Action: approveVerificationAction', message: agencyError.message, extra: `Agency: ${agencyId}` });
+    return { error: agencyError.message };
+  }
   return { success: true };
 }
 
@@ -180,7 +195,10 @@ export async function rejectVerificationAction(requestId: string, agencyId: stri
     })
     .eq('id', requestId);
 
-  if (reqError) return { error: reqError.message };
+  if (reqError) {
+    await notifySystemError({ source: 'Action: rejectVerificationAction', message: reqError.message, extra: `Request: ${requestId}` });
+    return { error: reqError.message };
+  }
 
   // Remove verified badge
   const { error: agencyError } = await admin
@@ -188,7 +206,10 @@ export async function rejectVerificationAction(requestId: string, agencyId: stri
     .update({ is_verified: false, updated_at: new Date().toISOString() })
     .eq('id', agencyId);
 
-  if (agencyError) return { error: agencyError.message };
+  if (agencyError) {
+    await notifySystemError({ source: 'Action: rejectVerificationAction', message: agencyError.message, extra: `Agency: ${agencyId}` });
+    return { error: agencyError.message };
+  }
   return { success: true };
 }
 

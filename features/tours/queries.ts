@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { cache } from 'react';
 import type { Tour, TourFilters } from '@/types';
 
@@ -56,6 +57,7 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   const { data, error } = await query.limit(filters?.limit ?? 50);
   if (error) {
     console.error('getTours error:', error);
+    await notifySystemError({ source: 'Query: getTours', message: error.message });
     return [];
   }
   return data ?? [];
@@ -75,6 +77,7 @@ export const getTourBySlug = cache(async (slug: string): Promise<Tour | null> =>
 
   if (error) {
     console.error('getTourBySlug error:', error);
+    await notifySystemError({ source: 'Query: getTourBySlug', message: error.message, extra: `Slug: ${slug}` });
     return null;
   }
   return data;
@@ -93,6 +96,7 @@ export async function getFeaturedTours(): Promise<Tour[]> {
 
   if (error) {
     console.error('getFeaturedTours error:', error);
+    await notifySystemError({ source: 'Query: getFeaturedTours', message: error.message });
     return [];
   }
   return data ?? [];
@@ -110,6 +114,7 @@ export async function getToursByAgency(agencyId: string): Promise<Tour[]> {
 
   if (error) {
     console.error('getToursByAgency error:', error);
+    await notifySystemError({ source: 'Query: getToursByAgency', message: error.message, extra: `Agency: ${agencyId}` });
     return [];
   }
   return data ?? [];
@@ -128,6 +133,7 @@ export async function getSimilarTours(tour: Tour, limit = 4): Promise<Tour[]> {
 
   if (error) {
     console.error('getSimilarTours error:', error);
+    await notifySystemError({ source: 'Query: getSimilarTours', message: error.message });
     return [];
   }
   return data ?? [];
@@ -170,6 +176,7 @@ export async function getToursByCategory(category: string, limit = 20): Promise<
 
   if (error) {
     console.error('getToursByCategory error:', error);
+    await notifySystemError({ source: 'Query: getToursByCategory', message: error.message, extra: `Category: ${category}` });
     return [];
   }
   return data ?? [];
@@ -258,6 +265,7 @@ export async function getPromotedTours(placement: string, limit = 50): Promise<T
 
   if (error) {
     console.error('getPromotedTours error:', error);
+    await notifySystemError({ source: 'Query: getPromotedTours', message: error.message, extra: `Placement: ${placement}` });
     return [];
   }
   return data ?? [];

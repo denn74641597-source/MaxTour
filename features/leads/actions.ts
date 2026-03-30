@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { z } from 'zod';
 
 const serverLeadSchema = z.object({
@@ -15,6 +16,7 @@ export async function submitLead(tourId: string, agencyId: string, formData: Rec
   const parsed = serverLeadSchema.safeParse(formData);
   if (!parsed.success) {
     console.error('Lead validation error:', parsed.error.flatten());
+    await notifySystemError({ source: 'Action: submitLead', message: 'Lead validation error', extra: JSON.stringify(parsed.error.flatten()).slice(0, 300) });
     return { success: false, error: 'Invalid form data' };
   }
 
@@ -47,6 +49,7 @@ export async function submitLead(tourId: string, agencyId: string, formData: Rec
 
   if (error) {
     console.error('Lead submission error:', error);
+    await notifySystemError({ source: 'Action: submitLead', message: error.message });
     return { success: false, error: 'Failed to submit request' };
   }
 
