@@ -67,6 +67,59 @@ export async function submitVerificationRequest(agencyId: string, certificateUrl
   return { success: true };
 }
 
+export async function submitVerificationFormRequest(
+  agencyId: string,
+  formData: {
+    company_name: string;
+    registered_name: string;
+    country: string;
+    office_address: string;
+    work_phone: string;
+    work_email: string;
+    telegram_link: string;
+    instagram_url: string;
+    website_url: string;
+    inn: string;
+    registration_number: string;
+    certificate_pdf_url: string;
+    license_pdf_url: string;
+  }
+) {
+  const supabase = await createServerSupabaseClient();
+
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return { error: 'Not authenticated' };
+
+  const { data: agency } = await supabase
+    .from('agencies')
+    .select('id')
+    .eq('id', agencyId)
+    .eq('owner_id', user.id)
+    .single();
+
+  if (!agency) return { error: 'Agency not found' };
+
+  const { data: existing } = await supabase
+    .from('verification_requests')
+    .select('id, status')
+    .eq('agency_id', agencyId)
+    .eq('status', 'pending')
+    .single();
+
+  if (existing) return { error: 'You already have a pending request' };
+
+  const { error } = await supabase
+    .from('verification_requests')
+    .insert({
+      agency_id: agencyId,
+      certificate_url: formData.certificate_pdf_url || null,
+      form_data: formData,
+    });
+
+  if (error) return { error: error.message };
+  return { success: true };
+}
+
 export async function getMyVerificationRequests(agencyId: string) {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
@@ -89,9 +142,10 @@ export async function approveVerificationAction(requestId: string, agencyId: str
 
   if (reqError) return { error: reqError.message };
 
+  // Only set is_verified (document check). is_approved is managed separately.
   const { error: agencyError } = await admin
     .from('agencies')
-    .update({ is_verified: true, is_approved: true, updated_at: new Date().toISOString() })
+    .update({ is_verified: true, updated_at: new Date().toISOString() })
     .eq('id', agencyId);
 
   if (agencyError) return { error: agencyError.message };
@@ -126,7 +180,7 @@ export async function getAllVerificationRequests() {
   const admin = await createAdminClient();
   const { data } = await admin
     .from('verification_requests')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified)')
+    .select('*, agency:agencies(id, name, slug, logo_url, phone, telegram_username, is_verified, is_approved)')
     .order('created_at', { ascending: false });
 
   return data ?? [];

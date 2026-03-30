@@ -84,12 +84,33 @@ export function AuthScreen() {
     try {
       // Determine if input is email or phone
       const isEmail = identifier.includes('@');
-      const authEmail = isEmail ? identifier.toLowerCase() : phoneToAuthEmail(identifier);
+      let authEmail = isEmail ? identifier.toLowerCase() : phoneToAuthEmail(identifier);
 
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      let { error: signInError } = await supabase.auth.signInWithPassword({
         email: authEmail,
         password: pwd,
       });
+
+      // If phone login failed, try looking up agency email by phone
+      if (signInError && !isEmail) {
+        try {
+          const res = await fetch('/api/auth-phone', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ phone: identifier }),
+          });
+          const data = await res.json();
+          if (data.email) {
+            const retry = await supabase.auth.signInWithPassword({
+              email: data.email,
+              password: pwd,
+            });
+            signInError = retry.error ?? null;
+          }
+        } catch {
+          // ignore lookup error, keep original error
+        }
+      }
 
       if (signInError) {
         setError(t.auth.wrongPassword);

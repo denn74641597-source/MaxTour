@@ -103,7 +103,7 @@ export async function getCoinRequests(status?: string) {
   const supabase = await createAdminClient();
   let query = supabase
     .from('coin_requests')
-    .select('*, agency:agencies(name, slug)')
+    .select('*, agency:agencies(name, slug, phone, telegram_username)')
     .order('created_at', { ascending: false });
 
   if (status) {

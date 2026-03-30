@@ -146,14 +146,14 @@ export function ImageUploader({
               image={cropSrc}
               crop={crop}
               zoom={zoom}
-              aspect={16 / 9}
+              aspect={1}
               onCropChange={setCrop}
               onZoomChange={setZoom}
               onCropComplete={onCropComplete}
             />
           </div>
-          <div className="bg-black/90 p-4 flex items-center justify-between">
-            <Button type="button" variant="ghost" onClick={cancelCrop} className="text-white hover:bg-white/10">
+          <div className="bg-black/90 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] flex items-center justify-between gap-3">
+            <Button type="button" variant="ghost" onClick={cancelCrop} className="text-white hover:bg-white/10 shrink-0">
               <X className="h-5 w-5 mr-1" />
               {t.common.cancel}
             </Button>
@@ -164,9 +164,9 @@ export function ImageUploader({
               step={0.1}
               value={zoom}
               onChange={(e) => setZoom(Number(e.target.value))}
-              className="w-32 accent-primary"
+              className="flex-1 min-w-0 accent-primary"
             />
-            <Button type="button" onClick={confirmCrop} className="bg-primary text-white hover:bg-primary/90">
+            <Button type="button" onClick={confirmCrop} className="bg-primary text-white hover:bg-primary/90 shrink-0">
               <Check className="h-5 w-5 mr-1" />
               {t.common.confirm}
             </Button>
@@ -175,24 +175,18 @@ export function ImageUploader({
       )}
 
       {preview ? (
-        <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={preview} alt="Preview" className="w-full h-full object-cover" />
-          {uploading && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 text-white animate-spin" />
-            </div>
-          )}
+        <div className="flex items-center gap-2 bg-primary/5 rounded-xl px-3 py-2.5">
+          <ImageIcon className="h-4 w-4 text-primary shrink-0" />
+          <span className="flex-1 text-sm text-foreground truncate">{preview.split('/').pop() || 'image'}</span>
+          {uploading && <Loader2 className="h-4 w-4 text-primary animate-spin shrink-0" />}
           {!uploading && (
-            <Button
+            <button
               type="button"
-              variant="destructive"
-              size="icon"
-              className="absolute top-2 right-2 h-7 w-7"
               onClick={handleRemove}
+              className="text-muted-foreground hover:text-red-500 shrink-0"
             >
               <X className="h-4 w-4" />
-            </Button>
+            </button>
           )}
         </div>
       ) : (

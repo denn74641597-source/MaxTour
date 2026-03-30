@@ -70,10 +70,27 @@ export interface Agency {
 
 export type VerificationStatus = 'pending' | 'approved' | 'rejected';
 
+export interface VerificationFormData {
+  company_name: string;
+  registered_name: string;
+  country: string;
+  office_address: string;
+  work_phone: string;
+  work_email: string;
+  telegram_link: string;
+  instagram_url: string;
+  website_url: string;
+  inn: string;
+  registration_number: string;
+  certificate_pdf_url: string;
+  license_pdf_url: string;
+}
+
 export interface VerificationRequest {
   id: string;
   agency_id: string;
-  certificate_url: string;
+  certificate_url: string | null;
+  form_data: VerificationFormData | null;
   status: VerificationStatus;
   admin_note: string | null;
   created_at: string;
@@ -355,5 +372,5 @@ export interface CoinRequest {
   admin_note: string | null;
   created_at: string;
   resolved_at: string | null;
-  agency?: { name: string; slug: string };
+  agency?: { name: string; slug: string; phone: string | null; telegram_username: string | null };
 }

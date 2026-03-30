@@ -1537,11 +1537,29 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               {/* Hotels */}
               {hotels.length > 0 && !isCombo && (
                 <div>
-                  <p className="text-xs font-bold uppercase text-muted-foreground mb-2">{t.agencyTours.accommodationTransport}</p>
+                  <p className="text-xs font-bold uppercase text-muted-foreground mb-2">{t.tours.comboHotels}</p>
                   {hotels.map((h, i) => (
                     <div key={i} className="bg-surface-container-low rounded-xl p-3 mb-2">
-                      <p className="font-semibold text-sm">{h.name} {'⭐'.repeat(h.stars || 0)}</p>
-                      {h.price > 0 && <p className="text-xs text-muted-foreground">{h.price} {isDomestic ? 'UZS' : (watch('currency') || 'USD')}</p>}
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-sm truncate">{h.name || '—'}</h4>
+                        {h.stars && h.stars > 0 ? (
+                          <div className="flex items-center gap-0.5 shrink-0 ml-2">
+                            {Array.from({ length: h.stars }).map((_, si) => (
+                              <Star key={si} className="h-3 w-3 text-amber-400 fill-amber-400" />
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                      {h.price > 0 && <p className="text-xs text-muted-foreground mt-1">{h.price} {isDomestic ? 'UZS' : (watch('currency') || 'USD')}</p>}
+                      {h.images && h.images.length > 0 && (
+                        <div className="flex gap-1.5 mt-2 overflow-x-auto">
+                          {h.images.slice(0, 3).map((img, ii) => (
+                            <div key={ii} className="w-16 h-16 rounded-lg overflow-hidden shrink-0 bg-muted">
+                              <img src={img} alt="" className="w-full h-full object-cover" />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>

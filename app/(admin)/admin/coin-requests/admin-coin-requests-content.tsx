@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Coins, Check, X, Clock, Building2, CheckCircle2 } from 'lucide-react';
+import { Coins, Check, X, Clock, Building2, CheckCircle2, Phone, Send } from 'lucide-react';
 import { approveCoinRequest, rejectCoinRequest } from '@/features/admin/actions';
 import { toast } from 'sonner';
 import type { CoinRequest } from '@/types';
@@ -132,7 +132,26 @@ export function AdminCoinRequestsContent({ requests }: Props) {
                         <div className="h-8 w-8 rounded-lg bg-cyan-100 flex items-center justify-center shrink-0">
                           <Building2 className="h-4 w-4 text-cyan-600" />
                         </div>
-                        <span className="font-medium text-slate-900">{req.agency?.name ?? 'Unknown'}</span>
+                        <div className="min-w-0">
+                          <span className="font-medium text-slate-900 block">{req.agency?.name ?? 'Unknown'}</span>
+                          <div className="flex items-center gap-3 mt-0.5">
+                            {req.agency?.phone && (
+                              <span className="text-[11px] text-slate-500 flex items-center gap-1">
+                                <Phone className="h-3 w-3" />{req.agency.phone}
+                              </span>
+                            )}
+                            {req.agency?.telegram_username && (
+                              <a
+                                href={`https://t.me/${req.agency.telegram_username.replace('@', '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[11px] text-blue-500 flex items-center gap-1 hover:underline"
+                              >
+                                <Send className="h-3 w-3" />@{req.agency.telegram_username.replace('@', '')}
+                              </a>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     </td>
                     <td className="py-3 px-4">

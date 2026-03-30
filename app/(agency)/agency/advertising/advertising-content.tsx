@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Coins, Star, Flame, TrendingUp, Eye, Zap, ShoppingCart, Shield } from 'lucide-react';
+import { Coins, Star, Flame, TrendingUp, Eye, Zap, ShoppingCart, Shield, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { purchaseMaxCoins, promoteTour } from '@/features/maxcoin/actions';
 
@@ -28,6 +28,7 @@ export function AdvertisingContent({
   const [activeTab, setActiveTab] = useState<'main' | 'buy' | 'history'>('main');
   const [sliderValue, setSliderValue] = useState(5);
   const [buying, setBuying] = useState(false);
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
   // Promote state
   const [selectedTour, setSelectedTour] = useState('');
@@ -49,7 +50,7 @@ export function AdvertisingContent({
     if (result.error) {
       toast.error(result.error);
     } else {
-      toast.success(t.maxcoin.requestSent);
+      setShowPurchaseModal(true);
       setActiveTab('main');
     }
   }
@@ -386,6 +387,29 @@ export function AdvertisingContent({
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Purchase Success Modal */}
+      {showPurchaseModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl p-6 max-w-sm w-full text-center shadow-xl">
+            <div className="flex items-center justify-center mb-4">
+              <div className="h-14 w-14 rounded-full bg-emerald-100 flex items-center justify-center">
+                <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+              </div>
+            </div>
+            <h3 className="text-lg font-bold text-foreground mb-2">{t.maxcoin.requestSent}</h3>
+            <p className="text-sm text-muted-foreground mb-5">
+              {t.maxcoin.requestSentDescription}
+            </p>
+            <button
+              onClick={() => setShowPurchaseModal(false)}
+              className="w-full bg-primary text-white font-bold py-3 rounded-xl hover:bg-primary/90 transition-colors text-sm"
+            >
+              OK
+            </button>
+          </div>
         </div>
       )}
     </div>

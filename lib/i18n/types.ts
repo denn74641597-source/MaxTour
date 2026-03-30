@@ -301,6 +301,34 @@ export interface Translations {
     noAgency: string;
     adminNote: string;
     successMessage: string;
+    companyInfo: string;
+    companyName: string;
+    companyNamePlaceholder: string;
+    registeredName: string;
+    registeredNamePlaceholder: string;
+    country: string;
+    countryPlaceholder: string;
+    officeAddress: string;
+    officeAddressPlaceholder: string;
+    workPhone: string;
+    workPhonePlaceholder: string;
+    workEmail: string;
+    workEmailPlaceholder: string;
+    telegramLink: string;
+    telegramLinkPlaceholder: string;
+    instagramUrl: string;
+    instagramUrlPlaceholder: string;
+    websiteUrl: string;
+    websiteUrlPlaceholder: string;
+    legalInfo: string;
+    inn: string;
+    innPlaceholder: string;
+    registrationNumber: string;
+    registrationNumberPlaceholder: string;
+    certificatePdf: string;
+    licensePdf: string;
+    pdfHint: string;
+    allFieldsRequired: string;
   };
   agencyTours: {
     title: string;
@@ -756,6 +784,7 @@ export interface Translations {
     sliderMin: string;
     sliderMax: string;
     requestSent: string;
+    requestSentDescription: string;
     requestPending: string;
   };
 }

@@ -38,6 +38,9 @@ yarn-error.log*
 
 # cloudflare
 .open-next
+
+# supabase temp
+supabase/.temp/
 .wrangler
 
 # typescript
