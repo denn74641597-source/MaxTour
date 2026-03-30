@@ -122,12 +122,16 @@ export async function submitVerificationFormRequest(
   if (error) return { error: error.message };
 
   // Notify admin via Telegram bot
-  notifyVerificationRequest(
-    inserted.id,
-    agencyId,
-    (agency as { id: string; name: string }).name || 'Noma\'lum',
-    formData.company_name
-  ).catch((err) => console.error('Bot notify error:', err));
+  try {
+    await notifyVerificationRequest(
+      inserted.id,
+      agencyId,
+      (agency as { id: string; name: string }).name || 'Noma\'lum',
+      formData.company_name
+    );
+  } catch (err) {
+    console.error('Bot notify error:', err);
+  }
 
   return { success: true };
 }

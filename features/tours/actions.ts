@@ -89,5 +89,9 @@ export async function deleteTourAction(tourId: string) {
 
 /** Notify admin bot when a tour is submitted for review */
 export async function notifyTourSubmitted(tourId: string, tourTitle: string, agencyName: string) {
-  notifyTourPending(tourId, tourTitle, agencyName).catch(() => {});
+  try {
+    await notifyTourPending(tourId, tourTitle, agencyName);
+  } catch (err) {
+    console.error('Bot notify error:', err);
+  }
 }

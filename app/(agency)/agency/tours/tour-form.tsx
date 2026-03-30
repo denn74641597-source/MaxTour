@@ -449,7 +449,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         return;
       }
       if (payload.status === 'pending') {
-        notifyTourSubmitted(tourId, payload.title, (agency as { id: string; name: string }).name || '');
+        await notifyTourSubmitted(tourId, payload.title, (agency as { id: string; name: string }).name || '');
       }
       toast.success(t.agencyTours.tourUpdated);
     } else {
@@ -464,7 +464,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         return;
       }
       if (payload.status === 'pending' && inserted) {
-        notifyTourSubmitted(inserted.id, payload.title, (agency as { id: string; name: string }).name || '');
+        await notifyTourSubmitted(inserted.id, payload.title, (agency as { id: string; name: string }).name || '');
       }
       toast.success(t.agencyTours.tourCreated);
     }

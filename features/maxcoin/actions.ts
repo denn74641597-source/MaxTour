@@ -34,12 +34,16 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
   if (error) return { error: error.message };
 
   // Notify admin via Telegram bot
-  notifyCoinRequest(
-    inserted.id,
-    (agency as { id: string; name: string }).name || 'Noma\'lum',
-    coins,
-    priceUzs
-  ).catch((err) => console.error('Bot notify error:', err));
+  try {
+    await notifyCoinRequest(
+      inserted.id,
+      (agency as { id: string; name: string }).name || 'Noma\'lum',
+      coins,
+      priceUzs
+    );
+  } catch (err) {
+    console.error('Bot notify error:', err);
+  }
 
   return { success: true, pending: true };
 }
