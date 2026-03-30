@@ -3,6 +3,8 @@ import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { ToursContent } from './tours-content';
 import type { TourFilters } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 interface Props {
   searchParams: Promise<{ [key: string]: string | undefined }>;
 }

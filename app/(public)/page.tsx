@@ -5,6 +5,8 @@ import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { HomeContent } from './home/home-content';
 import type { Tour } from '@/types';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   let featuredTours: Awaited<ReturnType<typeof getFeaturedTours>> = [];
   let recentTours: Awaited<ReturnType<typeof getTours>> = [];
