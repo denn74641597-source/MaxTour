@@ -16,7 +16,7 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
 
   const { data: agency } = await supabase
     .from('agencies')
-    .select('id, name, owner_id')
+    .select('id, name, owner_id, phone, telegram_username')
     .eq('id', agencyId)
     .eq('owner_id', user.id)
     .single();
@@ -39,7 +39,9 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
       inserted.id,
       (agency as { id: string; name: string }).name || 'Noma\'lum',
       coins,
-      priceUzs
+      priceUzs,
+      (agency as Record<string, string | null>).phone,
+      (agency as Record<string, string | null>).telegram_username
     );
   } catch (err) {
     console.error('Bot notify error:', err);

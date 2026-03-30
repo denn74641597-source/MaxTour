@@ -449,7 +449,43 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         return;
       }
       if (payload.status === 'pending') {
-        await notifyTourSubmitted(tourId, payload.title, (agency as { id: string; name: string }).name || '');
+        await notifyTourSubmitted({
+          id: tourId,
+          title: payload.title,
+          agencyName: (agency as { id: string; name: string }).name || '',
+          country: payload.country || '',
+          city: payload.city,
+          price: payload.price,
+          old_price: payload.old_price,
+          currency: payload.currency,
+          duration_days: payload.duration_days,
+          duration_nights: payload.duration_nights,
+          departure_date: payload.departure_date,
+          departure_month: payload.departure_month,
+          return_date: payload.return_date,
+          seats_total: payload.seats_total,
+          seats_left: payload.seats_left,
+          meal_type: payload.meal_type,
+          transport_type: payload.transport_type,
+          visa_required: payload.visa_required,
+          hotel_name: payload.hotel_name,
+          hotel_stars: payload.hotel_stars,
+          hotels: payload.hotels,
+          included_services: payload.included_services,
+          extra_charges: payload.extra_charges,
+          variable_charges: payload.variable_charges,
+          operator_telegram_username: payload.operator_telegram_username,
+          operator_phone: payload.operator_phone,
+          cover_image_url: payload.cover_image_url,
+          destinations: payload.destinations,
+          tour_type: payload.tour_type,
+          category: payload.category as string | null,
+          additional_info: payload.additional_info,
+          what_to_bring: payload.what_to_bring,
+          guide_name: payload.guide_name,
+          guide_phone: payload.guide_phone,
+          meeting_point: payload.meeting_point,
+        });
       }
       toast.success(t.agencyTours.tourUpdated);
     } else {
@@ -464,7 +500,43 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         return;
       }
       if (payload.status === 'pending' && inserted) {
-        await notifyTourSubmitted(inserted.id, payload.title, (agency as { id: string; name: string }).name || '');
+        await notifyTourSubmitted({
+          id: inserted.id,
+          title: payload.title,
+          agencyName: (agency as { id: string; name: string }).name || '',
+          country: payload.country || '',
+          city: payload.city,
+          price: payload.price,
+          old_price: payload.old_price,
+          currency: payload.currency,
+          duration_days: payload.duration_days,
+          duration_nights: payload.duration_nights,
+          departure_date: payload.departure_date,
+          departure_month: payload.departure_month,
+          return_date: payload.return_date,
+          seats_total: payload.seats_total,
+          seats_left: payload.seats_left,
+          meal_type: payload.meal_type,
+          transport_type: payload.transport_type,
+          visa_required: payload.visa_required,
+          hotel_name: payload.hotel_name,
+          hotel_stars: payload.hotel_stars,
+          hotels: payload.hotels,
+          included_services: payload.included_services,
+          extra_charges: payload.extra_charges,
+          variable_charges: payload.variable_charges,
+          operator_telegram_username: payload.operator_telegram_username,
+          operator_phone: payload.operator_phone,
+          cover_image_url: payload.cover_image_url,
+          destinations: payload.destinations,
+          tour_type: payload.tour_type,
+          category: payload.category as string | null,
+          additional_info: payload.additional_info,
+          what_to_bring: payload.what_to_bring,
+          guide_name: payload.guide_name,
+          guide_phone: payload.guide_phone,
+          meeting_point: payload.meeting_point,
+        });
       }
       toast.success(t.agencyTours.tourCreated);
     }

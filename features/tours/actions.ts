@@ -88,9 +88,46 @@ export async function deleteTourAction(tourId: string) {
 }
 
 /** Notify admin bot when a tour is submitted for review */
-export async function notifyTourSubmitted(tourId: string, tourTitle: string, agencyName: string) {
+export async function notifyTourSubmitted(tourData: {
+  id: string;
+  title: string;
+  agencyName: string;
+  country: string;
+  city?: string | null;
+  price: number;
+  old_price?: number | null;
+  currency: string;
+  duration_days?: number | null;
+  duration_nights?: number | null;
+  departure_date?: string | null;
+  departure_month?: string | null;
+  return_date?: string | null;
+  seats_total?: number | null;
+  seats_left?: number | null;
+  meal_type?: string | null;
+  transport_type?: string | null;
+  visa_required?: boolean;
+  hotel_name?: string | null;
+  hotel_stars?: number | null;
+  hotels?: { name: string; stars: number | null; price: number }[];
+  included_services?: string[];
+  extra_charges?: { name: string; amount: number }[];
+  variable_charges?: { name: string; min_amount: number; max_amount: number }[];
+  operator_telegram_username?: string | null;
+  operator_phone?: string | null;
+  cover_image_url?: string | null;
+  destinations?: string[];
+  tour_type?: string | null;
+  category?: string | null;
+  additional_info?: string | null;
+  what_to_bring?: string[];
+  guide_name?: string | null;
+  guide_phone?: string | null;
+  meeting_point?: string | null;
+  short_description?: string | null;
+}) {
   try {
-    await notifyTourPending(tourId, tourTitle, agencyName);
+    await notifyTourPending(tourData);
   } catch (err) {
     console.error('Bot notify error:', err);
   }
