@@ -7,8 +7,11 @@ function getBotToken() {
   return process.env.ADMIN_BOT_TOKEN || '8690380624:AAEWMibPtoXovf9W3avF-hPz9iM7PqU82Mc';
 }
 
-function getAdminChatId() {
-  return process.env.ADMIN_CHAT_ID || '496829881';
+function getAdminChatIds(): string[] {
+  const ids = [process.env.ADMIN_CHAT_ID || '496829881'];
+  const id2 = process.env.ADMIN_CHAT_ID_2 || '7298088133';
+  if (id2) ids.push(id2);
+  return ids;
 }
 
 interface InlineButton {
@@ -62,6 +65,14 @@ async function sendMessage(
   if (!res.ok) {
     console.error('Telegram sendMessage error:', await res.text());
   }
+}
+
+async function sendToAdmins(text: string, buttons?: InlineButton[][]) {
+  await Promise.all(getAdminChatIds().map(id => sendMessage(id, text, buttons)));
+}
+
+async function sendPhotoToAdmins(photoUrl: string, caption: string, buttons?: InlineButton[][]) {
+  await Promise.all(getAdminChatIds().map(id => sendPhoto(id, photoUrl, caption, buttons)));
 }
 
 async function editMessageText(
@@ -148,7 +159,7 @@ export async function notifyVerificationRequest(
     ],
   ];
 
-  await sendMessage(getAdminChatId(), text, buttons);
+  await sendToAdmins(text, buttons);
 }
 
 export async function notifyCoinRequest(
@@ -177,7 +188,7 @@ export async function notifyCoinRequest(
     ],
   ];
 
-  await sendMessage(getAdminChatId(), text, buttons);
+  await sendToAdmins(text, buttons);
 }
 
 export async function notifyAgencyRegistration(
@@ -198,7 +209,7 @@ export async function notifyAgencyRegistration(
     ],
   ];
 
-  await sendMessage(getAdminChatId(), text, buttons);
+  await sendToAdmins(text, buttons);
 }
 
 interface TourNotificationData {
@@ -355,13 +366,13 @@ export async function notifyTourPending(tour: TourNotificationData) {
   if (tour.cover_image_url) {
     // Photo caption max 1024 chars — if text is too long, send photo + separate message
     if (text.length <= 1024) {
-      await sendPhoto(getAdminChatId(), tour.cover_image_url, text, buttons);
+      await sendPhotoToAdmins(tour.cover_image_url, text, buttons);
     } else {
-      await sendPhoto(getAdminChatId(), tour.cover_image_url, `🗺 <b>${tour.title}</b>\n🏢 ${tour.agencyName}`);
-      await sendMessage(getAdminChatId(), text, buttons);
+      await sendPhotoToAdmins(tour.cover_image_url, `🗺 <b>${tour.title}</b>\n🏢 ${tour.agencyName}`);
+      await sendToAdmins(text, buttons);
     }
   } else {
-    await sendMessage(getAdminChatId(), text, buttons);
+    await sendToAdmins(text, buttons);
   }
 }
 
@@ -418,7 +429,7 @@ export async function notifySystemError(opts: {
     // Trim to Telegram max (4096 chars)
     if (text.length > 4000) text = text.slice(0, 4000) + '\n...';
 
-    await sendMessage(getAdminChatId(), text);
+    await sendToAdmins(text);
   } catch {
     // Never crash the app because of error reporting
   }
