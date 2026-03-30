@@ -25,9 +25,9 @@ export function AdminCoinRequestsContent({ requests }: Props) {
     const result = await approveCoinRequest(id);
     setProcessing(null);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
-      toast.success('Approved!');
+      toast.success('Tasdiqlandi');
       router.refresh();
     }
   }
@@ -37,9 +37,9 @@ export function AdminCoinRequestsContent({ requests }: Props) {
     const result = await rejectCoinRequest(id);
     setProcessing(null);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
-      toast.success('Rejected');
+      toast.success('Rad etildi');
       router.refresh();
     }
   }

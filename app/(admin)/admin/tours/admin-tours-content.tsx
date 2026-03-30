@@ -38,9 +38,9 @@ export function AdminToursContent({ tours }: AdminToursContentProps) {
     const result = await updateTourStatusAction(tourId, newStatus);
     setProcessing(null);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
-      toast.success(`Tour ${newStatus}`);
+      toast.success('Tur holati yangilandi');
       router.refresh();
     }
   }

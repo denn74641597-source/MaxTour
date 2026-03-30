@@ -48,7 +48,7 @@ export default function RootLayout({
           {children}
         </LanguageProvider>
         <HapticProvider />
-        <Toaster position="top-center" />
+        <Toaster position="top-center" offset={70} />
         {/* Telegram Mini App SDK — loaded after page is interactive */}
         <Script
           src="https://telegram.org/js/telegram-web-app.js"

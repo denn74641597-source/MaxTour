@@ -18,11 +18,11 @@ export function AdminAgencyActions({ agencyId, isApproved }: Props) {
     const result = await updateAgencyApprovalAction(agencyId, approved);
 
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
       return;
     }
 
-    toast.success(approved ? 'Agency approved' : 'Agency rejected');
+    toast.success(approved ? 'Agentlik tasdiqlandi' : 'Agentlik rad etildi');
     router.refresh();
   }
 

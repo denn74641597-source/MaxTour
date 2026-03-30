@@ -90,8 +90,8 @@ const ALLOWED_TYPES = [
   'image/png',
 ];
 
-/** Max file size: 2MB before compression */
-const MAX_FILE_SIZE = 2 * 1024 * 1024;
+/** Max file size: 4MB before compression */
+const MAX_FILE_SIZE = 4 * 1024 * 1024;
 
 /**
  * Validate an image file before upload.
@@ -102,7 +102,7 @@ export function validateImageFile(file: File): string | null {
     return `Faqat JPG va PNG formatlar qabul qilinadi`;
   }
   if (file.size > MAX_FILE_SIZE) {
-    return `Fayl hajmi juda katta: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maksimal: 2MB`;
+    return `Fayl hajmi juda katta: ${(file.size / 1024 / 1024).toFixed(1)}MB. Maksimal: 4MB`;
   }
   return null;
 }

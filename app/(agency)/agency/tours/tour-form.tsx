@@ -363,7 +363,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
-      toast.error('Not authenticated');
+      toast.error('Tizimda xatolik');
       return;
     }
 
@@ -374,7 +374,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       .single();
 
     if (!agency) {
-      toast.error('Agency not found');
+      toast.error('Tizimda xatolik');
       return;
     }
 
@@ -444,7 +444,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         .eq('id', tourId);
 
       if (error) {
-        toast.error(error.message);
+        toast.error('Tizimda xatolik');
         return;
       }
       toast.success(t.agencyTours.tourUpdated);
@@ -454,7 +454,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         .insert(payload);
 
       if (error) {
-        toast.error(error.message);
+        toast.error('Tizimda xatolik');
         return;
       }
       toast.success(t.agencyTours.tourCreated);
@@ -1280,14 +1280,14 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                                       fd.append('file', compressed);
                                       fd.append('folder', 'hotels');
                                       const result = await uploadImageAction(fd);
-                                      if (result.error) { toast.error(result.error); return; }
+                                      if (result.error) { toast.error('Tizimda xatolik'); return; }
                                       const u = [...comboHotels];
                                       const htls = [...variant.hotels];
                                       htls[entryIdx] = { ...entry, image_url: result.url ?? null };
                                       u[varIdx] = { ...variant, hotels: htls };
                                       setComboHotels(u);
                                     } catch {
-                                      toast.error('Upload failed');
+                                      toast.error('Rasm yuklanmadi');
                                     }
                                   }}
                                 />

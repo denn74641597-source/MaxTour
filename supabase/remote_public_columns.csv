@@ -1,0 +1,191 @@
+table_name,column_name,data_type,is_nullable,column_default
+agencies,id,uuid,NO,gen_random_uuid()
+agencies,owner_id,uuid,NO,
+agencies,name,text,NO,
+agencies,slug,text,NO,
+agencies,description,text,YES,
+agencies,logo_url,text,YES,
+agencies,phone,text,YES,
+agencies,telegram_username,text,YES,
+agencies,instagram_url,text,YES,
+agencies,website_url,text,YES,
+agencies,address,text,YES,
+agencies,city,text,YES,
+agencies,country,text,NO,'Uzbekistan'::text
+agencies,is_verified,boolean,NO,false
+agencies,is_approved,boolean,NO,false
+agencies,created_at,timestamp with time zone,NO,now()
+agencies,updated_at,timestamp with time zone,NO,now()
+agencies,google_maps_url,text,YES,
+agencies,maxcoin_balance,integer,NO,0
+agencies,inn,text,YES,
+agencies,responsible_person,text,YES,
+agencies,license_pdf_url,text,YES,
+agencies,certificate_pdf_url,text,YES,
+agencies,profile_views,integer,NO,0
+agency_follows,id,uuid,NO,gen_random_uuid()
+agency_follows,user_id,uuid,NO,
+agency_follows,agency_id,uuid,NO,
+agency_follows,created_at,timestamp with time zone,NO,now()
+agency_subscriptions,id,uuid,NO,gen_random_uuid()
+agency_subscriptions,agency_id,uuid,NO,
+agency_subscriptions,plan_id,uuid,NO,
+agency_subscriptions,status,text,NO,'active'::text
+agency_subscriptions,starts_at,timestamp with time zone,NO,now()
+agency_subscriptions,ends_at,timestamp with time zone,NO,
+agency_subscriptions,created_at,timestamp with time zone,NO,now()
+call_tracking,id,uuid,NO,gen_random_uuid()
+call_tracking,tour_id,uuid,YES,
+call_tracking,agency_id,uuid,NO,
+call_tracking,user_id,uuid,YES,
+call_tracking,type,text,NO,'call'::text
+call_tracking,created_at,timestamp with time zone,NO,now()
+coin_requests,id,uuid,NO,gen_random_uuid()
+coin_requests,agency_id,uuid,NO,
+coin_requests,coins,integer,NO,
+coin_requests,price_uzs,numeric,NO,
+coin_requests,status,text,NO,'pending'::text
+coin_requests,admin_note,text,YES,
+coin_requests,created_at,timestamp with time zone,NO,now()
+coin_requests,resolved_at,timestamp with time zone,YES,
+favorites,id,uuid,NO,gen_random_uuid()
+favorites,user_id,uuid,NO,
+favorites,tour_id,uuid,NO,
+favorites,created_at,timestamp with time zone,NO,now()
+featured_items,id,uuid,NO,gen_random_uuid()
+featured_items,tour_id,uuid,YES,
+featured_items,agency_id,uuid,YES,
+featured_items,placement_type,text,NO,'home_featured'::text
+featured_items,starts_at,timestamp with time zone,NO,now()
+featured_items,ends_at,timestamp with time zone,NO,
+featured_items,created_at,timestamp with time zone,NO,now()
+leads,id,uuid,NO,gen_random_uuid()
+leads,tour_id,uuid,NO,
+leads,agency_id,uuid,NO,
+leads,user_id,uuid,YES,
+leads,full_name,text,NO,
+leads,phone,text,NO,
+leads,telegram_username,text,YES,
+leads,comment,text,YES,
+leads,status,text,NO,'new'::text
+leads,created_at,timestamp with time zone,NO,now()
+leads,updated_at,timestamp with time zone,NO,now()
+leads,people_count,integer,NO,1
+maxcoin_transactions,id,uuid,NO,gen_random_uuid()
+maxcoin_transactions,agency_id,uuid,NO,
+maxcoin_transactions,amount,integer,NO,
+maxcoin_transactions,type,text,NO,
+maxcoin_transactions,description,text,YES,
+maxcoin_transactions,tour_id,uuid,YES,
+maxcoin_transactions,created_at,timestamp with time zone,NO,now()
+profiles,id,uuid,NO,
+profiles,role,text,NO,'user'::text
+profiles,full_name,text,YES,
+profiles,telegram_username,text,YES,
+profiles,phone,text,YES,
+profiles,avatar_url,text,YES,
+profiles,created_at,timestamp with time zone,NO,now()
+profiles,updated_at,timestamp with time zone,NO,now()
+profiles,email,text,YES,
+promotion_tiers,id,uuid,NO,gen_random_uuid()
+promotion_tiers,placement,text,NO,
+promotion_tiers,coins,integer,NO,
+promotion_tiers,days,integer,NO,
+promotion_tiers,sort_order,integer,NO,0
+promotion_tiers,created_at,timestamp with time zone,NO,now()
+reviews,id,uuid,NO,gen_random_uuid()
+reviews,agency_id,uuid,NO,
+reviews,user_id,uuid,NO,
+reviews,rating,integer,NO,
+reviews,comment,text,YES,
+reviews,created_at,timestamp with time zone,NO,now()
+subscription_plans,id,uuid,NO,gen_random_uuid()
+subscription_plans,name,text,NO,
+subscription_plans,slug,text,NO,
+subscription_plans,price_monthly,numeric,NO,0
+subscription_plans,max_active_tours,integer,NO,5
+subscription_plans,can_feature,boolean,NO,false
+subscription_plans,has_priority_support,boolean,NO,false
+subscription_plans,created_at,timestamp with time zone,NO,now()
+tour_images,id,uuid,NO,gen_random_uuid()
+tour_images,tour_id,uuid,NO,
+tour_images,image_url,text,NO,
+tour_images,sort_order,integer,NO,0
+tour_images,created_at,timestamp with time zone,NO,now()
+tour_interests,id,uuid,NO,gen_random_uuid()
+tour_interests,tour_id,uuid,NO,
+tour_interests,agency_id,uuid,NO,
+tour_interests,user_id,uuid,NO,
+tour_interests,full_name,text,YES,
+tour_interests,phone,text,YES,
+tour_interests,telegram_username,text,YES,
+tour_interests,source,text,NO,'favorite'::text
+tour_interests,created_at,timestamp with time zone,NO,now()
+tour_promotions,id,uuid,NO,gen_random_uuid()
+tour_promotions,tour_id,uuid,NO,
+tour_promotions,agency_id,uuid,NO,
+tour_promotions,placement,text,NO,
+tour_promotions,cost_coins,integer,NO,0
+tour_promotions,starts_at,timestamp with time zone,NO,now()
+tour_promotions,ends_at,timestamp with time zone,NO,
+tour_promotions,is_active,boolean,NO,true
+tour_promotions,created_at,timestamp with time zone,NO,now()
+tours,id,uuid,NO,gen_random_uuid()
+tours,agency_id,uuid,NO,
+tours,title,text,NO,
+tours,slug,text,NO,
+tours,short_description,text,YES,
+tours,full_description,text,YES,
+tours,country,text,NO,
+tours,city,text,YES,
+tours,departure_date,date,YES,
+tours,return_date,date,YES,
+tours,duration_days,integer,YES,
+tours,price,numeric,NO,0
+tours,currency,text,NO,'USD'::text
+tours,seats_total,integer,YES,
+tours,seats_left,integer,YES,
+tours,hotel_name,text,YES,
+tours,hotel_stars,integer,YES,
+tours,meal_type,text,NO,'none'::text
+tours,transport_type,text,NO,'flight'::text
+tours,visa_required,boolean,NO,false
+tours,included_services,jsonb,YES,'[]'::jsonb
+tours,excluded_services,jsonb,YES,'[]'::jsonb
+tours,status,text,NO,'draft'::text
+tours,is_featured,boolean,NO,false
+tours,cover_image_url,text,YES,
+tours,created_at,timestamp with time zone,NO,now()
+tours,updated_at,timestamp with time zone,NO,now()
+tours,hotel_booking_url,text,YES,
+tours,destinations,jsonb,YES,'[]'::jsonb
+tours,airline,text,YES,
+tours,extra_charges,jsonb,YES,'[]'::jsonb
+tours,hotel_images,jsonb,YES,'[]'::jsonb
+tours,hotels,jsonb,YES,'[]'::jsonb
+tours,old_price,numeric,YES,
+tours,operator_telegram_username,text,YES,
+tours,tour_type,text,NO,'international'::text
+tours,region,text,YES,
+tours,district,text,YES,
+tours,domestic_category,text,YES,
+tours,meeting_point,text,YES,
+tours,what_to_bring,jsonb,YES,'[]'::jsonb
+tours,guide_name,text,YES,
+tours,guide_phone,text,YES,
+tours,additional_info,text,YES,
+tours,category,text,YES,
+tours,operator_phone,text,YES,
+tours,departure_month,text,YES,
+tours,duration_nights,integer,YES,
+tours,view_count,integer,YES,0
+tours,variable_charges,jsonb,YES,'[]'::jsonb
+tours,combo_hotels,jsonb,YES,'[]'::jsonb
+verification_requests,id,uuid,NO,gen_random_uuid()
+verification_requests,agency_id,uuid,NO,
+verification_requests,certificate_url,text,YES,
+verification_requests,status,text,NO,'pending'::text
+verification_requests,admin_note,text,YES,
+verification_requests,created_at,timestamp with time zone,NO,now()
+verification_requests,updated_at,timestamp with time zone,NO,now()
+verification_requests,form_data,jsonb,YES,

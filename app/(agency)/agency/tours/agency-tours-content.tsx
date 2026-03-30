@@ -39,7 +39,7 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
     setDeleting(false);
     setDeleteTarget(null);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
       toast.success(t.agencyTours.tourDeleted);
       router.refresh();

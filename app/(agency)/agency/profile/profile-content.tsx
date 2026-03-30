@@ -148,7 +148,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
       certificate_pdf_url: certificatePdfUrl || null,
     });
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
       toast.success(t.agencyProfileForm.profileSaved);
       await reloadAgency();
@@ -576,7 +576,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
                       fd.append('folder', 'certificates');
                       const res = await uploadPdfAction(fd);
                       if (res.url) setCertificatePdfUrl(res.url);
-                      else toast.error(res.error || 'Upload failed');
+                      else toast.error('Tizimda xatolik');
                     }}
                   />
                 </label>
@@ -612,7 +612,7 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
                       fd.append('folder', 'licenses');
                       const res = await uploadPdfAction(fd);
                       if (res.url) setLicensePdfUrl(res.url);
-                      else toast.error(res.error || 'Upload failed');
+                      else toast.error('Tizimda xatolik');
                     }}
                   />
                 </label>

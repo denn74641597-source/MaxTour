@@ -72,7 +72,7 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
       if (res.url) {
         updateField(field, res.url);
       } else {
-        toast.error(res.error || 'Upload failed');
+        toast.error('Tizimda xatolik');
       }
     } finally {
       setUploadingField(null);
@@ -106,13 +106,13 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
     try {
       const result = await submitVerificationFormRequest(agency.id, form);
       if (result.error) {
-        toast.error(result.error);
+        toast.error('Tizimda xatolik');
         return;
       }
       toast.success(t.verification.successMessage);
       router.refresh();
     } catch {
-      toast.error('Something went wrong');
+      toast.error('Tizimda xatolik');
     } finally {
       setIsSubmitting(false);
     }

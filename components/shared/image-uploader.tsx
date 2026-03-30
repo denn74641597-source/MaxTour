@@ -100,7 +100,7 @@ export function ImageUploader({
       const result = await uploadImageAction(formData);
 
       if (result.error) {
-        toast.error(result.error);
+        toast.error('Tizimda xatolik');
         setPreview(null);
         return;
       }

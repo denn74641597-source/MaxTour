@@ -113,9 +113,9 @@ export function AdminVerificationContent({ requests }: Props) {
     setProcessing(requestId);
     const result = await approveVerificationAction(requestId, agencyId);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
-      toast.success('Verification approved');
+      toast.success('Tasdiqlandi');
     }
     setProcessing(null);
     router.refresh();
@@ -126,9 +126,9 @@ export function AdminVerificationContent({ requests }: Props) {
     const note = rejectNotes[requestId] || '';
     const result = await rejectVerificationAction(requestId, agencyId, note);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
-      toast.success('Verification rejected');
+      toast.success('Rad etildi');
     }
     setProcessing(null);
     router.refresh();

@@ -40,9 +40,9 @@ export function AdminAgenciesContent({ agencies }: AdminAgenciesContentProps) {
     const result = await updateAgencyApprovalAction(agencyId, approved);
     setProcessing(null);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
-      toast.success(approved ? 'Agency approved' : 'Agency rejected');
+      toast.success(approved ? 'Agentlik tasdiqlandi' : 'Agentlik rad etildi');
       router.refresh();
     }
   }

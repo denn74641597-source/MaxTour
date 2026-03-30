@@ -48,7 +48,7 @@ export function AdvertisingContent({
     const result = await purchaseMaxCoins(agencyId, sliderValue);
     setBuying(false);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
       setShowPurchaseModal(true);
       setActiveTab('main');
@@ -61,7 +61,7 @@ export function AdvertisingContent({
     const result = await promoteTour(agencyId, selectedTour, selectedTierId);
     setPromoting(false);
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
     } else {
       toast.success('Tur muvaffaqiyatli reklama qilindi!');
       if (result.newBalance !== undefined) setBalance(result.newBalance);

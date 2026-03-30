@@ -24,11 +24,11 @@ export function AdminTourActions({ tourId, currentStatus }: Props) {
     const result = await updateTourStatusAction(tourId, newStatus);
 
     if (result.error) {
-      toast.error(result.error);
+      toast.error('Tizimda xatolik');
       return;
     }
 
-    toast.success(`Tour ${newStatus}`);
+    toast.success('Tur holati yangilandi');
     router.refresh();
   }
 
