@@ -51,48 +51,8 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
   const { t } = useTranslation();
   const heroTour = featuredTours[0] ?? recentTours[0];
 
-  // Pull-to-refresh state
-  const [pullY, setPullY] = useState(0);
-  const [refreshing, setRefreshing] = useState(false);
-  const pullStart = useRef(0);
-  const PULL_THRESHOLD = 80;
-
-  const onPullStart = (e: React.TouchEvent) => {
-    if (window.scrollY === 0) pullStart.current = e.touches[0].clientY;
-    else pullStart.current = 0;
-  };
-  const onPullMove = (e: React.TouchEvent) => {
-    if (!pullStart.current || refreshing) return;
-    const delta = Math.max(0, e.touches[0].clientY - pullStart.current);
-    setPullY(Math.min(delta * 0.4, 100));
-  };
-  const onPullEnd = () => {
-    if (pullY >= PULL_THRESHOLD && !refreshing) {
-      setRefreshing(true);
-      hapticFeedback('medium');
-      window.location.reload();
-    } else {
-      setPullY(0);
-    }
-    pullStart.current = 0;
-  };
-
   return (
-    <div
-      className="px-6 pb-8"
-      onTouchStart={onPullStart}
-      onTouchMove={onPullMove}
-      onTouchEnd={onPullEnd}
-    >
-      {/* Pull-to-refresh indicator */}
-      {pullY > 0 && (
-        <div
-          className="flex justify-center items-center transition-all duration-150 overflow-hidden"
-          style={{ height: pullY }}
-        >
-          <div className={`w-6 h-6 rounded-full border-2 border-primary border-t-transparent ${pullY >= PULL_THRESHOLD ? 'animate-spin' : ''}`} />
-        </div>
-      )}
+    <div className="px-6 pb-8">
       {/* Search Bar */}
       <div className="mt-4 mb-5">
         <Suspense>
