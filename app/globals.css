@@ -176,6 +176,11 @@
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
+/* Position toasts below app header (safe-area + header height) */
+[data-sonner-toaster][data-y-position="top"] {
+  top: calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 64px) !important;
+}
+
 /* Glass morphism for floating nav */
 .glass-nav {
   background: rgba(255, 255, 255, 0.8);
