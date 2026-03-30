@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
+import { notifyVerificationRequest } from '@/lib/telegram/admin-bot';
 
 export async function uploadCertificateAction(formData: FormData) {
   const file = formData.get('file') as File;
@@ -92,7 +93,7 @@ export async function submitVerificationFormRequest(
 
   const { data: agency } = await supabase
     .from('agencies')
-    .select('id')
+    .select('id, name')
     .eq('id', agencyId)
     .eq('owner_id', user.id)
     .single();
@@ -108,15 +109,26 @@ export async function submitVerificationFormRequest(
 
   if (existing) return { error: 'You already have a pending request' };
 
-  const { error } = await supabase
+  const { data: inserted, error } = await supabase
     .from('verification_requests')
     .insert({
       agency_id: agencyId,
       certificate_url: formData.certificate_pdf_url || null,
       form_data: formData,
-    });
+    })
+    .select('id')
+    .single();
 
   if (error) return { error: error.message };
+
+  // Notify admin via Telegram bot
+  notifyVerificationRequest(
+    inserted.id,
+    agencyId,
+    (agency as { id: string; name: string }).name || 'Noma\'lum',
+    formData.company_name
+  ).catch(() => {});
+
   return { success: true };
 }
 

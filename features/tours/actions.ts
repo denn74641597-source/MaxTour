@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
+import { notifyTourPending } from '@/lib/telegram/admin-bot';
 
 function extractStoragePath(url: string): string | null {
   const marker = '/storage/v1/object/public/images/';
@@ -84,4 +85,9 @@ export async function deleteTourAction(tourId: string) {
   if (error) return { error: error.message };
 
   return { success: true };
+}
+
+/** Notify admin bot when a tour is submitted for review */
+export async function notifyTourSubmitted(tourId: string, tourTitle: string, agencyName: string) {
+  notifyTourPending(tourId, tourTitle, agencyName).catch(() => {});
 }

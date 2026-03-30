@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/lib/i18n';
 import { uploadImageAction } from '@/features/upload/actions';
+import { notifyTourSubmitted } from '@/features/tours/actions';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
 import { createClient } from '@/lib/supabase/client';
 import { COUNTRIES, CITIES_BY_COUNTRY, AIRLINES, UZ_REGIONS, UZ_DISTRICTS } from '@/lib/tour-data';
@@ -369,7 +370,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
     const { data: agency } = await supabase
       .from('agencies')
-      .select('id')
+      .select('id, name')
       .eq('owner_id', user.id)
       .single();
 
@@ -447,15 +448,23 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         toast.error('Tizimda xatolik');
         return;
       }
+      if (payload.status === 'pending') {
+        notifyTourSubmitted(tourId, payload.title, (agency as { id: string; name: string }).name || '');
+      }
       toast.success(t.agencyTours.tourUpdated);
     } else {
-      const { error } = await supabase
+      const { data: inserted, error } = await supabase
         .from('tours')
-        .insert(payload);
+        .insert(payload)
+        .select('id')
+        .single();
 
       if (error) {
         toast.error('Tizimda xatolik');
         return;
+      }
+      if (payload.status === 'pending' && inserted) {
+        notifyTourSubmitted(inserted.id, payload.title, (agency as { id: string; name: string }).name || '');
       }
       toast.success(t.agencyTours.tourCreated);
     }

@@ -1,6 +1,7 @@
 'use server';
 
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
+import { notifyCoinRequest } from '@/lib/telegram/admin-bot';
 import type { PromotionPlacement } from '@/types';
 
 const COIN_PRICE_UZS = 15000; // UZS per coin
@@ -15,7 +16,7 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
 
   const { data: agency } = await supabase
     .from('agencies')
-    .select('id, owner_id')
+    .select('id, name, owner_id')
     .eq('id', agencyId)
     .eq('owner_id', user.id)
     .single();
@@ -24,13 +25,21 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
   const priceUzs = coins * COIN_PRICE_UZS;
 
   const admin = await createAdminClient();
-  const { error } = await admin.from('coin_requests').insert({
+  const { data: inserted, error } = await admin.from('coin_requests').insert({
     agency_id: agencyId,
     coins,
     price_uzs: priceUzs,
     status: 'pending',
-  });
+  }).select('id').single();
   if (error) return { error: error.message };
+
+  // Notify admin via Telegram bot
+  notifyCoinRequest(
+    inserted.id,
+    (agency as { id: string; name: string }).name || 'Noma\'lum',
+    coins,
+    priceUzs
+  ).catch(() => {});
 
   return { success: true, pending: true };
 }
