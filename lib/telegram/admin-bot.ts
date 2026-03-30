@@ -3,10 +3,13 @@
  * Callback queries are processed via /api/admin-bot/webhook route.
  */
 
-const BOT_TOKEN = process.env.ADMIN_BOT_TOKEN || '8690380624:AAEWMibPtoXovf9W3avF-hPz9iM7PqU82Mc';
-const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || '496829881';
+function getBotToken() {
+  return process.env.ADMIN_BOT_TOKEN || '8690380624:AAEWMibPtoXovf9W3avF-hPz9iM7PqU82Mc';
+}
 
-const API_BASE = `https://api.telegram.org/bot${BOT_TOKEN}`;
+function getAdminChatId() {
+  return process.env.ADMIN_CHAT_ID || '496829881';
+}
 
 interface InlineButton {
   text: string;
@@ -28,7 +31,7 @@ async function sendMessage(
     body.reply_markup = { inline_keyboard: buttons };
   }
 
-  const res = await fetch(`${API_BASE}/sendMessage`, {
+  const res = await fetch(`https://api.telegram.org/bot${getBotToken()}/sendMessage`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
@@ -44,7 +47,7 @@ async function editMessageText(
   messageId: number,
   text: string
 ) {
-  await fetch(`${API_BASE}/editMessageText`, {
+  await fetch(`https://api.telegram.org/bot${getBotToken()}/editMessageText`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -77,7 +80,7 @@ export async function notifyVerificationRequest(
     ],
   ];
 
-  await sendMessage(ADMIN_CHAT_ID, text, buttons);
+  await sendMessage(getAdminChatId(), text, buttons);
 }
 
 export async function notifyCoinRequest(
@@ -100,7 +103,7 @@ export async function notifyCoinRequest(
     ],
   ];
 
-  await sendMessage(ADMIN_CHAT_ID, text, buttons);
+  await sendMessage(getAdminChatId(), text, buttons);
 }
 
 export async function notifyAgencyRegistration(
@@ -121,7 +124,7 @@ export async function notifyAgencyRegistration(
     ],
   ];
 
-  await sendMessage(ADMIN_CHAT_ID, text, buttons);
+  await sendMessage(getAdminChatId(), text, buttons);
 }
 
 export async function notifyTourPending(
@@ -142,7 +145,7 @@ export async function notifyTourPending(
     ],
   ];
 
-  await sendMessage(ADMIN_CHAT_ID, text, buttons);
+  await sendMessage(getAdminChatId(), text, buttons);
 }
 
 // ─── Callback result editor ───

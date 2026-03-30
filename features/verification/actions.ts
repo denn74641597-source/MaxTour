@@ -127,7 +127,7 @@ export async function submitVerificationFormRequest(
     agencyId,
     (agency as { id: string; name: string }).name || 'Noma\'lum',
     formData.company_name
-  ).catch(() => {});
+  ).catch((err) => console.error('Bot notify error:', err));
 
   return { success: true };
 }

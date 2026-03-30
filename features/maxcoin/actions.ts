@@ -39,7 +39,7 @@ export async function purchaseMaxCoins(agencyId: string, coins: number) {
     (agency as { id: string; name: string }).name || 'Noma\'lum',
     coins,
     priceUzs
-  ).catch(() => {});
+  ).catch((err) => console.error('Bot notify error:', err));
 
   return { success: true, pending: true };
 }
