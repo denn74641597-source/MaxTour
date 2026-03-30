@@ -290,11 +290,6 @@ export async function notifyTourPending(tour: TourNotificationData) {
   text += `🛂 Viza: ${tour.visa_required ? 'Talab qilinadi' : 'Talab qilinmaydi'}\n`;
 
   // Hotels
-  if (tour.hotel_name) {
-    text += `\n🏨 Mehmonxona: ${tour.hotel_name}`;
-    if (tour.hotel_stars) text += ` ${'⭐'.repeat(tour.hotel_stars)}`;
-    text += `\n`;
-  }
   if (tour.hotels?.length) {
     text += `\n🏨 <b>Mehmonxonalar:</b>\n`;
     for (const h of tour.hotels) {
