@@ -33,6 +33,7 @@ import { uploadPdfAction } from '@/features/upload/actions';
 import Image from 'next/image';
 import { placeholderImage, slugify } from '@/lib/utils';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
+import { SecuritySection } from './security-section';
 import type { Agency } from '@/types';
 
 type PageMode = 'form' | 'view';
@@ -408,6 +409,9 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
           </Card>
         )}
 
+        {/* Security Section */}
+        <SecuritySection />
+
         {/* Meta Info */}
         <Card className="overflow-hidden">
           <CardContent className="p-4">
@@ -626,6 +630,9 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
           {t.agencyProfileForm.saveProfile}
         </Button>
       </form>
+
+      {/* Security Section (always visible below form) */}
+      <SecuritySection />
     </div>
   );
 }

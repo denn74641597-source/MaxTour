@@ -787,4 +787,34 @@ export interface Translations {
     requestSentDescription: string;
     requestPending: string;
   };
+  security: {
+    title: string;
+    subtitle: string;
+    changeEmail: string;
+    changeEmailHint: string;
+    currentEmail: string;
+    newEmail: string;
+    newEmailPlaceholder: string;
+    changePhone: string;
+    changePhoneHint: string;
+    currentPhone: string;
+    newPhone: string;
+    newPhonePlaceholder: string;
+    changePassword: string;
+    changePasswordHint: string;
+    currentPassword: string;
+    currentPasswordPlaceholder: string;
+    newPassword: string;
+    newPasswordPlaceholder: string;
+    confirmPassword: string;
+    confirmPasswordPlaceholder: string;
+    passwordMismatch: string;
+    passwordTooShort: string;
+    wrongPassword: string;
+    emailTaken: string;
+    phoneTaken: string;
+    saving: string;
+    saved: string;
+    error: string;
+  };
 }
