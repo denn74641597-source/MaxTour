@@ -2,6 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
 import { editCallbackMessage, notifySystemError } from '@/lib/telegram/admin-bot';
 
+/** Answer Telegram callback query immediately to prevent queue blocking */
+async function answerCallback(callbackId: string, text: string) {
+  try {
+    await fetch(
+      `https://api.telegram.org/bot${process.env.ADMIN_BOT_TOKEN}/answerCallbackQuery`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ callback_query_id: callbackId, text }),
+      }
+    );
+  } catch {
+    // ignore — answering is best-effort
+  }
+}
+
 /**
  * Telegram Bot Webhook — handles inline button callbacks from admin.
  * POST /api/admin-bot/webhook
@@ -21,149 +37,179 @@ export async function POST(request: NextRequest) {
     const originalText = callback.message?.text || callback.message?.caption || '';
     const data: string = callback.data;
 
-    const supabase = await createAdminClient();
-
     // Parse callback_data format: "action:id1:id2?"
     const parts = data.split(':');
     const action = parts[0];
     const id1 = parts[1];
     const id2 = parts[2]; // optional (e.g. agencyId for verification)
 
+    // Answer callback IMMEDIATELY — prevents Telegram from blocking the webhook queue
+    const isApprove = action.includes('approve') || action === 'tour_publish';
+    await answerCallback(callback.id, isApprove ? '✅ Tasdiqlandi' : '❌ Rad etildi');
+
+    // Now process the action in database
+    const supabase = await createAdminClient();
     let decision = '';
+    let dbError: string | null = null;
 
-    switch (action) {
-      // ─── Verification ───
-      case 'verify_approve': {
-        const { error: reqError } = await supabase
-          .from('verification_requests')
-          .update({ status: 'approved', updated_at: new Date().toISOString() })
-          .eq('id', id1);
-        if (!reqError) {
-          await supabase
-            .from('agencies')
-            .update({ is_verified: true, updated_at: new Date().toISOString() })
-            .eq('id', id2);
-        }
-        decision = 'approved';
-        break;
-      }
-      case 'verify_reject': {
-        await supabase
-          .from('verification_requests')
-          .update({ status: 'rejected', updated_at: new Date().toISOString() })
-          .eq('id', id1);
-        await supabase
-          .from('agencies')
-          .update({ is_verified: false, updated_at: new Date().toISOString() })
-          .eq('id', id2);
-        decision = 'rejected';
-        break;
-      }
-
-      // ─── Coin Requests ───
-      case 'coin_approve': {
-        const { data: req } = await supabase
-          .from('coin_requests')
-          .select('*')
-          .eq('id', id1)
-          .eq('status', 'pending')
-          .single();
-
-        if (req) {
-          const { data: agency } = await supabase
-            .from('agencies')
-            .select('maxcoin_balance')
-            .eq('id', req.agency_id)
-            .single();
-
-          const currentBalance = (agency as { maxcoin_balance: number } | null)?.maxcoin_balance ?? 0;
-
-          await supabase
-            .from('agencies')
-            .update({ maxcoin_balance: currentBalance + req.coins })
-            .eq('id', req.agency_id);
-
-          await supabase
-            .from('coin_requests')
-            .update({ status: 'approved', resolved_at: new Date().toISOString() })
+    try {
+      switch (action) {
+        // ─── Verification ───
+        case 'verify_approve': {
+          const { error: reqError } = await supabase
+            .from('verification_requests')
+            .update({ status: 'approved', updated_at: new Date().toISOString() })
             .eq('id', id1);
-
-          await supabase.from('maxcoin_transactions').insert({
-            agency_id: req.agency_id,
-            amount: req.coins,
-            type: 'purchase',
-            description: `${req.coins} MC sotib olindi (${Number(req.price_uzs).toLocaleString()} UZS)`,
-          });
+          if (!reqError) {
+            await supabase
+              .from('agencies')
+              .update({ is_verified: true, updated_at: new Date().toISOString() })
+              .eq('id', id2);
+          } else {
+            dbError = reqError.message;
+          }
+          decision = 'approved';
+          break;
         }
-        decision = 'approved';
-        break;
-      }
-      case 'coin_reject': {
-        await supabase
-          .from('coin_requests')
-          .update({ status: 'rejected', resolved_at: new Date().toISOString() })
-          .eq('id', id1);
-        decision = 'rejected';
-        break;
-      }
+        case 'verify_reject': {
+          const { error: e1 } = await supabase
+            .from('verification_requests')
+            .update({ status: 'rejected', updated_at: new Date().toISOString() })
+            .eq('id', id1);
+          const { error: e2 } = await supabase
+            .from('agencies')
+            .update({ is_verified: false, updated_at: new Date().toISOString() })
+            .eq('id', id2);
+          if (e1 || e2) dbError = (e1?.message || '') + (e2?.message || '');
+          decision = 'rejected';
+          break;
+        }
 
-      // ─── Agency Approval ───
-      case 'agency_approve': {
-        await supabase
-          .from('agencies')
-          .update({ is_approved: true, updated_at: new Date().toISOString() })
-          .eq('id', id1);
-        decision = 'approved';
-        break;
-      }
-      case 'agency_reject': {
-        await supabase
-          .from('agencies')
-          .update({ is_approved: false, updated_at: new Date().toISOString() })
-          .eq('id', id1);
-        decision = 'rejected';
-        break;
-      }
+        // ─── Coin Requests ───
+        case 'coin_approve': {
+          const { data: req, error: fetchErr } = await supabase
+            .from('coin_requests')
+            .select('*')
+            .eq('id', id1)
+            .eq('status', 'pending')
+            .maybeSingle();
 
-      // ─── Tour Publish ───
-      case 'tour_publish': {
-        await supabase
-          .from('tours')
-          .update({ status: 'published', updated_at: new Date().toISOString() })
-          .eq('id', id1);
-        decision = 'approved';
-        break;
-      }
-      case 'tour_reject': {
-        await supabase
-          .from('tours')
-          .update({ status: 'archived', updated_at: new Date().toISOString() })
-          .eq('id', id1);
-        decision = 'rejected';
-        break;
-      }
+          if (fetchErr) {
+            dbError = fetchErr.message;
+          } else if (!req) {
+            dbError = 'Coin request not found or already processed';
+          } else {
+            const { data: agency } = await supabase
+              .from('agencies')
+              .select('maxcoin_balance')
+              .eq('id', req.agency_id)
+              .maybeSingle();
 
-      default:
-        return NextResponse.json({ ok: true });
+            const currentBalance = (agency as { maxcoin_balance: number } | null)?.maxcoin_balance ?? 0;
+
+            const { error: e1 } = await supabase
+              .from('agencies')
+              .update({ maxcoin_balance: currentBalance + req.coins })
+              .eq('id', req.agency_id);
+
+            const { error: e2 } = await supabase
+              .from('coin_requests')
+              .update({ status: 'approved', resolved_at: new Date().toISOString() })
+              .eq('id', id1);
+
+            const { error: e3 } = await supabase.from('maxcoin_transactions').insert({
+              agency_id: req.agency_id,
+              amount: req.coins,
+              type: 'purchase',
+              description: `${req.coins} MC sotib olindi (${Number(req.price_uzs).toLocaleString()} UZS)`,
+            });
+
+            if (e1 || e2 || e3) dbError = [e1, e2, e3].filter(Boolean).map(e => e!.message).join('; ');
+          }
+          decision = 'approved';
+          break;
+        }
+        case 'coin_reject': {
+          const { error } = await supabase
+            .from('coin_requests')
+            .update({ status: 'rejected', resolved_at: new Date().toISOString() })
+            .eq('id', id1);
+          if (error) dbError = error.message;
+          decision = 'rejected';
+          break;
+        }
+
+        // ─── Agency Approval ───
+        case 'agency_approve': {
+          const { error } = await supabase
+            .from('agencies')
+            .update({ is_approved: true, updated_at: new Date().toISOString() })
+            .eq('id', id1);
+          if (error) dbError = error.message;
+          decision = 'approved';
+          break;
+        }
+        case 'agency_reject': {
+          const { error } = await supabase
+            .from('agencies')
+            .update({ is_approved: false, updated_at: new Date().toISOString() })
+            .eq('id', id1);
+          if (error) dbError = error.message;
+          decision = 'rejected';
+          break;
+        }
+
+        // ─── Tour Publish ───
+        case 'tour_publish': {
+          const { error } = await supabase
+            .from('tours')
+            .update({ status: 'published', updated_at: new Date().toISOString() })
+            .eq('id', id1);
+          if (error) dbError = error.message;
+          decision = 'approved';
+          break;
+        }
+        case 'tour_reject': {
+          const { error } = await supabase
+            .from('tours')
+            .update({ status: 'archived', updated_at: new Date().toISOString() })
+            .eq('id', id1);
+          if (error) dbError = error.message;
+          decision = 'rejected';
+          break;
+        }
+
+        default:
+          return NextResponse.json({ ok: true });
+      }
+    } catch (actionErr) {
+      dbError = actionErr instanceof Error ? actionErr.message : 'Unknown DB error';
+      if (!decision) decision = isApprove ? 'approved' : 'rejected';
     }
 
     // Update the Telegram message to show the decision
-    if (messageId) {
-      await editCallbackMessage(chatId, messageId, originalText, decision);
+    if (messageId && decision) {
+      try {
+        if (dbError) {
+          // Show error in message
+          await editCallbackMessage(chatId, messageId, originalText, 'error', dbError);
+        } else {
+          await editCallbackMessage(chatId, messageId, originalText, decision);
+        }
+      } catch {
+        // ignore edit errors
+      }
     }
 
-    // Answer callback to remove loading spinner on button
-    await fetch(
-      `https://api.telegram.org/bot${process.env.ADMIN_BOT_TOKEN}/answerCallbackQuery`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          callback_query_id: callback.id,
-          text: decision === 'approved' ? '✅ Tasdiqlandi' : '❌ Rad etildi',
-        }),
-      }
-    );
+    // Log DB errors
+    if (dbError) {
+      console.error(`Webhook action ${action} error:`, dbError);
+      await notifySystemError({
+        source: `Bot callback: ${action}`,
+        message: dbError,
+        extra: `ID: ${id1}`,
+      });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

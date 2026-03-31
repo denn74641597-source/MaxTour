@@ -424,11 +424,17 @@ export async function editCallbackMessage(
   chatId: string,
   messageId: number,
   originalText: string,
-  decision: string
+  decision: string,
+  errorMsg?: string
 ) {
-  const statusLine = decision === 'approved'
-    ? '\n\n✅ <b>TASDIQLANDI</b>'
-    : '\n\n❌ <b>RAD ETILDI</b>';
+  let statusLine: string;
+  if (errorMsg) {
+    statusLine = `\n\n⚠️ <b>XATOLIK:</b> ${errorMsg}`;
+  } else {
+    statusLine = decision === 'approved'
+      ? '\n\n✅ <b>TASDIQLANDI</b>'
+      : '\n\n❌ <b>RAD ETILDI</b>';
+  }
 
   // Try editMessageText first (for text messages)
   const res = await editMessageText(chatId, messageId, originalText + statusLine);
@@ -437,7 +443,7 @@ export async function editCallbackMessage(
   if (!res.ok) {
     const caption = originalText
       ? originalText + statusLine
-      : (decision === 'approved' ? '✅ <b>TASDIQLANDI</b>' : '❌ <b>RAD ETILDI</b>');
+      : statusLine;
     await editMessageCaption(chatId, messageId, caption);
   }
 }
