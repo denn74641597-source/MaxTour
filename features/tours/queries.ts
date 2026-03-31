@@ -3,6 +3,9 @@ import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { cache } from 'react';
 import type { Tour, TourFilters } from '@/types';
 
+/** Narrow select for homepage tour cards — only the fields card components actually read */
+const HOMEPAGE_TOUR_SELECT = 'id, slug, title, cover_image_url, price, old_price, currency, tour_type, region, city, country, district, destinations, is_featured, agency_id, category, view_count, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)' as const;
+
 /** Fetch published tours with optional filters */
 export async function getTours(filters?: TourFilters): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
@@ -269,4 +272,80 @@ export async function getPromotedTours(placement: string, limit = 50): Promise<T
     return [];
   }
   return data ?? [];
+}
+
+/* ─── Homepage-specific narrow queries ─── */
+
+/** Homepage featured tours — narrow select */
+export async function getHomeFeaturedTours(): Promise<Tour[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('tours')
+    .select(HOMEPAGE_TOUR_SELECT)
+    .eq('status', 'published')
+    .eq('is_featured', true)
+    .order('created_at', { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.error('getHomeFeaturedTours error:', error);
+    await notifySystemError({ source: 'Query: getHomeFeaturedTours', message: error.message });
+    return [];
+  }
+  return (data ?? []) as unknown as Tour[];
+}
+
+/** Homepage popular tours — narrow select */
+export async function getHomePopularTours(limit = 10): Promise<Tour[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('tours')
+    .select(HOMEPAGE_TOUR_SELECT)
+    .eq('status', 'published')
+    .order('view_count', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    const { data: fallback } = await supabase
+      .from('tours')
+      .select(HOMEPAGE_TOUR_SELECT)
+      .eq('status', 'published')
+      .order('is_featured', { ascending: false })
+      .order('created_at', { ascending: false })
+      .limit(limit);
+    return (fallback ?? []) as unknown as Tour[];
+  }
+  return (data ?? []) as unknown as Tour[];
+}
+
+/** Homepage promoted tours — narrow select */
+export async function getHomePromotedTours(placement: string, limit = 50): Promise<Tour[]> {
+  const supabase = await createServerSupabaseClient();
+  const now = new Date().toISOString();
+
+  const { data: promos } = await supabase
+    .from('tour_promotions')
+    .select('tour_id')
+    .eq('placement', placement)
+    .eq('is_active', true)
+    .gte('ends_at', now)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (!promos || promos.length === 0) return [];
+
+  const tourIds = promos.map(p => p.tour_id);
+
+  const { data, error } = await supabase
+    .from('tours')
+    .select(HOMEPAGE_TOUR_SELECT)
+    .eq('status', 'published')
+    .in('id', tourIds);
+
+  if (error) {
+    console.error('getHomePromotedTours error:', error);
+    await notifySystemError({ source: 'Query: getHomePromotedTours', message: error.message, extra: `Placement: ${placement}` });
+    return [];
+  }
+  return (data ?? []) as unknown as Tour[];
 }

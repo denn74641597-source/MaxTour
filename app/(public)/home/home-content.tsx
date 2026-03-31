@@ -18,14 +18,7 @@ import type { Tour, Agency } from '@/types';
 
 interface HomeContentProps {
   featuredTours: Tour[];
-  recentTours: Tour[];
-  agencies: Agency[];
-  topAgencies?: Agency[];
   popularTours?: Tour[];
-  hotDeals?: Tour[];
-  hotTours?: Tour[];
-  /** Current user's agency ID (if agency owner) — their tours show first */
-  currentAgencyId?: string;
 }
 
 /** Shuffle array (Fisher-Yates) returning a new array */
@@ -38,21 +31,17 @@ function shuffle<T>(arr: T[]): T[] {
   return a;
 }
 
-/** Pick `limit` random tours from `all`, with `ownAgencyId` tours always first */
-function pickRandom(all: Tour[], limit: number, ownAgencyId?: string): Tour[] {
+/** Pick `limit` random tours from `all` */
+function pickRandom(all: Tour[], limit: number): Tour[] {
   if (all.length === 0) return [];
-  const own = ownAgencyId ? all.filter(t => t.agency_id === ownAgencyId) : [];
-  const others = ownAgencyId ? all.filter(t => t.agency_id !== ownAgencyId) : all;
-  const shuffled = [...own, ...shuffle(others)];
-  return shuffled.slice(0, limit);
+  return shuffle(all).slice(0, limit);
 }
 
-export function HomeContent({ featuredTours, recentTours, agencies, topAgencies = [], popularTours = [], hotDeals = [], hotTours = [], currentAgencyId }: HomeContentProps) {
+export function HomeContent({ featuredTours, popularTours = [] }: HomeContentProps) {
   const { t } = useTranslation();
-  const heroTour = featuredTours[0] ?? recentTours[0];
 
   return (
-    <div className="px-6 pb-8">
+    <>
       {/* Search Bar */}
       <div className="mt-4 mb-5">
         <Suspense>
@@ -75,85 +64,89 @@ export function HomeContent({ featuredTours, recentTours, agencies, topAgencies 
         </div>
       </div>
 
-      {/* Hero Banner — rotates featured tours every 3s */}
-      {featuredTours.length > 0 ? (
+      {/* Hero Banner — rotates featured tours every 5s */}
+      {featuredTours.length > 0 && (
         <div className="mb-10">
           <h3 className="text-lg font-bold text-foreground mb-4">{t.home.recommendedTours}</h3>
-          <RotatingHero tours={featuredTours} currentAgencyId={currentAgencyId} />
+          <RotatingHero tours={featuredTours} />
         </div>
-      ) : heroTour ? (
-        <div className="mb-10"><HeroBanner tour={heroTour} /></div>
-      ) : null}
+      )}
 
       {/* Popular Destinations (dynamic - most viewed tours) */}
       <div className="mb-10">
         <PopularDestinations tours={popularTours} />
       </div>
-
-      {/* Verified Agencies */}
-      {agencies.length > 0 && (
-        <section className="mb-10">
-          <h3 className="text-lg font-bold text-foreground mb-4">{t.home.verifiedAgencies}</h3>
-          <div className="flex gap-5 overflow-x-auto no-scrollbar items-start py-1 -mx-6 px-6">
-            {agencies.map((agency) => (
-              <AgencyCard key={agency.id} agency={agency} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Hot Deals / Yaxshi takliflar */}
-      <section className="mb-10">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
-        </div>
-        {hotDeals.length > 0 ? (
-          <RotatingGrid
-            allTours={hotDeals}
-            limit={20}
-            currentAgencyId={currentAgencyId}
-            CardComponent={HotDealCard}
-          />
-        ) : (
-          <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
-        )}
-      </section>
-
-      {/* Qaynoq turlar */}
-      <section className="mb-10">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-foreground">{t.home.hotTours}</h3>
-        </div>
-        {hotTours.length > 0 ? (
-          <RotatingGrid
-            allTours={hotTours}
-            limit={20}
-            currentAgencyId={currentAgencyId}
-            CardComponent={HotTourCard}
-          />
-        ) : (
-          <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
-        )}
-      </section>
-
-      {/* Top Rated Agencies */}
-      {topAgencies.length > 0 && (
-        <section>
-          <h3 className="text-lg font-bold text-foreground mb-4">{t.home.topRated}</h3>
-          <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
-            {topAgencies.map((agency) => (
-              <TopRatedAgencyCard key={agency.id} agency={agency} />
-            ))}
-          </div>
-        </section>
-      )}
-    </div>
+    </>
   );
 }
 
-/** Rotating Hero Banner — picks random 10 from featured, auto-rotates every 3s, supports swipe */
-function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgencyId?: string }) {
-  const [current, setCurrent] = useState(() => pickRandom(tours, 10, currentAgencyId));
+/* ─── Deferred section components (rendered via Suspense from page.tsx) ─── */
+
+export function HomeAgenciesSection({ agencies }: { agencies: Agency[] }) {
+  const { t } = useTranslation();
+  if (agencies.length === 0) return null;
+  return (
+    <section className="mb-10">
+      <h3 className="text-lg font-bold text-foreground mb-4">{t.home.verifiedAgencies}</h3>
+      <div className="flex gap-5 overflow-x-auto no-scrollbar items-start py-1 -mx-6 px-6">
+        {agencies.map((agency) => (
+          <AgencyCard key={agency.id} agency={agency} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
+  const { t } = useTranslation();
+  return (
+    <section className="mb-10">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
+      </div>
+      {hotDeals.length > 0 ? (
+        <RotatingGrid allTours={hotDeals} limit={20} CardComponent={HotDealCard} />
+      ) : (
+        <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
+      )}
+    </section>
+  );
+}
+
+export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
+  const { t } = useTranslation();
+  return (
+    <section className="mb-10">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-foreground">{t.home.hotTours}</h3>
+      </div>
+      {hotTours.length > 0 ? (
+        <RotatingGrid allTours={hotTours} limit={20} CardComponent={HotTourCard} />
+      ) : (
+        <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
+      )}
+    </section>
+  );
+}
+
+export function HomeTopRatedSection({ topAgencies }: { topAgencies: Agency[] }) {
+  const { t } = useTranslation();
+  if (topAgencies.length === 0) return null;
+  return (
+    <section>
+      <h3 className="text-lg font-bold text-foreground mb-4">{t.home.topRated}</h3>
+      <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
+        {topAgencies.map((agency) => (
+          <TopRatedAgencyCard key={agency.id} agency={agency} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/** Rotating Hero Banner — picks random 10 from featured, auto-rotates every 5s, supports swipe */
+function RotatingHero({ tours }: { tours: Tour[] }) {
+  const [current, setCurrent] = useState(() => pickRandom(tours, 10));
   const [idx, setIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const touchStart = useRef(0);
@@ -170,12 +163,12 @@ function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgency
   const goNext = useCallback(() => {
     const next = idx + 1;
     if (next >= current.length) {
-      setCurrent(pickRandom(tours, 10, currentAgencyId));
+      setCurrent(pickRandom(tours, 10));
       goTo(0);
     } else {
       goTo(next);
     }
-  }, [idx, current.length, tours, currentAgencyId, goTo]);
+  }, [idx, current.length, tours, goTo]);
 
   const goPrev = useCallback(() => {
     goTo(idx > 0 ? idx - 1 : current.length - 1);
@@ -238,15 +231,13 @@ function RotatingHero({ tours, currentAgencyId }: { tours: Tour[]; currentAgency
 function RotatingGrid({
   allTours,
   limit,
-  currentAgencyId,
   CardComponent,
 }: {
   allTours: Tour[];
   limit: number;
-  currentAgencyId?: string;
   CardComponent: React.ComponentType<{ tour: Tour }>;
 }) {
-  const [display, setDisplay] = useState(() => pickRandom(allTours, limit, currentAgencyId));
+  const [display, setDisplay] = useState(() => pickRandom(allTours, limit));
   const [pageIdx, setPageIdx] = useState(0);
   const [fading, setFading] = useState(false);
   const touchStart = useRef(0);
@@ -265,12 +256,12 @@ function RotatingGrid({
   const goNext = useCallback(() => {
     const next = pageIdx + 1;
     if (next >= totalPages) {
-      setDisplay(pickRandom(allTours, limit, currentAgencyId));
+      setDisplay(pickRandom(allTours, limit));
       goToPage(0);
     } else {
       goToPage(next);
     }
-  }, [pageIdx, totalPages, allTours, limit, currentAgencyId, goToPage]);
+  }, [pageIdx, totalPages, allTours, limit, goToPage]);
 
   const goPrev = useCallback(() => {
     goToPage(pageIdx > 0 ? pageIdx - 1 : totalPages - 1);

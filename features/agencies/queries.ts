@@ -3,6 +3,9 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
 import type { Agency, Review } from '@/types';
 
+/** Narrow select for homepage agency cards — only the fields card components actually read */
+const HOMEPAGE_AGENCY_SELECT = 'id, name, slug, logo_url, is_verified, is_approved, avg_rating, review_count' as const;
+
 /**
  * Get the current user's agency (cached per request via React.cache).
  * Deduplicates auth + agency lookup across server components in the same render.
@@ -170,4 +173,45 @@ export async function getAgencyTourLimit(agencyId: string): Promise<TourLimitInf
     currentTours,
     canCreate: currentTours < maxTours,
   };
+}
+
+/* ─── Homepage-specific narrow queries ─── */
+
+/** Homepage verified agencies — narrow select */
+export async function getHomeVerifiedAgencies(limit = 6): Promise<Agency[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('agencies')
+    .select(HOMEPAGE_AGENCY_SELECT)
+    .eq('is_approved', true)
+    .eq('is_verified', true)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('getHomeVerifiedAgencies error:', error);
+    await notifySystemError({ source: 'Query: getHomeVerifiedAgencies', message: error.message });
+    return [];
+  }
+  return (data ?? []) as unknown as Agency[];
+}
+
+/** Homepage top-rated agencies — narrow select */
+export async function getHomeTopRatedAgencies(limit = 6): Promise<Agency[]> {
+  const supabase = await createServerSupabaseClient();
+  const { data, error } = await supabase
+    .from('agencies')
+    .select(HOMEPAGE_AGENCY_SELECT)
+    .eq('is_approved', true)
+    .order('avg_rating', { ascending: false })
+    .order('review_count', { ascending: false })
+    .gt('review_count', 0)
+    .limit(limit);
+
+  if (error) {
+    console.error('getHomeTopRatedAgencies error:', error);
+    await notifySystemError({ source: 'Query: getHomeTopRatedAgencies', message: error.message });
+    return [];
+  }
+  return (data ?? []) as unknown as Agency[];
 }
