@@ -42,26 +42,13 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Agency routes — require Supabase auth
+  // Agency routes — require Supabase auth (role checked in layout)
   if (pathname.startsWith('/agency')) {
-    const { supabaseResponse, user, supabase } = await updateSession(request);
+    const { supabaseResponse, user } = await updateSession(request);
 
     if (!user) {
       const loginUrl = new URL('/profile', request.nextUrl);
       return NextResponse.redirect(loginUrl);
-    }
-
-    if (supabase) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (profile?.role !== 'agency_manager' && profile?.role !== 'admin') {
-        const homeUrl = new URL('/', request.nextUrl);
-        return NextResponse.redirect(homeUrl);
-      }
     }
 
     return supabaseResponse;

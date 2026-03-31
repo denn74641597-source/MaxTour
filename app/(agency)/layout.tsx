@@ -3,6 +3,8 @@ import { AppHeader } from '@/components/shared/app-header';
 import { BottomNav } from '@/components/shared/bottom-nav';
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { requireRole } from '@/features/auth/helpers';
 
 function AgencyLoadingFallback() {
   return (
@@ -12,11 +14,14 @@ function AgencyLoadingFallback() {
   );
 }
 
-export default function AgencyLayout({
+export default async function AgencyLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const profile = await requireRole('agency_manager', 'admin');
+  if (!profile) redirect('/');
+
   return (
     <div className="min-h-screen flex flex-col">
       <div className="md:hidden sticky top-0 z-50">
