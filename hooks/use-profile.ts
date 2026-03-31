@@ -18,6 +18,7 @@ export function useProfile() {
       } = await supabase.auth.getUser();
 
       if (!user) {
+        setProfile(null);
         setLoading(false);
         return;
       }
@@ -33,6 +34,17 @@ export function useProfile() {
     }
 
     fetchProfile();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session?.user) {
+        setProfile(null);
+        setLoading(false);
+      } else {
+        fetchProfile();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return { profile, loading };

@@ -42,19 +42,18 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Refresh Supabase session for ALL non-admin routes (keeps tokens alive)
+  const { supabaseResponse, user } = await updateSession(request);
+
   // Agency routes — require Supabase auth (role checked in layout)
   if (pathname.startsWith('/agency')) {
-    const { supabaseResponse, user } = await updateSession(request);
-
     if (!user) {
       const loginUrl = new URL('/profile', request.nextUrl);
       return NextResponse.redirect(loginUrl);
     }
-
-    return supabaseResponse;
   }
 
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {
