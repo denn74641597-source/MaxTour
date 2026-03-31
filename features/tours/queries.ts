@@ -319,7 +319,7 @@ export async function getHomePopularTours(limit = 10): Promise<Tour[]> {
 }
 
 /** Homepage promoted tours — narrow select */
-export async function getHomePromotedTours(placement: string, limit = 50): Promise<Tour[]> {
+export async function getHomePromotedTours(placement: string, limit = 20): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const now = new Date().toISOString();
 

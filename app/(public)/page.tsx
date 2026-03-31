@@ -2,7 +2,7 @@ import { Suspense } from 'react';
 import { getHomeFeaturedTours, getHomePopularTours, getHomePromotedTours } from '@/features/tours/queries';
 import { getHomeVerifiedAgencies, getHomeTopRatedAgencies } from '@/features/agencies/queries';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
-import { HomeContent, HomeAgenciesSection, HomeHotDealsSection, HomeHotToursSection, HomeTopRatedSection } from './home/home-content';
+import { HomeContent, HomeAgenciesSection, HomeHotDealsSection, HomeHotToursSection, HomeTopRatedSection, HomeFavoritesProvider } from './home/home-content';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Tour } from '@/types';
 
@@ -17,7 +17,7 @@ export default async function HomePage() {
     [featuredTours, popularTours, promotedFeatured] = await Promise.all([
       getHomeFeaturedTours(),
       getHomePopularTours(10),
-      getHomePromotedTours('featured'),
+      getHomePromotedTours('featured', 12),
     ]);
   } catch (error) {
     console.error('HomePage critical data fetch error:', error);
@@ -33,12 +33,14 @@ export default async function HomePage() {
       <Suspense fallback={<AgenciesSkeleton />}>
         <DeferredAgencies />
       </Suspense>
-      <Suspense fallback={<GridSkeleton />}>
-        <DeferredHotDeals />
-      </Suspense>
-      <Suspense fallback={<GridSkeleton />}>
-        <DeferredHotTours />
-      </Suspense>
+      <HomeFavoritesProvider>
+        <Suspense fallback={<GridSkeleton />}>
+          <DeferredHotDeals />
+        </Suspense>
+        <Suspense fallback={<GridSkeleton />}>
+          <DeferredHotTours />
+        </Suspense>
+      </HomeFavoritesProvider>
       <Suspense fallback={<TopRatedSkeleton />}>
         <DeferredTopRated />
       </Suspense>
@@ -64,7 +66,7 @@ async function DeferredAgencies() {
 async function DeferredHotDeals() {
   let hotDeals: Tour[] = [];
   try {
-    hotDeals = await getHomePromotedTours('hot_deals');
+    hotDeals = await getHomePromotedTours('hot_deals', 20);
   } catch (error) {
     console.error('DeferredHotDeals error:', error);
     await notifySystemError({ source: 'Page: HomePage DeferredHotDeals', message: error instanceof Error ? error.message : 'Hot deals fetch error' });
@@ -75,7 +77,7 @@ async function DeferredHotDeals() {
 async function DeferredHotTours() {
   let hotTours: Tour[] = [];
   try {
-    hotTours = await getHomePromotedTours('hot_tours');
+    hotTours = await getHomePromotedTours('hot_tours', 20);
   } catch (error) {
     console.error('DeferredHotTours error:', error);
     await notifySystemError({ source: 'Page: HomePage DeferredHotTours', message: error instanceof Error ? error.message : 'Hot tours fetch error' });
