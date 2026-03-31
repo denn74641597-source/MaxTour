@@ -3,8 +3,8 @@ import { createAdminClient } from '@/lib/supabase/server';
 
 /**
  * POST /api/auth-phone
- * Given a phone number, returns the auth email associated with that phone.
- * Used so agencies can login with their phone number.
+ * Given a phone number, returns the Supabase auth email associated with that phone.
+ * First checks auth.users directly (most reliable), then falls back to profiles table.
  */
 export async function POST(request: NextRequest) {
   const { phone } = await request.json();
@@ -17,44 +17,44 @@ export async function POST(request: NextRequest) {
   if (cleaned.startsWith('998') && !cleaned.startsWith('+')) {
     cleaned = '+' + cleaned;
   }
+  const withoutPlus = cleaned.replace(/^\+/, '');
 
   const admin = await createAdminClient();
 
-  // Try exact match first
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('email, role')
-    .eq('phone', cleaned)
-    .single();
+  // 1. Find user ID from profiles table by phone
+  const phoneVariants = [cleaned, withoutPlus];
+  if (!cleaned.startsWith('+')) phoneVariants.push('+' + cleaned);
 
-  if (profile?.email) {
-    return NextResponse.json({ email: profile.email });
-  }
-
-  // Try without + prefix
-  const withoutPlus = cleaned.replace(/^\+/, '');
-  const { data: profile2 } = await admin
-    .from('profiles')
-    .select('email, role')
-    .eq('phone', withoutPlus)
-    .single();
-
-  if (profile2?.email) {
-    return NextResponse.json({ email: profile2.email });
-  }
-
-  // Try with + prefix
-  if (!cleaned.startsWith('+')) {
-    const { data: profile3 } = await admin
+  let userId: string | null = null;
+  for (const ph of phoneVariants) {
+    const { data } = await admin
       .from('profiles')
-      .select('email, role')
-      .eq('phone', '+' + cleaned)
+      .select('id')
+      .eq('phone', ph)
+      .limit(1)
       .single();
-
-    if (profile3?.email) {
-      return NextResponse.json({ email: profile3.email });
+    if (data?.id) {
+      userId = data.id;
+      break;
     }
   }
 
-  return NextResponse.json({ email: null });
+  if (!userId) {
+    return NextResponse.json({ email: null });
+  }
+
+  // 2. Get the ACTUAL auth email from auth.users (this is what Supabase uses for login)
+  const { data: authUser } = await admin.auth.admin.getUserById(userId);
+  if (authUser?.user?.email) {
+    return NextResponse.json({ email: authUser.user.email });
+  }
+
+  // 3. Fallback: try legacy email patterns
+  const legacyEmails = [
+    `${withoutPlus}@maxtour.local`,
+    `${cleaned}@user.maxtour.uz`,
+    `${withoutPlus}@user.maxtour.uz`,
+  ];
+
+  return NextResponse.json({ email: legacyEmails[0], legacyEmails });
 }

@@ -101,6 +101,37 @@ export function AuthScreen() {
         password: pwd,
       });
 
+      // If email login failed, try looking up actual auth email via phone
+      if (signInError && isEmail) {
+        try {
+          // Look up phone from profiles by this email, then resolve auth email
+          const { data: profileByEmail } = await supabase
+            .from('profiles')
+            .select('phone')
+            .eq('email', identifier.toLowerCase())
+            .limit(1)
+            .single();
+
+          if (profileByEmail?.phone) {
+            const res = await fetch('/api/auth-phone', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phone: profileByEmail.phone }),
+            });
+            const data = await res.json();
+            if (data.email && data.email !== authEmail) {
+              const retry = await supabase.auth.signInWithPassword({
+                email: data.email,
+                password: pwd,
+              });
+              signInError = retry.error ?? null;
+            }
+          }
+        } catch {
+          // ignore lookup error
+        }
+      }
+
       // If phone login failed, try looking up agency email by phone
       if (signInError && !isEmail) {
         try {
@@ -111,12 +142,42 @@ export function AuthScreen() {
             body: JSON.stringify({ phone: normalizedPhone }),
           });
           const data = await res.json();
+
+          // Try primary email from auth-phone
           if (data.email) {
             const retry = await supabase.auth.signInWithPassword({
               email: data.email,
               password: pwd,
             });
             signInError = retry.error ?? null;
+          }
+
+          // Try legacy email patterns if primary failed
+          if (signInError && data.legacyEmails) {
+            for (const legacyEmail of data.legacyEmails) {
+              if (legacyEmail === data.email) continue;
+              const legacyRetry = await supabase.auth.signInWithPassword({
+                email: legacyEmail,
+                password: pwd,
+              });
+              if (!legacyRetry.error) {
+                signInError = null;
+                break;
+              }
+            }
+          }
+
+          // Last resort: try legacy @maxtour.local format
+          if (signInError) {
+            const phoneDigits = normalizedPhone.replace(/^\+/, '');
+            const legacyEmail = `${phoneDigits}@maxtour.local`;
+            if (legacyEmail !== data.email) {
+              const legacy = await supabase.auth.signInWithPassword({
+                email: legacyEmail,
+                password: pwd,
+              });
+              signInError = legacy.error ?? null;
+            }
           }
         } catch {
           // ignore lookup error, keep original error
