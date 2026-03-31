@@ -88,7 +88,7 @@ export const getTourBySlug = cache(async (slug: string): Promise<Tour | null> =>
     )
     .eq('slug', slug)
     .eq('status', 'published')
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('getTourBySlug error:', error);
