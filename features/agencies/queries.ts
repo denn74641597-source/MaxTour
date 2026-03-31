@@ -178,10 +178,12 @@ export async function getAgencyTourLimit(agencyId: string): Promise<TourLimitInf
 
 /* ─── Homepage-specific narrow queries ─── */
 
-/** Homepage verified agencies — narrow select, cached 120s */
+/** Homepage verified agencies — narrow select, cached 120s. Falls back to approved agencies. */
 export async function getHomeVerifiedAgencies(limit = 6): Promise<Agency[]> {
   return withTTLCache(`home:verified-agencies:${limit}`, async () => {
     const supabase = createPublicSupabaseClient();
+
+    // Try verified + approved first
     const { data, error } = await supabase
       .from('agencies')
       .select(HOMEPAGE_AGENCY_SELECT)
@@ -193,16 +195,34 @@ export async function getHomeVerifiedAgencies(limit = 6): Promise<Agency[]> {
     if (error) {
       console.error('getHomeVerifiedAgencies error:', error);
       await notifySystemError({ source: 'Query: getHomeVerifiedAgencies', message: error.message });
+    }
+
+    if (data && data.length > 0) {
+      return data as unknown as Agency[];
+    }
+
+    // Fallback: show all approved agencies (not just verified)
+    const { data: fallback, error: fbError } = await supabase
+      .from('agencies')
+      .select(HOMEPAGE_AGENCY_SELECT)
+      .eq('is_approved', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (fbError) {
+      console.error('getHomeVerifiedAgencies fallback error:', fbError);
       return [];
     }
-    return (data ?? []) as unknown as Agency[];
+    return (fallback ?? []) as unknown as Agency[];
   }, 120);
 }
 
-/** Homepage top-rated agencies — narrow select, cached 120s */
+/** Homepage top-rated agencies — narrow select, cached 120s. Falls back to approved agencies. */
 export async function getHomeTopRatedAgencies(limit = 6): Promise<Agency[]> {
   return withTTLCache(`home:top-rated-agencies:${limit}`, async () => {
     const supabase = createPublicSupabaseClient();
+
+    // Try top-rated first (with reviews)
     const { data, error } = await supabase
       .from('agencies')
       .select(HOMEPAGE_AGENCY_SELECT)
@@ -215,8 +235,24 @@ export async function getHomeTopRatedAgencies(limit = 6): Promise<Agency[]> {
     if (error) {
       console.error('getHomeTopRatedAgencies error:', error);
       await notifySystemError({ source: 'Query: getHomeTopRatedAgencies', message: error.message });
+    }
+
+    if (data && data.length > 0) {
+      return data as unknown as Agency[];
+    }
+
+    // Fallback: show approved agencies sorted by rating (even with 0 reviews)
+    const { data: fallback, error: fbError } = await supabase
+      .from('agencies')
+      .select(HOMEPAGE_AGENCY_SELECT)
+      .eq('is_approved', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
+
+    if (fbError) {
+      console.error('getHomeTopRatedAgencies fallback error:', fbError);
       return [];
     }
-    return (data ?? []) as unknown as Agency[];
+    return (fallback ?? []) as unknown as Agency[];
   }, 120);
 }

@@ -288,10 +288,12 @@ export async function getPromotedTours(placement: string, limit = 50): Promise<T
 
 /* ─── Homepage-specific narrow queries ─── */
 
-/** Homepage featured tours — narrow select, cached 60s */
+/** Homepage featured tours — narrow select, cached 60s. Falls back to published tours. */
 export async function getHomeFeaturedTours(): Promise<Tour[]> {
   return withTTLCache('home:featured-tours', async () => {
     const supabase = createPublicSupabaseClient();
+
+    // Try featured tours first
     const { data, error } = await supabase
       .from('tours')
       .select(HOMEPAGE_TOUR_SELECT)
@@ -303,9 +305,21 @@ export async function getHomeFeaturedTours(): Promise<Tour[]> {
     if (error) {
       console.error('getHomeFeaturedTours error:', error);
       await notifySystemError({ source: 'Query: getHomeFeaturedTours', message: error.message });
-      return [];
     }
-    return (data ?? []) as unknown as Tour[];
+
+    if (data && data.length > 0) {
+      return data as unknown as Tour[];
+    }
+
+    // Fallback: show newest published tours
+    const { data: fallback } = await supabase
+      .from('tours')
+      .select(HOMEPAGE_TOUR_SELECT)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .limit(8);
+
+    return (fallback ?? []) as unknown as Tour[];
   }, 60);
 }
 
@@ -334,7 +348,7 @@ export async function getHomePopularTours(limit = 10): Promise<Tour[]> {
   }, 60);
 }
 
-/** Homepage promoted tours — narrow select, cached 60s */
+/** Homepage promoted tours — narrow select, cached 60s. Falls back to published tours. */
 export async function getHomePromotedTours(placement: string, limit = 20): Promise<Tour[]> {
   return withTTLCache(`home:promoted-tours:${placement}:${limit}`, async () => {
     const supabase = createPublicSupabaseClient();
@@ -349,21 +363,33 @@ export async function getHomePromotedTours(placement: string, limit = 20): Promi
       .order('created_at', { ascending: false })
       .limit(limit) as { data: { tour_id: string }[] | null };
 
-    if (!promos || promos.length === 0) return [];
+    if (promos && promos.length > 0) {
+      const tourIds = promos.map(p => p.tour_id);
 
-    const tourIds = promos.map(p => p.tour_id);
+      const { data, error } = await supabase
+        .from('tours')
+        .select(HOMEPAGE_TOUR_SELECT)
+        .eq('status', 'published')
+        .in('id', tourIds);
 
-    const { data, error } = await supabase
+      if (!error && data && data.length > 0) {
+        return data as unknown as Tour[];
+      }
+
+      if (error) {
+        console.error('getHomePromotedTours error:', error);
+        await notifySystemError({ source: 'Query: getHomePromotedTours', message: error.message, extra: `Placement: ${placement}` });
+      }
+    }
+
+    // Fallback: show recent published tours
+    const { data: fallback } = await supabase
       .from('tours')
       .select(HOMEPAGE_TOUR_SELECT)
       .eq('status', 'published')
-      .in('id', tourIds);
+      .order('created_at', { ascending: false })
+      .limit(Math.min(limit, 12));
 
-    if (error) {
-      console.error('getHomePromotedTours error:', error);
-      await notifySystemError({ source: 'Query: getHomePromotedTours', message: error.message, extra: `Placement: ${placement}` });
-      return [];
-    }
-    return (data ?? []) as unknown as Tour[];
+    return (fallback ?? []) as unknown as Tour[];
   }, 60);
 }

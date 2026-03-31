@@ -12,19 +12,49 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Phone required' }, { status: 400 });
   }
 
-  const cleaned = phone.trim();
+  // Normalize phone: remove spaces/dashes, ensure + prefix
+  let cleaned = phone.trim().replace(/[\s\-\(\)]/g, '');
+  if (cleaned.startsWith('998') && !cleaned.startsWith('+')) {
+    cleaned = '+' + cleaned;
+  }
+
   const admin = await createAdminClient();
 
-  // Look up profile by phone
+  // Try exact match first
   const { data: profile } = await admin
     .from('profiles')
     .select('email, role')
     .eq('phone', cleaned)
     .single();
 
-  if (!profile?.email) {
-    return NextResponse.json({ email: null });
+  if (profile?.email) {
+    return NextResponse.json({ email: profile.email });
   }
 
-  return NextResponse.json({ email: profile.email });
+  // Try without + prefix
+  const withoutPlus = cleaned.replace(/^\+/, '');
+  const { data: profile2 } = await admin
+    .from('profiles')
+    .select('email, role')
+    .eq('phone', withoutPlus)
+    .single();
+
+  if (profile2?.email) {
+    return NextResponse.json({ email: profile2.email });
+  }
+
+  // Try with + prefix
+  if (!cleaned.startsWith('+')) {
+    const { data: profile3 } = await admin
+      .from('profiles')
+      .select('email, role')
+      .eq('phone', '+' + cleaned)
+      .single();
+
+    if (profile3?.email) {
+      return NextResponse.json({ email: profile3.email });
+    }
+  }
+
+  return NextResponse.json({ email: null });
 }

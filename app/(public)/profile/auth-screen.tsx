@@ -21,6 +21,16 @@ function phoneToAuthEmail(phone: string): string {
   return `${cleaned}@user.maxtour.uz`;
 }
 
+/** Normalize phone number to consistent format for lookups */
+function normalizePhone(phone: string): string {
+  let cleaned = phone.replace(/[\s\-\(\)]/g, '');
+  // Ensure + prefix for numbers starting with country code
+  if (cleaned.startsWith('998') && !cleaned.startsWith('+')) {
+    cleaned = '+' + cleaned;
+  }
+  return cleaned;
+}
+
 export function AuthScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -84,7 +94,7 @@ export function AuthScreen() {
     try {
       // Determine if input is email or phone
       const isEmail = identifier.includes('@');
-      let authEmail = isEmail ? identifier.toLowerCase() : phoneToAuthEmail(identifier);
+      let authEmail = isEmail ? identifier.toLowerCase() : phoneToAuthEmail(normalizePhone(identifier));
 
       let { error: signInError } = await supabase.auth.signInWithPassword({
         email: authEmail,
@@ -94,10 +104,11 @@ export function AuthScreen() {
       // If phone login failed, try looking up agency email by phone
       if (signInError && !isEmail) {
         try {
+          const normalizedPhone = normalizePhone(identifier);
           const res = await fetch('/api/auth-phone', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ phone: identifier }),
+            body: JSON.stringify({ phone: normalizedPhone }),
           });
           const data = await res.json();
           if (data.email) {
@@ -113,7 +124,16 @@ export function AuthScreen() {
       }
 
       if (signInError) {
-        setError(t.auth.wrongPassword);
+        const msg = signInError.message?.toLowerCase() || '';
+        if (msg.includes('invalid login credentials') || msg.includes('invalid password')) {
+          setError(t.auth.wrongPassword);
+        } else if (msg.includes('email not confirmed')) {
+          setError('Email tasdiqlanmagan. Iltimos, emailingizni tekshiring.');
+        } else if (msg.includes('not found') || msg.includes('no user')) {
+          setError('Foydalanuvchi topilmadi. Ro\'yxatdan o\'ting.');
+        } else {
+          setError(t.auth.wrongPassword);
+        }
         return;
       }
 
@@ -145,7 +165,7 @@ export function AuthScreen() {
   // ── USER REGISTRATION (no email verification) ──
   const handleUserRegister = async () => {
     const trimmedName = fullName.trim();
-    const trimmedPhone = phone.trim();
+    const trimmedPhone = normalizePhone(phone.trim());
     const trimmedPassword = password.trim();
     if (!trimmedName || !trimmedPhone || !trimmedPassword) return;
 
@@ -299,14 +319,19 @@ export function AuthScreen() {
       }
 
       // Set password for future email+password login
-      await supabase.auth.updateUser({ password: pending.password });
+      const { error: pwdError } = await supabase.auth.updateUser({ password: pending.password });
+      if (pwdError) {
+        console.error('Password update error:', pwdError);
+        setError('Parolni saqlashda xatolik. Qayta urinib ko\'ring.');
+        return;
+      }
 
       // Upsert agency_manager profile
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: userId,
         role: 'agency_manager' as const,
         full_name: pending.fullName,
-        phone: pending.phone,
+        phone: normalizePhone(pending.phone),
         email: pending.email,
         updated_at: new Date().toISOString(),
       });
