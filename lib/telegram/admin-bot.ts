@@ -9,6 +9,26 @@ function getBotToken() {
   return token;
 }
 
+// ─── Auto webhook setup (runs once per cold start) ───
+let _webhookEnsured = false;
+
+async function ensureWebhook() {
+  if (_webhookEnsured) return;
+  _webhookEnsured = true;
+  try {
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) return;
+    const webhookUrl = `${appUrl}/api/admin-bot/webhook`;
+    await fetch(`https://api.telegram.org/bot${getBotToken()}/setWebhook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: webhookUrl }),
+    });
+  } catch {
+    // ignore — webhook will be set on next attempt
+  }
+}
+
 function getAdminChatIds(): string[] {
   const id1 = process.env.ADMIN_CHAT_ID;
   if (!id1) throw new Error('ADMIN_CHAT_ID environment variable is not set');
@@ -50,6 +70,8 @@ async function sendMessage(
   text: string,
   buttons?: InlineButton[][]
 ) {
+  await ensureWebhook();
+
   const body: Record<string, unknown> = {
     chat_id: chatId,
     text,
@@ -84,7 +106,7 @@ async function editMessageText(
   messageId: number,
   text: string
 ) {
-  await fetch(`https://api.telegram.org/bot${getBotToken()}/editMessageText`, {
+  const res = await fetch(`https://api.telegram.org/bot${getBotToken()}/editMessageText`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -92,8 +114,29 @@ async function editMessageText(
       message_id: messageId,
       text,
       parse_mode: 'HTML',
+      reply_markup: { inline_keyboard: [] },
     }),
   });
+  return res;
+}
+
+async function editMessageCaption(
+  chatId: string,
+  messageId: number,
+  caption: string
+) {
+  const res = await fetch(`https://api.telegram.org/bot${getBotToken()}/editMessageCaption`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: chatId,
+      message_id: messageId,
+      caption,
+      parse_mode: 'HTML',
+      reply_markup: { inline_keyboard: [] },
+    }),
+  });
+  return res;
 }
 
 // ─── Notification senders ───
@@ -387,7 +430,16 @@ export async function editCallbackMessage(
     ? '\n\n✅ <b>TASDIQLANDI</b>'
     : '\n\n❌ <b>RAD ETILDI</b>';
 
-  await editMessageText(chatId, messageId, originalText + statusLine);
+  // Try editMessageText first (for text messages)
+  const res = await editMessageText(chatId, messageId, originalText + statusLine);
+
+  // If it fails (e.g. photo message), try editMessageCaption
+  if (!res.ok) {
+    const caption = originalText
+      ? originalText + statusLine
+      : (decision === 'approved' ? '✅ <b>TASDIQLANDI</b>' : '❌ <b>RAD ETILDI</b>');
+    await editMessageCaption(chatId, messageId, caption);
+  }
 }
 
 // ─── System error notification (with deduplication) ───

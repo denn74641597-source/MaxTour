@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     const chatId = String(callback.message?.chat?.id);
     const messageId = callback.message?.message_id;
-    const originalText = callback.message?.text || '';
+    const originalText = callback.message?.text || callback.message?.caption || '';
     const data: string = callback.data;
 
     const supabase = await createAdminClient();
