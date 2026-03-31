@@ -2,7 +2,8 @@ import { Suspense } from 'react';
 import { getHomeFeaturedTours, getHomePopularTours, getHomePromotedTours } from '@/features/tours/queries';
 import { getHomeVerifiedAgencies, getHomeTopRatedAgencies } from '@/features/agencies/queries';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
-import { HomeContent, HomeAgenciesSection, HomeHotDealsSection, HomeHotToursSection, HomeTopRatedSection, HomeFavoritesProvider } from './home/home-content';
+import { HomeContent, HomeAgenciesSection, HomeHotDealsSection, HomeHotToursSection, HomeTopRatedSection } from './home/home-content';
+import { HomeFavoritesProvider } from './home/home-favorites-provider';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Tour } from '@/types';
 

@@ -11,7 +11,7 @@ import { PopularDestinations } from '@/components/shared/popular-destinations';
 import { EmptyState } from '@/components/shared/empty-state';
 import { placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
-import { useFavorites } from '@/hooks/use-favorites';
+import { useHomeFavorites } from './home-favorites-provider';
 import { hapticFeedback } from '@/lib/telegram';
 import { TOUR_CATEGORIES } from '@/types';
 import type { Tour, Agency } from '@/types';
@@ -324,7 +324,7 @@ function RotatingGrid({
 
 /** Hot Deal Card — shows tour name, location, and price */
 function HotDealCard({ tour }: { tour: Tour }) {
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useHomeFavorites();
   const liked = isFavorite(tour.id);
   const location = tour.tour_type === 'domestic'
     ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
@@ -373,7 +373,7 @@ function HotDealCard({ tour }: { tour: Tour }) {
 
 /** Hot Tour Card — same layout as HotDealCard, only icon differs */
 function HotTourCard({ tour }: { tour: Tour }) {
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { isFavorite, toggleFavorite } = useHomeFavorites();
   const liked = isFavorite(tour.id);
   const location = tour.tour_type === 'domestic'
     ? `${tour.district ? `${tour.district}, ` : ''}${tour.region || 'O\'zbekiston'}`
