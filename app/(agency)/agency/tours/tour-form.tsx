@@ -445,7 +445,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         .eq('id', tourId);
 
       if (error) {
-        toast.error('Tizimda xatolik');
+        console.error('Tour update error:', error);
+        toast.error(`Xatolik: ${error.message}`);
         return;
       }
       if (payload.status === 'pending') {
@@ -496,7 +497,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         .single();
 
       if (error) {
-        toast.error('Tizimda xatolik');
+        console.error('Tour insert error:', error);
+        toast.error(`Xatolik: ${error.message}`);
         return;
       }
       if (payload.status === 'pending' && inserted) {
