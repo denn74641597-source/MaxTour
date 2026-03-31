@@ -239,22 +239,23 @@ export async function notifyVerificationRequest(
     license_pdf_url?: string;
   }
 ) {
+  const s = sanitize;
   let text =
     `🔔 <b>Yangi verifikatsiya so'rovi</b>\n\n` +
-    `🏢 Agentlik: <b>${agencyName}</b>\n` +
-    `📋 Kompaniya: ${companyName}\n`;
+    `🏢 Agentlik: <b>${s(agencyName)}</b>\n` +
+    `📋 Kompaniya: ${s(companyName)}\n`;
 
   if (formData) {
-    if (formData.registered_name) text += `📝 Ro'yxatdagi nomi: ${formData.registered_name}\n`;
-    if (formData.country) text += `🌍 Mamlakat: ${formData.country}\n`;
-    if (formData.office_address) text += `📍 Ofis manzili: ${formData.office_address}\n`;
-    if (formData.work_phone) text += `📞 Ish telefon: ${formData.work_phone}\n`;
-    if (formData.work_email) text += `📧 Ish email: ${formData.work_email}\n`;
-    if (formData.telegram_link) text += `✈️ Telegram: ${formData.telegram_link}\n`;
-    if (formData.instagram_url) text += `📸 Instagram: ${formData.instagram_url}\n`;
-    if (formData.website_url) text += `🌐 Veb-sayt: ${formData.website_url}\n`;
-    if (formData.inn) text += `🏛 INN: ${formData.inn}\n`;
-    if (formData.registration_number) text += `📄 Ro'yxatga olish raqami: ${formData.registration_number}\n`;
+    if (formData.registered_name) text += `📝 Ro'yxatdagi nomi: ${s(formData.registered_name)}\n`;
+    if (formData.country) text += `🌍 Mamlakat: ${s(formData.country)}\n`;
+    if (formData.office_address) text += `📍 Ofis manzili: ${s(formData.office_address)}\n`;
+    if (formData.work_phone) text += `📞 Ish telefon: ${s(formData.work_phone)}\n`;
+    if (formData.work_email) text += `📧 Ish email: ${s(formData.work_email)}\n`;
+    if (formData.telegram_link) text += `✈️ Telegram: ${s(formData.telegram_link)}\n`;
+    if (formData.instagram_url) text += `📸 Instagram: ${s(formData.instagram_url)}\n`;
+    if (formData.website_url) text += `🌐 Veb-sayt: ${s(formData.website_url)}\n`;
+    if (formData.inn) text += `🏛 INN: ${s(formData.inn)}\n`;
+    if (formData.registration_number) text += `📄 Ro'yxatga olish raqami: ${s(formData.registration_number)}\n`;
   }
 
   text += `\n🆔 So'rov: <code>${requestId}</code>`;
