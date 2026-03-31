@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
-import { editCallbackMessage, notifySystemError } from '@/lib/telegram/admin-bot';
+import { editCallbackMessage, notifySystemError, ensureWebhook } from '@/lib/telegram/admin-bot';
 
 /** Answer Telegram callback query immediately to prevent queue blocking */
 async function answerCallback(callbackId: string, text: string) {
@@ -24,6 +24,9 @@ async function answerCallback(callbackId: string, text: string) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Ensure webhook URL is set on cold start
+    await ensureWebhook();
+
     const update = await request.json();
 
     // Only handle callback_query

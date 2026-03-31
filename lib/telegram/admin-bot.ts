@@ -12,7 +12,7 @@ function getBotToken() {
 // ─── Auto webhook setup (runs once per cold start) ───
 let _webhookEnsured = false;
 
-async function ensureWebhook() {
+export async function ensureWebhook() {
   if (_webhookEnsured) return;
   _webhookEnsured = true;
   try {
