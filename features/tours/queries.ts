@@ -1,7 +1,19 @@
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createPublicSupabaseClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
+import { withTTLCache } from '@/lib/cache';
 import { cache } from 'react';
 import type { Tour, TourFilters } from '@/types';
+
+/* ─── Reusable narrow-select constants for list / card queries ─── */
+
+/** Fields consumed by the compact TourCard component (search results, similar tours) */
+const TOUR_CARD_SELECT = 'id, slug, title, cover_image_url, price, old_price, currency, tour_type, region, city, country, district, destinations, is_featured' as const;
+
+/** Fields consumed by TourCardCatalog — adds agency join, duration, hotel stars, etc. */
+const TOUR_CATALOG_SELECT = 'id, slug, title, cover_image_url, price, old_price, currency, tour_type, region, city, country, district, destinations, is_featured, agency_id, category, duration_days, duration_nights, hotels, hotel_stars, departure_date, view_count, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)' as const;
+
+/** Fields for agency-page tour cards — no agency join needed since agency is already known */
+const TOUR_AGENCY_LIST_SELECT = 'id, slug, title, cover_image_url, price, old_price, currency, tour_type, region, city, country, district, destinations, is_featured, duration_days, duration_nights, hotels, hotel_stars' as const;
 
 /** Narrow select for homepage tour cards — only the fields card components actually read */
 const HOMEPAGE_TOUR_SELECT = 'id, slug, title, cover_image_url, price, old_price, currency, tour_type, region, city, country, district, destinations, is_featured, agency_id, category, view_count, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)' as const;
@@ -12,7 +24,7 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
 
   let query = supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .select(TOUR_CATALOG_SELECT)
     .eq('status', 'published');
 
   if (filters?.search) {
@@ -63,7 +75,7 @@ export async function getTours(filters?: TourFilters): Promise<Tour[]> {
     await notifySystemError({ source: 'Query: getTours', message: error.message });
     return [];
   }
-  return data ?? [];
+  return (data ?? []) as unknown as Tour[];
 }
 
 /** Fetch a single tour by slug (deduplicated per request) */
@@ -91,7 +103,7 @@ export async function getFeaturedTours(): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .select(TOUR_CATALOG_SELECT)
     .eq('status', 'published')
     .eq('is_featured', true)
     .order('created_at', { ascending: false })
@@ -102,7 +114,7 @@ export async function getFeaturedTours(): Promise<Tour[]> {
     await notifySystemError({ source: 'Query: getFeaturedTours', message: error.message });
     return [];
   }
-  return data ?? [];
+  return (data ?? []) as unknown as Tour[];
 }
 
 /** Fetch tours by agency */
@@ -110,7 +122,7 @@ export async function getToursByAgency(agencyId: string): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
-    .select('*')
+    .select(TOUR_AGENCY_LIST_SELECT)
     .eq('agency_id', agencyId)
     .eq('status', 'published')
     .order('created_at', { ascending: false });
@@ -120,7 +132,7 @@ export async function getToursByAgency(agencyId: string): Promise<Tour[]> {
     await notifySystemError({ source: 'Query: getToursByAgency', message: error.message, extra: `Agency: ${agencyId}` });
     return [];
   }
-  return data ?? [];
+  return (data ?? []) as unknown as Tour[];
 }
 
 /** Fetch similar tours (same country, different tour) */
@@ -128,7 +140,7 @@ export async function getSimilarTours(tour: Tour, limit = 4): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .select(TOUR_CARD_SELECT)
     .eq('status', 'published')
     .eq('country', tour.country)
     .neq('id', tour.id)
@@ -139,7 +151,7 @@ export async function getSimilarTours(tour: Tour, limit = 4): Promise<Tour[]> {
     await notifySystemError({ source: 'Query: getSimilarTours', message: error.message });
     return [];
   }
-  return data ?? [];
+  return (data ?? []) as unknown as Tour[];
 }
 
 /** Fetch most popular tours by view_count (for "Mashhur joylar") */
@@ -147,7 +159,7 @@ export async function getPopularTours(limit = 10): Promise<Tour[]> {
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .select(TOUR_CATALOG_SELECT)
     .eq('status', 'published')
     .order('view_count', { ascending: false })
     .limit(limit);
@@ -156,14 +168,14 @@ export async function getPopularTours(limit = 10): Promise<Tour[]> {
     // Fallback: view_count column may not exist yet, use featured + newest
     const { data: fallback } = await supabase
       .from('tours')
-      .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+      .select(TOUR_CATALOG_SELECT)
       .eq('status', 'published')
       .order('is_featured', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(limit);
-    return fallback ?? [];
+    return (fallback ?? []) as unknown as Tour[];
   }
-  return data ?? [];
+  return (data ?? []) as unknown as Tour[];
 }
 
 /** Fetch tours by category */
@@ -171,7 +183,7 @@ export async function getToursByCategory(category: string, limit = 20): Promise<
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .select(TOUR_CATALOG_SELECT)
     .eq('status', 'published')
     .eq('category', category)
     .order('created_at', { ascending: false })
@@ -182,7 +194,7 @@ export async function getToursByCategory(category: string, limit = 20): Promise<
     await notifySystemError({ source: 'Query: getToursByCategory', message: error.message, extra: `Category: ${category}` });
     return [];
   }
-  return data ?? [];
+  return (data ?? []) as unknown as Tour[];
 }
 
 /** Increment tour view count */
@@ -262,7 +274,7 @@ export async function getPromotedTours(placement: string, limit = 50): Promise<T
 
   const { data, error } = await supabase
     .from('tours')
-    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)')
+    .select(TOUR_CATALOG_SELECT)
     .eq('status', 'published')
     .in('id', tourIds);
 
@@ -271,81 +283,87 @@ export async function getPromotedTours(placement: string, limit = 50): Promise<T
     await notifySystemError({ source: 'Query: getPromotedTours', message: error.message, extra: `Placement: ${placement}` });
     return [];
   }
-  return data ?? [];
+  return (data ?? []) as unknown as Tour[];
 }
 
 /* ─── Homepage-specific narrow queries ─── */
 
-/** Homepage featured tours — narrow select */
+/** Homepage featured tours — narrow select, cached 60s */
 export async function getHomeFeaturedTours(): Promise<Tour[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from('tours')
-    .select(HOMEPAGE_TOUR_SELECT)
-    .eq('status', 'published')
-    .eq('is_featured', true)
-    .order('created_at', { ascending: false })
-    .limit(8);
-
-  if (error) {
-    console.error('getHomeFeaturedTours error:', error);
-    await notifySystemError({ source: 'Query: getHomeFeaturedTours', message: error.message });
-    return [];
-  }
-  return (data ?? []) as unknown as Tour[];
-}
-
-/** Homepage popular tours — narrow select */
-export async function getHomePopularTours(limit = 10): Promise<Tour[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from('tours')
-    .select(HOMEPAGE_TOUR_SELECT)
-    .eq('status', 'published')
-    .order('view_count', { ascending: false })
-    .limit(limit);
-
-  if (error) {
-    const { data: fallback } = await supabase
+  return withTTLCache('home:featured-tours', async () => {
+    const supabase = createPublicSupabaseClient();
+    const { data, error } = await supabase
       .from('tours')
       .select(HOMEPAGE_TOUR_SELECT)
       .eq('status', 'published')
-      .order('is_featured', { ascending: false })
+      .eq('is_featured', true)
       .order('created_at', { ascending: false })
-      .limit(limit);
-    return (fallback ?? []) as unknown as Tour[];
-  }
-  return (data ?? []) as unknown as Tour[];
+      .limit(8);
+
+    if (error) {
+      console.error('getHomeFeaturedTours error:', error);
+      await notifySystemError({ source: 'Query: getHomeFeaturedTours', message: error.message });
+      return [];
+    }
+    return (data ?? []) as unknown as Tour[];
+  }, 60);
 }
 
-/** Homepage promoted tours — narrow select */
+/** Homepage popular tours — narrow select, cached 60s */
+export async function getHomePopularTours(limit = 10): Promise<Tour[]> {
+  return withTTLCache(`home:popular-tours:${limit}`, async () => {
+    const supabase = createPublicSupabaseClient();
+    const { data, error } = await supabase
+      .from('tours')
+      .select(HOMEPAGE_TOUR_SELECT)
+      .eq('status', 'published')
+      .order('view_count', { ascending: false })
+      .limit(limit);
+
+    if (error) {
+      const { data: fallback } = await supabase
+        .from('tours')
+        .select(HOMEPAGE_TOUR_SELECT)
+        .eq('status', 'published')
+        .order('is_featured', { ascending: false })
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      return (fallback ?? []) as unknown as Tour[];
+    }
+    return (data ?? []) as unknown as Tour[];
+  }, 60);
+}
+
+/** Homepage promoted tours — narrow select, cached 60s */
 export async function getHomePromotedTours(placement: string, limit = 20): Promise<Tour[]> {
-  const supabase = await createServerSupabaseClient();
-  const now = new Date().toISOString();
+  return withTTLCache(`home:promoted-tours:${placement}:${limit}`, async () => {
+    const supabase = createPublicSupabaseClient();
+    const now = new Date().toISOString();
 
-  const { data: promos } = await supabase
-    .from('tour_promotions')
-    .select('tour_id')
-    .eq('placement', placement)
-    .eq('is_active', true)
-    .gte('ends_at', now)
-    .order('created_at', { ascending: false })
-    .limit(limit);
+    const { data: promos } = await supabase
+      .from('tour_promotions')
+      .select('tour_id')
+      .eq('placement', placement)
+      .eq('is_active', true)
+      .gte('ends_at', now)
+      .order('created_at', { ascending: false })
+      .limit(limit) as { data: { tour_id: string }[] | null };
 
-  if (!promos || promos.length === 0) return [];
+    if (!promos || promos.length === 0) return [];
 
-  const tourIds = promos.map(p => p.tour_id);
+    const tourIds = promos.map(p => p.tour_id);
 
-  const { data, error } = await supabase
-    .from('tours')
-    .select(HOMEPAGE_TOUR_SELECT)
-    .eq('status', 'published')
-    .in('id', tourIds);
+    const { data, error } = await supabase
+      .from('tours')
+      .select(HOMEPAGE_TOUR_SELECT)
+      .eq('status', 'published')
+      .in('id', tourIds);
 
-  if (error) {
-    console.error('getHomePromotedTours error:', error);
-    await notifySystemError({ source: 'Query: getHomePromotedTours', message: error.message, extra: `Placement: ${placement}` });
-    return [];
-  }
-  return (data ?? []) as unknown as Tour[];
+    if (error) {
+      console.error('getHomePromotedTours error:', error);
+      await notifySystemError({ source: 'Query: getHomePromotedTours', message: error.message, extra: `Placement: ${placement}` });
+      return [];
+    }
+    return (data ?? []) as unknown as Tour[];
+  }, 60);
 }

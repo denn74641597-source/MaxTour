@@ -5,11 +5,17 @@ import { NextResponse } from 'next/server';
  * Use to verify bot token and chat ID are working.
  */
 export async function GET() {
-  const token = process.env.ADMIN_BOT_TOKEN || '8690380624:AAEWMibPtoXovf9W3avF-hPz9iM7PqU82Mc';
+  const token = process.env.ADMIN_BOT_TOKEN;
+  if (!token) {
+    return NextResponse.json({ error: 'ADMIN_BOT_TOKEN is not configured' }, { status: 500 });
+  }
   const chatIds = [
-    process.env.ADMIN_CHAT_ID || '496829881',
-    process.env.ADMIN_CHAT_ID_2 || '7298088133',
-  ].filter(Boolean);
+    process.env.ADMIN_CHAT_ID,
+    process.env.ADMIN_CHAT_ID_2,
+  ].filter(Boolean) as string[];
+  if (chatIds.length === 0) {
+    return NextResponse.json({ error: 'ADMIN_CHAT_ID is not configured' }, { status: 500 });
+  }
 
   const results = await Promise.all(
     chatIds.map(async (chatId) => {
@@ -26,5 +32,5 @@ export async function GET() {
     })
   );
 
-  return NextResponse.json({ token_prefix: token.substring(0, 10) + '...', chatIds, results });
+  return NextResponse.json({ ok: true, chatIds, results });
 }

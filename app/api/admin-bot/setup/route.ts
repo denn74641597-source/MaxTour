@@ -5,7 +5,10 @@ import { NextRequest, NextResponse } from 'next/server';
  * Call once after deploy: https://your-domain.com/api/admin-bot/setup
  */
 export async function GET(request: NextRequest) {
-  const token = process.env.ADMIN_BOT_TOKEN || '8690380624:AAEWMibPtoXovf9W3avF-hPz9iM7PqU82Mc';
+  const token = process.env.ADMIN_BOT_TOKEN;
+  if (!token) {
+    return NextResponse.json({ error: 'ADMIN_BOT_TOKEN is not configured' }, { status: 500 });
+  }
 
   const host = request.headers.get('host') || 'localhost:3000';
   const proto = host.includes('localhost') ? 'http' : 'https';

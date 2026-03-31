@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Denn1006';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!ADMIN_PASSWORD) {
+  console.error('ADMIN_PASSWORD environment variable is not set');
+}
 
 export async function POST(request: NextRequest) {
   const { password } = await request.json();

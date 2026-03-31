@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
 
     // Answer callback to remove loading spinner on button
     await fetch(
-      `https://api.telegram.org/bot${process.env.ADMIN_BOT_TOKEN || '8690380624:AAEWMibPtoXovf9W3avF-hPz9iM7PqU82Mc'}/answerCallbackQuery`,
+      `https://api.telegram.org/bot${process.env.ADMIN_BOT_TOKEN}/answerCallbackQuery`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

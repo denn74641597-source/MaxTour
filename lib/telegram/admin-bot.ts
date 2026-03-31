@@ -4,12 +4,16 @@
  */
 
 function getBotToken() {
-  return process.env.ADMIN_BOT_TOKEN || '8690380624:AAEWMibPtoXovf9W3avF-hPz9iM7PqU82Mc';
+  const token = process.env.ADMIN_BOT_TOKEN;
+  if (!token) throw new Error('ADMIN_BOT_TOKEN environment variable is not set');
+  return token;
 }
 
 function getAdminChatIds(): string[] {
-  const ids = [process.env.ADMIN_CHAT_ID || '496829881'];
-  const id2 = process.env.ADMIN_CHAT_ID_2 || '7298088133';
+  const id1 = process.env.ADMIN_CHAT_ID;
+  if (!id1) throw new Error('ADMIN_CHAT_ID environment variable is not set');
+  const ids = [id1];
+  const id2 = process.env.ADMIN_CHAT_ID_2;
   if (id2) ids.push(id2);
   return ids;
 }

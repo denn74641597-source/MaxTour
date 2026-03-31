@@ -2,12 +2,11 @@ import { Suspense } from 'react';
 import { getHomeFeaturedTours, getHomePopularTours, getHomePromotedTours } from '@/features/tours/queries';
 import { getHomeVerifiedAgencies, getHomeTopRatedAgencies } from '@/features/agencies/queries';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
-import { HomeContent, HomeAgenciesSection, HomeHotDealsSection, HomeHotToursSection, HomeTopRatedSection } from './home/home-content';
+import { HomeContent, HomeAgenciesSection } from './home/home-content';
+import { HomeHotDealsSection, HomeHotToursSection, HomeTopRatedSection } from './home/home-interactive';
 import { HomeFavoritesProvider } from './home/home-favorites-provider';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { Tour } from '@/types';
-
-export const dynamic = 'force-dynamic';
 
 export default async function HomePage() {
   let featuredTours: Tour[] = [];

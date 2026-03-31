@@ -1,6 +1,7 @@
 import { cache } from 'react';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createPublicSupabaseClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
+import { withTTLCache } from '@/lib/cache';
 import type { Agency, Review } from '@/types';
 
 /** Narrow select for homepage agency cards — only the fields card components actually read */
@@ -177,41 +178,45 @@ export async function getAgencyTourLimit(agencyId: string): Promise<TourLimitInf
 
 /* ─── Homepage-specific narrow queries ─── */
 
-/** Homepage verified agencies — narrow select */
+/** Homepage verified agencies — narrow select, cached 120s */
 export async function getHomeVerifiedAgencies(limit = 6): Promise<Agency[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from('agencies')
-    .select(HOMEPAGE_AGENCY_SELECT)
-    .eq('is_approved', true)
-    .eq('is_verified', true)
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  return withTTLCache(`home:verified-agencies:${limit}`, async () => {
+    const supabase = createPublicSupabaseClient();
+    const { data, error } = await supabase
+      .from('agencies')
+      .select(HOMEPAGE_AGENCY_SELECT)
+      .eq('is_approved', true)
+      .eq('is_verified', true)
+      .order('created_at', { ascending: false })
+      .limit(limit);
 
-  if (error) {
-    console.error('getHomeVerifiedAgencies error:', error);
-    await notifySystemError({ source: 'Query: getHomeVerifiedAgencies', message: error.message });
-    return [];
-  }
-  return (data ?? []) as unknown as Agency[];
+    if (error) {
+      console.error('getHomeVerifiedAgencies error:', error);
+      await notifySystemError({ source: 'Query: getHomeVerifiedAgencies', message: error.message });
+      return [];
+    }
+    return (data ?? []) as unknown as Agency[];
+  }, 120);
 }
 
-/** Homepage top-rated agencies — narrow select */
+/** Homepage top-rated agencies — narrow select, cached 120s */
 export async function getHomeTopRatedAgencies(limit = 6): Promise<Agency[]> {
-  const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase
-    .from('agencies')
-    .select(HOMEPAGE_AGENCY_SELECT)
-    .eq('is_approved', true)
-    .order('avg_rating', { ascending: false })
-    .order('review_count', { ascending: false })
-    .gt('review_count', 0)
-    .limit(limit);
+  return withTTLCache(`home:top-rated-agencies:${limit}`, async () => {
+    const supabase = createPublicSupabaseClient();
+    const { data, error } = await supabase
+      .from('agencies')
+      .select(HOMEPAGE_AGENCY_SELECT)
+      .eq('is_approved', true)
+      .order('avg_rating', { ascending: false })
+      .order('review_count', { ascending: false })
+      .gt('review_count', 0)
+      .limit(limit);
 
-  if (error) {
-    console.error('getHomeTopRatedAgencies error:', error);
-    await notifySystemError({ source: 'Query: getHomeTopRatedAgencies', message: error.message });
-    return [];
-  }
-  return (data ?? []) as unknown as Agency[];
+    if (error) {
+      console.error('getHomeTopRatedAgencies error:', error);
+      await notifySystemError({ source: 'Query: getHomeTopRatedAgencies', message: error.message });
+      return [];
+    }
+    return (data ?? []) as unknown as Agency[];
+  }, 120);
 }
