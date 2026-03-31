@@ -16,16 +16,20 @@ async function ensureWebhook() {
   if (_webhookEnsured) return;
   _webhookEnsured = true;
   try {
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const appUrl = process.env.WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) return;
     const webhookUrl = `${appUrl}/api/admin-bot/webhook`;
-    await fetch(`https://api.telegram.org/bot${getBotToken()}/setWebhook`, {
+    const res = await fetch(`https://api.telegram.org/bot${getBotToken()}/setWebhook`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ url: webhookUrl }),
     });
+    if (!res.ok) {
+      console.error('ensureWebhook failed:', await res.text());
+      _webhookEnsured = false; // retry next time
+    }
   } catch {
-    // ignore — webhook will be set on next attempt
+    _webhookEnsured = false; // retry next time
   }
 }
 
