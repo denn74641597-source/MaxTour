@@ -49,7 +49,7 @@ export async function getAgencyBySlug(slug: string): Promise<Agency | null> {
     .select('*')
     .eq('slug', slug)
     .eq('is_approved', true)
-    .single();
+    .maybeSingle();
 
   if (error) {
     console.error('getAgencyBySlug error:', error);
