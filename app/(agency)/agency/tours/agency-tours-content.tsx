@@ -103,7 +103,7 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
                       {tour.seats_left != null && (
                         <span className="flex items-center gap-0.5">
                           <Users className="h-3 w-3" />
-                          {tour.seats_left} {t.agencyTours.seatsLeftShort || 'ta joy'}
+                          {tour.seats_left} ta joy
                         </span>
                       )}
                     </div>
