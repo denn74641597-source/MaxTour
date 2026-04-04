@@ -30,10 +30,9 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
   const agencyMobileNav = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
-    { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
-    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
+    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
@@ -41,10 +40,9 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
   const agencyNavFull = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
-    { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
-    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
+    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];
@@ -132,10 +130,9 @@ function DashboardMenuTriggerInner({ type }: { type: 'agency' | 'admin' }) {
   const agencyMobileNav = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
-    { href: '/agency/leads', label: t.nav.requests, icon: MessageSquareText },
-    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
+    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
+    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
     { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
     { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
   ];

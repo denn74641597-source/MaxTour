@@ -6,14 +6,18 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Building2, MapPin, ShieldCheck, Coins,
   Star, Users, FileText, Settings, LogOut, Menu, X,
-  ChevronRight,
+  ChevronRight, MessageSquareText, Globe,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '@/lib/i18n';
+import { LANGUAGE_LABELS, LANGUAGE_FLAGS, LANGUAGES } from '@/lib/i18n/config';
+import type { Language } from '@/lib/i18n/config';
 
 const navItems = [
   { href: '/admin?mode=admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/agencies?mode=admin', label: 'Agencies', icon: Building2 },
   { href: '/admin/tours?mode=admin', label: 'Tours', icon: MapPin },
+  { href: '/admin/leads?mode=admin', label: 'Tour Requests', icon: MessageSquareText },
   { href: '/admin/verification?mode=admin', label: 'Verification', icon: ShieldCheck },
   { href: '/admin/coin-requests?mode=admin', label: 'Coins', icon: Coins },
   { href: '/admin/featured?mode=admin', label: 'Promotions', icon: Star },
@@ -26,6 +30,7 @@ export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { language, setLanguage } = useTranslation();
 
   const isItemActive = (href: string) => {
     const path = href.split('?')[0];
@@ -80,8 +85,26 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* System status + logout */}
+      {/* Language switcher + System status + logout */}
       <div className="p-4 border-t border-slate-700/50 space-y-3">
+        {/* Language Switcher */}
+        <div className="flex items-center gap-1.5 px-1">
+          <Globe className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+          {LANGUAGES.map((lang) => (
+            <button
+              key={lang}
+              onClick={() => setLanguage(lang)}
+              className={cn(
+                'flex-1 text-xs py-1.5 rounded-md transition-colors text-center',
+                language === lang
+                  ? 'bg-blue-600 text-white font-medium'
+                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
+              )}
+            >
+              {LANGUAGE_FLAGS[lang]} {LANGUAGE_LABELS[lang]}
+            </button>
+          ))}
+        </div>
         <div className="flex items-center gap-2 px-3 py-2 bg-slate-800/60 rounded-lg">
           <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-xs text-slate-400">System: Optimal</span>

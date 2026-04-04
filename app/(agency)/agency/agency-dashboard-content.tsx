@@ -1,7 +1,7 @@
 'use client';
 
 import Image from 'next/image';
-import { MapPin, Users, Eye, Plus, Settings, Bell, AlertTriangle, Building2, Coins } from 'lucide-react';
+import { MapPin, Users, Eye, Plus, Settings, Bell, AlertTriangle, Building2, Coins, MessageSquareText } from 'lucide-react';
 import { StatusBadge } from '@/components/shared/status-badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -36,6 +36,7 @@ interface AgencyDashboardContentProps {
     agency: DashboardAgency;
     activeTours: number;
     totalLeads: number;
+    totalRequests: number;
     recentLeads: DashboardLead[];
     totalViews: number;
     activeToursList: ActiveTourPromo[];
@@ -114,7 +115,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
       )}
 
       {/* Stat Cards — horizontal compact row */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2">
         <div className="bg-surface rounded-2xl shadow-ambient p-3 text-center">
           <MapPin className="h-4 w-4 text-indigo-600 mx-auto mb-1" />
           <p className="text-lg font-bold text-foreground">{data.activeTours}</p>
@@ -129,6 +130,11 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
           <Users className="h-4 w-4 text-sky-600 mx-auto mb-1" />
           <p className="text-lg font-bold text-foreground">{data.totalLeads}</p>
           <p className="text-[10px] text-muted-foreground leading-tight">{t.agency.totalLeads}</p>
+        </div>
+        <div className="bg-surface rounded-2xl shadow-ambient p-3 text-center">
+          <MessageSquareText className="h-4 w-4 text-emerald-600 mx-auto mb-1" />
+          <p className="text-lg font-bold text-foreground">{data.totalRequests}</p>
+          <p className="text-[10px] text-muted-foreground leading-tight">{t.leadsPage.title}</p>
         </div>
       </div>
 

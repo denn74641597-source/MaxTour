@@ -12,17 +12,16 @@ export type LeadFormData = z.infer<typeof leadFormSchema>;
 
 export const agencyProfileSchema = z.object({
   name: z.string().min(2, 'Agency name is required'),
-  description: z.string().max(2000).optional(),
-  phone: z.string().min(7, 'Enter a valid phone number').optional(),
-  telegram_username: z.string().optional(),
+  description: z.string().min(1, 'Description is required').max(2000),
+  phone: z.string().min(7, 'Enter a valid phone number'),
+  telegram_username: z.string().min(1, 'Telegram username is required'),
   instagram_url: z.string().url('Enter a valid URL').optional().or(z.literal('')),
-  website_url: z.string().url('Enter a valid URL').optional().or(z.literal('')),
-  address: z.string().optional(),
-  city: z.string().optional(),
-  country: z.string().optional(),
+  address: z.string().min(1, 'Address is required'),
+  city: z.string().min(1, 'City is required'),
+  country: z.string().min(1, 'Country is required'),
   google_maps_url: z.string().url('Enter a valid URL').optional().or(z.literal('')),
-  inn: z.string().optional(),
-  responsible_person: z.string().optional(),
+  inn: z.string().min(1, 'INN is required'),
+  responsible_person: z.string().min(1, 'Responsible person is required'),
 });
 
 export type AgencyProfileData = z.infer<typeof agencyProfileSchema>;

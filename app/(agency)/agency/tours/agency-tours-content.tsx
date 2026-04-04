@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -17,8 +18,8 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useTranslation } from '@/lib/i18n';
-import { formatPrice, formatDate } from '@/lib/utils';
-import { Plus, Pencil, Trash2 } from 'lucide-react';
+import { formatPrice, formatDate, placeholderImage } from '@/lib/utils';
+import { Plus, Pencil, Trash2, MapPin, CalendarDays, Users } from 'lucide-react';
 import { deleteTourAction } from '@/features/tours/actions';
 import { toast } from 'sonner';
 
@@ -63,39 +64,69 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
       {tours.length > 0 ? (
         <div className="space-y-3">
           {tours.map((tour) => (
-            <Card key={tour.id}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-sm truncate">{tour.title}</h3>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {tour.country}{tour.city ? `, ${tour.city}` : ''}
-                      {tour.departure_date ? ` · ${formatDate(tour.departure_date)}` : ''}
-                    </p>
-                    <div className="flex items-center gap-2 mt-2">
+            <Card key={tour.id} className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="flex gap-0">
+                  {/* Tour Image */}
+                  <div className="relative w-28 shrink-0">
+                    <Image
+                      src={tour.cover_image_url || placeholderImage(200, 200, tour.title)}
+                      alt={tour.title}
+                      fill
+                      className="object-cover"
+                    />
+                    {tour.is_featured && (
+                      <div className="absolute top-1.5 left-1.5 bg-tertiary/90 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                        ★ {t.common.featured}
+                      </div>
+                    )}
+                  </div>
+                  {/* Tour Info */}
+                  <div className="flex-1 min-w-0 p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <h3 className="font-semibold text-sm leading-tight line-clamp-2">{tour.title}</h3>
                       <StatusBadge status={tour.status} />
-                      <span className="text-sm font-medium">
-                        {formatPrice(tour.price, tour.currency)}
-                      </span>
-                      {tour.is_featured && (
-                        <span className="text-[10px] text-tertiary font-medium">★ {t.common.featured}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs text-muted-foreground">
+                      {(tour.country || tour.region) && (
+                        <span className="flex items-center gap-0.5">
+                          <MapPin className="h-3 w-3" />
+                          {tour.region || tour.country}{tour.city ? `, ${tour.city}` : ''}
+                        </span>
+                      )}
+                      {tour.departure_date && (
+                        <span className="flex items-center gap-0.5">
+                          <CalendarDays className="h-3 w-3" />
+                          {formatDate(tour.departure_date)}
+                        </span>
+                      )}
+                      {tour.seats_left != null && (
+                        <span className="flex items-center gap-0.5">
+                          <Users className="h-3 w-3" />
+                          {tour.seats_left} {t.agencyTours.seatsLeftShort || 'ta joy'}
+                        </span>
                       )}
                     </div>
-                  </div>
-                  <div className="flex gap-1.5">
-                    <Link href={`/agency/tours/${tour.id}/edit`}>
-                      <Button variant="outline" size="icon" className="h-8 w-8">
-                        <Pencil className="h-3.5 w-3.5" />
-                      </Button>
-                    </Link>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:bg-destructive/10"
-                      onClick={() => setDeleteTarget({ id: tour.id, title: tour.title })}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-sm font-bold text-primary">
+                        {formatPrice(tour.price, tour.currency)}
+                      </span>
+                      <div className="flex gap-1.5">
+                        <Link href={`/agency/tours/${tour.id}/edit`}>
+                          <Button variant="outline" size="icon" className="h-7 w-7 rounded-lg">
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-7 w-7 rounded-lg text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteTarget({ id: tour.id, title: tour.title })}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </CardContent>

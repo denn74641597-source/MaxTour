@@ -43,13 +43,13 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
   const [form, setForm] = useState<VerificationFormData>({
     company_name: agency.name || '',
     registered_name: '',
-    country: agency.country || 'Uzbekistan',
+    country: 'O\'zbekiston',
     office_address: agency.address || '',
     work_phone: agency.phone || '',
     work_email: '',
     telegram_link: agency.telegram_username || '',
     instagram_url: agency.instagram_url || '',
-    website_url: agency.website_url || '',
+    website_url: '',
     inn: agency.inn || '',
     registration_number: '',
     certificate_pdf_url: agency.certificate_pdf_url || '',
@@ -83,13 +83,11 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
     return !!(
       form.company_name.trim() &&
       form.registered_name.trim() &&
-      form.country.trim() &&
       form.office_address.trim() &&
       form.work_phone.trim() &&
       form.work_email.trim() &&
       form.telegram_link.trim() &&
       form.inn.trim() &&
-      form.registration_number.trim() &&
       form.certificate_pdf_url &&
       form.license_pdf_url
     );
@@ -249,7 +247,7 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
 
               <div className="space-y-1.5">
                 <Label>{t.verification.country} *</Label>
-                <Input value={form.country} onChange={e => updateField('country', e.target.value)} placeholder={t.verification.countryPlaceholder} />
+                <Input value="O'zbekiston" disabled className="bg-muted" />
               </div>
 
               <div className="space-y-1.5">
@@ -263,7 +261,7 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
               </div>
 
               <div className="space-y-1.5">
-                <Label>{t.verification.workEmail} *</Label>
+                <Label>Email *</Label>
                 <Input type="email" value={form.work_email} onChange={e => updateField('work_email', e.target.value)} placeholder={t.verification.workEmailPlaceholder} />
               </div>
 
@@ -273,13 +271,8 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
               </div>
 
               <div className="space-y-1.5">
-                <Label>{t.verification.instagramUrl}</Label>
+                <Label>Instagram linki</Label>
                 <Input value={form.instagram_url} onChange={e => updateField('instagram_url', e.target.value)} placeholder={t.verification.instagramUrlPlaceholder} />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>{t.verification.websiteUrl}</Label>
-                <Input value={form.website_url} onChange={e => updateField('website_url', e.target.value)} placeholder={t.verification.websiteUrlPlaceholder} />
               </div>
             </CardContent>
           </Card>
@@ -295,11 +288,6 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
               <div className="space-y-1.5">
                 <Label>{t.verification.inn} *</Label>
                 <Input value={form.inn} onChange={e => updateField('inn', e.target.value)} placeholder={t.verification.innPlaceholder} />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>{t.verification.registrationNumber} *</Label>
-                <Input value={form.registration_number} onChange={e => updateField('registration_number', e.target.value)} placeholder={t.verification.registrationNumberPlaceholder} />
               </div>
 
               <PdfUploadField
@@ -345,7 +333,7 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
                   {req.status === 'pending' && <Clock className="h-4 w-4 text-yellow-500" />}
                   {req.status === 'approved' && <CheckCircle2 className="h-4 w-4 text-green-500" />}
                   {req.status === 'rejected' && <XCircle className="h-4 w-4 text-red-500" />}
-                  <span className="text-xs capitalize">{req.status}</span>
+                  <span className="text-xs capitalize">{req.status === 'pending' ? t.verification.pending : req.status === 'approved' ? t.verification.approved : req.status === 'rejected' ? t.verification.rejected : req.status}</span>
                 </div>
                 <span className="text-xs text-muted-foreground">
                   {new Date(req.created_at).toLocaleDateString()}

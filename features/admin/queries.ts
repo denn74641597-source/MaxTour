@@ -113,3 +113,14 @@ export async function getCoinRequests(status?: string) {
   const { data } = await query;
   return data ?? [];
 }
+
+/** Admin: get all leads across all agencies with tour & agency info */
+export async function getAllLeads() {
+  const supabase = await createAdminClient();
+  const { data } = await supabase
+    .from('leads')
+    .select('*, tour:tours(id, title, slug, cover_image_url, country, city, price, currency), agency:agencies(id, name, slug, phone, telegram_username)')
+    .order('created_at', { ascending: false });
+
+  return data ?? [];
+}

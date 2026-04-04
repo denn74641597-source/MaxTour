@@ -1,6 +1,5 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star, MapPin, Heart, Zap, Flame } from 'lucide-react';
@@ -8,120 +7,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useHomeFavorites } from './home-favorites-provider';
-import { hapticFeedback } from '@/lib/telegram';
 import type { Tour, Agency } from '@/types';
-
-/* ─── Helpers ─── */
-
-function shuffle<T>(arr: T[]): T[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
-
-function pickRandom(all: Tour[], limit: number): Tour[] {
-  if (all.length === 0) return [];
-  return shuffle(all).slice(0, limit);
-}
-
-/* ─── Rotating 2×2 Grid — picks random tours, groups into pages of 4, auto-rotates ─── */
-
-function RotatingGrid({
-  allTours,
-  limit,
-  CardComponent,
-}: {
-  allTours: Tour[];
-  limit: number;
-  CardComponent: React.ComponentType<{ tour: Tour }>;
-}) {
-  const [display, setDisplay] = useState(() => pickRandom(allTours, limit));
-  const [pageIdx, setPageIdx] = useState(0);
-  const [fading, setFading] = useState(false);
-  const touchStart = useRef(0);
-  const autoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const totalPages = Math.ceil(display.length / 4);
-
-  const goToPage = useCallback((newPage: number) => {
-    setFading(true);
-    setTimeout(() => {
-      setPageIdx(newPage);
-      setFading(false);
-    }, 200);
-  }, []);
-
-  const goNext = useCallback(() => {
-    const next = pageIdx + 1;
-    if (next >= totalPages) {
-      setDisplay(pickRandom(allTours, limit));
-      goToPage(0);
-    } else {
-      goToPage(next);
-    }
-  }, [pageIdx, totalPages, allTours, limit, goToPage]);
-
-  const goPrev = useCallback(() => {
-    goToPage(pageIdx > 0 ? pageIdx - 1 : totalPages - 1);
-  }, [pageIdx, totalPages, goToPage]);
-
-  // Auto-rotate
-  useEffect(() => {
-    if (totalPages <= 1) return;
-    autoTimer.current = setInterval(goNext, 3000);
-    return () => { if (autoTimer.current) clearInterval(autoTimer.current); };
-  }, [goNext, totalPages]);
-
-  const resetTimer = useCallback(() => {
-    if (autoTimer.current) clearInterval(autoTimer.current);
-    if (totalPages > 1) autoTimer.current = setInterval(goNext, 3000);
-  }, [goNext, totalPages]);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = e.touches[0].clientX;
-  };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStart.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) > 50) {
-      hapticFeedback('light');
-      if (diff > 0) goNext(); else goPrev();
-      resetTimer();
-    }
-  };
-
-  const pageTours = display.slice(pageIdx * 4, pageIdx * 4 + 4);
-  const rows = Math.ceil(pageTours.length / 2);
-
-  return (
-    <div onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
-      <div
-        className={`grid grid-cols-2 gap-3 transition-opacity duration-300 ${fading ? 'opacity-0' : 'opacity-100'}`}
-        style={{ gridTemplateRows: `repeat(${rows}, auto)` }}
-      >
-        {pageTours.map((tour) => (
-          <CardComponent key={tour.id} tour={tour} />
-        ))}
-      </div>
-      {/* Page dots */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-1.5 mt-3">
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => { goToPage(i); resetTimer(); }}
-              className={`h-1.5 rounded-full transition-all duration-300 ${
-                i === pageIdx ? 'w-4 bg-primary' : 'w-1.5 bg-muted-foreground/30'
-              }`}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* ─── Tour Cards ─── */
 
@@ -231,7 +117,13 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
         <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
       </div>
       {hotDeals.length > 0 ? (
-        <RotatingGrid allTours={hotDeals} limit={20} CardComponent={HotDealCard} />
+        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
+          {hotDeals.map((tour) => (
+            <div key={tour.id} className="shrink-0 w-[160px]">
+              <HotDealCard tour={tour} />
+            </div>
+          ))}
+        </div>
       ) : (
         <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
       )}
@@ -247,7 +139,13 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
         <h3 className="text-lg font-bold text-foreground">{t.home.hotTours}</h3>
       </div>
       {hotTours.length > 0 ? (
-        <RotatingGrid allTours={hotTours} limit={20} CardComponent={HotTourCard} />
+        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
+          {hotTours.map((tour) => (
+            <div key={tour.id} className="shrink-0 w-[160px]">
+              <HotTourCard tour={tour} />
+            </div>
+          ))}
+        </div>
       ) : (
         <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
       )}
@@ -258,11 +156,13 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
 export function HomeTopRatedSection({ topAgencies }: { topAgencies: Agency[] }) {
   const { t } = useTranslation();
   if (topAgencies.length === 0) return null;
+  // Sort by rating descending (highest first)
+  const sorted = [...topAgencies].sort((a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0));
   return (
     <section>
       <h3 className="text-lg font-bold text-foreground mb-4">{t.home.topRated}</h3>
       <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
-        {topAgencies.map((agency) => (
+        {sorted.map((agency) => (
           <TopRatedAgencyCard key={agency.id} agency={agency} />
         ))}
       </div>

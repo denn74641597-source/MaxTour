@@ -1,14 +1,30 @@
 import { createAdminClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
-import type { TourInterest } from '@/types';
 
-/** Fetch interests (favorites) for an agency with tour & profile info */
-export async function getInterestsByAgency(agencyId: string): Promise<TourInterest[]> {
+/** Fetch favorites for an agency — which users added which agency tours to favorites */
+export async function getInterestsByAgency(agencyId: string) {
   const supabase = await createAdminClient();
+
+  // Get all tours for this agency
+  const { data: tours, error: toursError } = await supabase
+    .from('tours')
+    .select('id')
+    .eq('agency_id', agencyId);
+
+  if (toursError || !tours || tours.length === 0) {
+    if (toursError) {
+      console.error('getInterestsByAgency tours error:', toursError);
+      await notifySystemError({ source: 'Query: getInterestsByAgency', message: toursError.message, extra: `Agency: ${agencyId}` });
+    }
+    return [];
+  }
+
+  const tourIds = tours.map((t) => t.id);
+
   const { data, error } = await supabase
-    .from('tour_interests')
+    .from('favorites')
     .select('*, tour:tours(id, title, slug, country, city), profile:profiles(full_name, phone, telegram_username, avatar_url)')
-    .eq('agency_id', agencyId)
+    .in('tour_id', tourIds)
     .order('created_at', { ascending: false });
 
   if (error) {
