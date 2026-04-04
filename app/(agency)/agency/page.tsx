@@ -11,14 +11,13 @@ async function getAgencyDashboardData() {
   const now = new Date();
   const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
   
-  const [toursRes, leadsRes, leadsAllCountRes, viewsRes, activeToursList, maxCoinBalance, leadsCountRes] = await Promise.all([
+  const [toursRes, leadsRes, leadsAllCountRes, viewsRes, activeToursList, maxCoinBalance] = await Promise.all([
     supabase.from('tours').select('id', { count: 'exact', head: true }).eq('agency_id', agency.id).eq('status', 'published'),
     supabase.from('leads').select('*, tour:tours(title)').eq('agency_id', agency.id).order('created_at', { ascending: false }).gte('created_at', twentyFourHoursAgo).limit(5),
     supabase.from('leads').select('id', { count: 'exact', head: true }).eq('agency_id', agency.id),
     supabase.from('tours').select('view_count').eq('agency_id', agency.id).eq('status', 'published'),
     supabase.from('tours').select('id, title, cover_image_url, price, currency, country, city').eq('agency_id', agency.id).eq('status', 'published').limit(20),
     getMaxCoinBalance(agency.id),
-    supabase.from('leads').select('id', { count: 'exact', head: true }).eq('agency_id', agency.id),
   ]);
 
   const totalViews = (viewsRes.data ?? []).reduce((sum, t) => {
@@ -30,7 +29,6 @@ async function getAgencyDashboardData() {
     agency,
     activeTours: toursRes.count ?? 0,
     totalLeads: leadsAllCountRes.count ?? 0,
-    totalRequests: leadsCountRes.count ?? 0,
     recentLeads: leadsRes.data ?? [],
     totalViews,
     activeToursList: activeToursList.data ?? [],

@@ -119,7 +119,7 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
       {hotDeals.length > 0 ? (
         <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
           {hotDeals.map((tour) => (
-            <div key={tour.id} className="shrink-0 w-[160px]">
+            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px]">
               <HotDealCard tour={tour} />
             </div>
           ))}
@@ -141,7 +141,7 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
       {hotTours.length > 0 ? (
         <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
           {hotTours.map((tour) => (
-            <div key={tour.id} className="shrink-0 w-[160px]">
+            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px]">
               <HotTourCard tour={tour} />
             </div>
           ))}

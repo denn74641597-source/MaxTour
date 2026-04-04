@@ -2,7 +2,7 @@
 
 import { EmptyState } from '@/components/shared/empty-state';
 import { useTranslation } from '@/lib/i18n';
-import { BarChart3, Heart, Phone, Send } from 'lucide-react';
+import { BarChart3, Heart, Phone, Send, Users } from 'lucide-react';
 
 interface TourAnalyticsRow {
   tour: { id: string; title: string; slug: string; country: string; city: string | null };
@@ -13,9 +13,10 @@ interface TourAnalyticsRow {
 
 interface AnalyticsContentProps {
   analytics: TourAnalyticsRow[];
+  totalRequests: number;
 }
 
-export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
+export function AnalyticsContent({ analytics, totalRequests }: AnalyticsContentProps) {
   const { t } = useTranslation();
 
   const totals = analytics.reduce(
@@ -37,7 +38,12 @@ export function AnalyticsContent({ analytics }: AnalyticsContentProps) {
       {analytics.length > 0 ? (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-sky-50 rounded-2xl p-4 text-center border border-sky-100">
+              <Users className="h-5 w-5 text-sky-500 mx-auto mb-1" />
+              <p className="text-2xl font-bold text-sky-600">{totalRequests}</p>
+              <p className="text-[10px] text-sky-400 font-medium uppercase tracking-wider">{t.leadsPage.title}</p>
+            </div>
             <div className="bg-pink-50 rounded-2xl p-4 text-center border border-pink-100">
               <Heart className="h-5 w-5 text-pink-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-pink-600">{totals.interests}</p>
