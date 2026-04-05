@@ -19,10 +19,15 @@ export async function ensureWebhook() {
     const appUrl = process.env.WEBHOOK_BASE_URL || process.env.NEXT_PUBLIC_APP_URL;
     if (!appUrl) return;
     const webhookUrl = `${appUrl}/api/admin-bot/webhook`;
+    // Webhook so'rovlarini himoyalash uchun secret_token o'rnatamiz
+    const secretToken = process.env.ADMIN_BOT_WEBHOOK_SECRET;
     const res = await fetch(`https://api.telegram.org/bot${getBotToken()}/setWebhook`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: webhookUrl }),
+      body: JSON.stringify({
+        url: webhookUrl,
+        ...(secretToken ? { secret_token: secretToken } : {}),
+      }),
     });
     if (!res.ok) {
       console.error('ensureWebhook failed:', await res.text());

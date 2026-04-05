@@ -13,7 +13,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const agency = await getAgencyBySlug(slug);
   if (!agency) return { title: 'Agency Not Found' };
-  return { title: agency.name, description: agency.description ?? `${agency.name} — travel agency` };
+
+  const description = agency.description ?? `${agency.name} — travel agency`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+
+  return {
+    title: agency.name,
+    description,
+    openGraph: {
+      title: agency.name,
+      description,
+      type: 'profile',
+      url: `${appUrl}/agencies/${slug}`,
+      ...(agency.logo_url ? { images: [{ url: agency.logo_url }] } : {}),
+    },
+  };
 }
 
 export default async function AgencyProfilePage({ params }: Props) {

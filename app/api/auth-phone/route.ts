@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/server';
+import { checkRateLimit, getClientIP, rateLimitHeaders } from '@/lib/rate-limit';
+import { z } from 'zod';
+
+// Telefon raqami validatsiyasi
+const phoneSchema = z.object({
+  phone: z.string().min(7).max(20).regex(/^[\d\s\-+()]+$/),
+});
 
 /**
  * POST /api/auth-phone
@@ -7,10 +14,26 @@ import { createAdminClient } from '@/lib/supabase/server';
  * First checks auth.users directly (most reliable), then falls back to profiles table.
  */
 export async function POST(request: NextRequest) {
-  const { phone } = await request.json();
-  if (!phone || typeof phone !== 'string') {
+  // Brute-force himoyasi: bir IP dan 1 daqiqada 10 ta so'rov
+  const ip = getClientIP(request.headers);
+  const { allowed, remaining, retryAfterMs } = checkRateLimit(
+    `auth-phone:${ip}`,
+    10,
+    60_000
+  );
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Juda koʻp soʻrov. Biroz kutib turing.' },
+      { status: 429, headers: rateLimitHeaders(remaining, retryAfterMs) }
+    );
+  }
+
+  const body = await request.json();
+  const parsed = phoneSchema.safeParse(body);
+  if (!parsed.success) {
     return NextResponse.json({ error: 'Phone required' }, { status: 400 });
   }
+  const phone = parsed.data.phone;
 
   // Normalize phone: remove spaces/dashes, ensure + prefix
   let cleaned = phone.trim().replace(/[\s\-\(\)]/g, '');

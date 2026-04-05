@@ -24,6 +24,15 @@ async function answerCallback(callbackId: string, text: string) {
  */
 export async function POST(request: NextRequest) {
   try {
+    // Webhook so'rovining haqiqiyligini tekshirish (Telegram secret_token orqali)
+    const webhookSecret = process.env.ADMIN_BOT_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      const receivedToken = request.headers.get('x-telegram-bot-api-secret-token');
+      if (receivedToken !== webhookSecret) {
+        return NextResponse.json({ ok: false }, { status: 403 });
+      }
+    }
+
     // Ensure webhook URL is set on cold start
     await ensureWebhook();
 
@@ -90,11 +99,13 @@ export async function POST(request: NextRequest) {
 
         // ─── Coin Requests ───
         case 'coin_approve': {
+          // Takroriy approve oldini olish: faqat pending statusdagi so'rovni o'zgartirish
           const { data: req, error: fetchErr } = await supabase
             .from('coin_requests')
-            .select('*')
+            .update({ status: 'approved', resolved_at: new Date().toISOString() })
             .eq('id', id1)
             .eq('status', 'pending')
+            .select('*')
             .maybeSingle();
 
           if (fetchErr) {
@@ -115,11 +126,6 @@ export async function POST(request: NextRequest) {
               .update({ maxcoin_balance: currentBalance + req.coins })
               .eq('id', req.agency_id);
 
-            const { error: e2 } = await supabase
-              .from('coin_requests')
-              .update({ status: 'approved', resolved_at: new Date().toISOString() })
-              .eq('id', id1);
-
             const { error: e3 } = await supabase.from('maxcoin_transactions').insert({
               agency_id: req.agency_id,
               amount: req.coins,
@@ -127,7 +133,7 @@ export async function POST(request: NextRequest) {
               description: `${req.coins} MC sotib olindi (${Number(req.price_uzs).toLocaleString()} UZS)`,
             });
 
-            if (e1 || e2 || e3) dbError = [e1, e2, e3].filter(Boolean).map(e => e!.message).join('; ');
+            if (e1 || e3) dbError = [e1, e3].filter(Boolean).map(e => e!.message).join('; ');
           }
           decision = 'approved';
           break;

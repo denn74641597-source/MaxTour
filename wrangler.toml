@@ -8,12 +8,17 @@ directory = ".open-next/assets"
 binding = "ASSETS"
 
 [vars]
+# Ommaviy (public) o'zgaruvchilar — brauzerda ko'rinadi, maxfiy emas
 NEXT_PUBLIC_APP_NAME = "MaxTour"
 NEXT_PUBLIC_APP_URL = "https://maxtour.denn74641597.workers.dev"
 NEXT_PUBLIC_SUPABASE_URL = "https://vgdfewmyhgzpbxesxfdb.supabase.co"
 NEXT_PUBLIC_SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnZGZld215aGd6cGJ4ZXN4ZmRiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyODkwOTQsImV4cCI6MjA4ODg2NTA5NH0.VnVf5TqU-klQOIoVSBXtVBoDWwgXwLCAD56iW2u7l6Y"
-ADMIN_CHAT_ID = "496829881"
-ADMIN_CHAT_ID_2 = "7298088133"
-ADMIN_PASSWORD = "Denn1006"
-# Secrets (set via Cloudflare Dashboard or `wrangler secret put`):
-# ADMIN_BOT_TOKEN, SUPABASE_SERVICE_ROLE_KEY, DATABASE_URL
+
+# ⚠️ Maxfiy qiymatlar — `wrangler secret put` orqali o'rnating, bu yerga YOZMANG!
+# wrangler secret put ADMIN_PASSWORD
+# wrangler secret put ADMIN_CHAT_ID
+# wrangler secret put ADMIN_CHAT_ID_2
+# wrangler secret put ADMIN_BOT_TOKEN
+# wrangler secret put ADMIN_BOT_WEBHOOK_SECRET
+# wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+# wrangler secret put DATABASE_URL

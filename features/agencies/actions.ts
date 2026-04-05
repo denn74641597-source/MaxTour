@@ -3,6 +3,7 @@
 import { createServerSupabaseClient, createAdminClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { getMyAgency } from './queries';
+import { sanitizeText } from '@/lib/sanitize';
 
 function isProfilePayloadComplete(payload: { name: string; description: string | null; phone: string | null; logo_url: string | null; address: string | null; city: string | null; inn: string | null; responsible_person: string | null }) {
   return !!(payload.name && payload.description && payload.phone && payload.logo_url && payload.address && payload.city && payload.inn && payload.responsible_person);
@@ -120,7 +121,7 @@ export async function incrementAgencyViews(agencyId: string) {
     .select('profile_views')
     .eq('id', agencyId)
     .single();
-  const currentViews = (data as any)?.profile_views ?? 0;
+  const currentViews = (data as { profile_views: number } | null)?.profile_views ?? 0;
   await supabase
     .from('agencies')
     .update({ profile_views: currentViews + 1 })
@@ -150,7 +151,7 @@ export async function submitReview(agencyId: string, rating: number, comment: st
     agency_id: agencyId,
     user_id: user.id,
     rating,
-    comment: comment || null,
+    comment: comment ? sanitizeText(comment, 500) : null,
   });
 
   if (error) {

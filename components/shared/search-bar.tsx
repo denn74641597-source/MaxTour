@@ -33,7 +33,7 @@ export function SearchBar({
   }
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form onSubmit={handleSubmit} className={className} role="search" aria-label="Tour qidirish">
       <div className={cn(
         'relative group flex items-center transition-all',
         variant === 'hero'
@@ -60,6 +60,7 @@ export function SearchBar({
               : 'py-2.5 pl-10 pr-4 text-sm'
           )}
           type="text"
+          aria-label={displayPlaceholder}
         />
         {variant === 'hero' && (
           <button
@@ -67,7 +68,7 @@ export function SearchBar({
             onClick={() => router.push('/tours')}
             className="absolute right-4 inset-y-0 flex items-center"
           >
-            <SlidersHorizontal className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" />
+            <SlidersHorizontal className="h-5 w-5 text-muted-foreground hover:text-primary transition-colors" aria-hidden="true" />
           </button>
         )}
       </div>

@@ -11,9 +11,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const tour = await getTourBySlug(slug);
   if (!tour) return { title: 'Tour Not Found' };
+
+  const description = tour.short_description ?? `${tour.title} — ${tour.country}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+
   return {
     title: tour.title,
-    description: tour.short_description ?? `${tour.title} — ${tour.country}`,
+    description,
+    openGraph: {
+      title: tour.title,
+      description,
+      type: 'article',
+      url: `${appUrl}/tours/${slug}`,
+      ...(tour.cover_image_url ? { images: [{ url: tour.cover_image_url }] } : {}),
+    },
   };
 }
 

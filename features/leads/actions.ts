@@ -27,6 +27,21 @@ export async function submitLead(tourId: string, agencyId: string, formData: Rec
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Takroriy lead oldini olish: bir xil tour + agency + telefon 5 daqiqa ichida kiritilmasin
+  const fiveMinAgo = new Date(Date.now() - 5 * 60_000).toISOString();
+  const { data: existing } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('tour_id', tourId)
+    .eq('agency_id', agencyId)
+    .eq('phone', parsed.data.phone)
+    .gte('created_at', fiveMinAgo)
+    .limit(1);
+
+  if (existing && existing.length > 0) {
+    return { success: true, message: 'Arizangiz allaqachon yuborilgan' };
+  }
+
   const insertData: Record<string, unknown> = {
     tour_id: tourId,
     agency_id: agencyId,

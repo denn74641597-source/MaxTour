@@ -24,6 +24,17 @@ export const metadata: Metadata = {
   },
   description:
     "O'zbekistondagi tasdiqlangan sayohat agentliklaridan eng yaxshi tur paketlarini toping va band qiling.",
+  openGraph: {
+    type: 'website',
+    siteName: 'MaxTour',
+    title: "MaxTour — O'zbekiston sayohat bozori",
+    description:
+      "O'zbekistondagi tasdiqlangan sayohat agentliklaridan eng yaxshi tur paketlarini toping va band qiling.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export const viewport: Viewport = {

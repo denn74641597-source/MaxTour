@@ -108,13 +108,20 @@ export async function promoteTour(agencyId: string, tourId: string, tierId: stri
   const now = new Date();
   const endsAt = new Date(now.getTime() + tier.days * 24 * 60 * 60 * 1000);
 
-  const { error: balanceError } = await admin
+  // Atomik balans tekshiruvi — faqat yetarli balans bo'lganda ayiradi (race condition oldini olish)
+  const { data: updated, error: balanceError } = await admin
     .from('agencies')
     .update({ maxcoin_balance: balance - tier.coins })
-    .eq('id', agencyId);
+    .eq('id', agencyId)
+    .gte('maxcoin_balance', tier.coins)
+    .select('id')
+    .maybeSingle();
   if (balanceError) {
     await notifySystemError({ source: 'Action: promoteTour', message: balanceError.message, extra: `Agency: ${agencyId}, Tour: ${tourId}` });
     return { error: balanceError.message };
+  }
+  if (!updated) {
+    return { error: 'Insufficient MaxCoin balance (concurrent update detected)', required: tier.coins, current: balance };
   }
 
   const { error: promoError } = await admin.from('tour_promotions').insert({
