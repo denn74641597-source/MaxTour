@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { HeroBanner } from '@/components/shared/hero-banner';
+import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
 import { useTranslation } from '@/lib/i18n';
 import { hapticFeedback } from '@/lib/telegram';
 import { TOUR_CATEGORIES } from '@/types';
@@ -29,7 +30,7 @@ function pickRandom(all: Tour[], limit: number): Tour[] {
 export function CategoryChips() {
   const { t } = useTranslation();
   return (
-    <div className="flex gap-2 overflow-x-auto no-scrollbar -mx-6 px-6 pb-1">
+    <HorizontalScroll className="gap-2 pb-1">
       {TOUR_CATEGORIES.map((cat) => (
         <Link
           key={cat}
@@ -39,7 +40,7 @@ export function CategoryChips() {
           {t.tourCategories[cat]}
         </Link>
       ))}
-    </div>
+    </HorizontalScroll>
   );
 }
 
@@ -50,14 +51,14 @@ export function AgenciesHeading() {
   return <h3 className="text-lg font-bold text-foreground mb-4">{t.home.verifiedAgencies}</h3>;
 }
 
-/* ─── Rotating Hero Banner — picks random 10, auto-rotates every 5s, supports swipe ─── */
+/* ─── Rotating Hero Banner — picks random 10, auto-rotates every 5s, supports swipe + mouse drag ─── */
 
 export function RotatingHero({ tours }: { tours: Tour[] }) {
   const { t } = useTranslation();
   const [current, setCurrent] = useState(() => pickRandom(tours, 10));
   const [idx, setIdx] = useState(0);
   const [fading, setFading] = useState(false);
-  const touchStart = useRef(0);
+  const pointerStart = useRef(0);
   const autoTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const goTo = useCallback((newIdx: number) => {
@@ -94,11 +95,12 @@ export function RotatingHero({ tours }: { tours: Tour[] }) {
     autoTimer.current = setInterval(goNext, 5000);
   }, [goNext]);
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStart.current = e.touches[0].clientX;
+  // Unified pointer handlers (touch + mouse)
+  const handlePointerDown = (e: React.PointerEvent) => {
+    pointerStart.current = e.clientX;
   };
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const diff = touchStart.current - e.changedTouches[0].clientX;
+  const handlePointerUp = (e: React.PointerEvent) => {
+    const diff = pointerStart.current - e.clientX;
     if (Math.abs(diff) > 50) {
       hapticFeedback('light');
       if (diff > 0) goNext(); else goPrev();
@@ -113,8 +115,9 @@ export function RotatingHero({ tours }: { tours: Tour[] }) {
     <>
       <h3 className="text-lg font-bold text-foreground mb-4">{t.home.recommendedTours}</h3>
       <div
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        className="cursor-grab active:cursor-grabbing select-none"
       >
         <div className={`transition-opacity duration-300 ${fading ? 'opacity-0' : 'opacity-100'}`}>
           <HeroBanner tour={tour} featured />

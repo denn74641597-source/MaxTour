@@ -12,7 +12,7 @@ export default function PublicLayout({
   return (
     <PullToRefresh>
       <AppHeader />
-      <main className="flex-1 mx-auto w-full max-w-2xl pb-24">{children}</main>
+      <main className="flex-1 mx-auto w-full max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl pb-24 md:pb-8">{children}</main>
       <BottomNav />
     </PullToRefresh>
   );

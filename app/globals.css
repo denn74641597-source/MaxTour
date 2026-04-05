@@ -214,6 +214,36 @@
   scrollbar-width: none;
 }
 
+/* Thin styled scrollbar for desktop (768px+) — shown on hover */
+@media (min-width: 768px) {
+  .desktop-scrollbar::-webkit-scrollbar {
+    height: 6px;
+  }
+  .desktop-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .desktop-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 3px;
+  }
+  .desktop-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+  }
+  .dark .desktop-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
+  .dark .desktop-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+  .desktop-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+  }
+  .dark .desktop-scrollbar {
+    scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+  }
+}
+
 /* Safe area bottom padding for Telegram Mini App / iOS */
 .safe-area-pb {
   padding-bottom: env(safe-area-inset-bottom, 0px);

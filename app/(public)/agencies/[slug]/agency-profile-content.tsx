@@ -244,7 +244,7 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
       <div className="px-4 py-4">
         {/* Active Tours Tab */}
         {activeTab === 'tours' && (
-          <div className="space-y-4">
+          <div className="space-y-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:space-y-0">
             {tours.length > 0 ? (
               tours.map((tour) => (
                 <AgencyTourCard key={tour.id} tour={tour} />

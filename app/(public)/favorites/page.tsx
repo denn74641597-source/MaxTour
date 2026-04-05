@@ -231,7 +231,7 @@ export default function FavoritesPage() {
         {activeTab === 'favorites' && (
           <div>
             {favorites.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 {favorites.map((fav) =>
                   fav.tour ? <TourCard key={fav.id} tour={fav.tour} /> : null
                 )}

@@ -13,7 +13,7 @@ export function AgencyCard({ agency }: AgencyCardProps) {
   return (
     <Link href={`/agencies/${agency.slug}`} className="flex flex-col items-center gap-1.5 shrink-0">
       <div className="relative">
-        <div className="w-16 h-16 rounded-full bg-surface-container-low flex items-center justify-center overflow-hidden shadow-ambient">
+        <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-surface-container-low flex items-center justify-center overflow-hidden shadow-ambient">
           <Image
             src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
             alt={agency.name}

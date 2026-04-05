@@ -29,7 +29,7 @@ export function SearchContent({ tours, query }: SearchContentProps) {
             <p className="text-sm text-muted-foreground">
               {tours.length} {t.search.resultsFor} &quot;{query}&quot;
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {tours.map((tour) => (
                 <TourCard key={tour.id} tour={tour} />
               ))}

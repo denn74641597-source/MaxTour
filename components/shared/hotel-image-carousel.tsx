@@ -12,6 +12,7 @@ interface HotelImageCarouselProps {
 export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const dragState = useRef({ isDown: false, startX: 0, scrollLeft: 0, hasDragged: false });
 
   const scrollTo = useCallback((index: number) => {
     setCurrentIndex(index);
@@ -25,6 +26,28 @@ export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProp
   const prev = () => scrollTo(currentIndex > 0 ? currentIndex - 1 : images.length - 1);
   const next = () => scrollTo(currentIndex < images.length - 1 ? currentIndex + 1 : 0);
 
+  // Mouse drag handlers for desktop
+  const handleMouseDown = (e: React.MouseEvent) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    dragState.current = { isDown: true, startX: e.pageX, scrollLeft: el.scrollLeft, hasDragged: false };
+    el.style.cursor = 'grabbing';
+  };
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!dragState.current.isDown) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    e.preventDefault();
+    const dx = e.pageX - dragState.current.startX;
+    if (Math.abs(dx) > 5) dragState.current.hasDragged = true;
+    el.scrollLeft = dragState.current.scrollLeft - dx;
+  };
+  const handleMouseUp = () => {
+    dragState.current.isDown = false;
+    const el = scrollRef.current;
+    if (el) el.style.cursor = '';
+  };
+
   if (images.length === 0) return null;
 
   return (
@@ -32,7 +55,7 @@ export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProp
       {/* Image container */}
       <div
         ref={scrollRef}
-        className="flex snap-x snap-mandatory overflow-x-auto scrollbar-hide rounded-xl"
+        className="flex snap-x snap-mandatory overflow-x-auto scrollbar-hide rounded-xl cursor-grab active:cursor-grabbing"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         onScroll={(e) => {
           const el = e.currentTarget;
@@ -41,6 +64,10 @@ export function HotelImageCarousel({ images, hotelName }: HotelImageCarouselProp
             setCurrentIndex(index);
           }
         }}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
       >
         {images.map((src, i) => (
           <div

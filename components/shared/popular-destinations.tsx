@@ -4,6 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useTranslation } from '@/lib/i18n';
 import { placeholderImage } from '@/lib/utils';
+import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
 import type { Tour } from '@/types';
 
 interface PopularDestinationsProps {
@@ -23,26 +24,26 @@ export function PopularDestinations({ tours }: PopularDestinationsProps) {
           {t.home.seeAll}
         </Link>
       </div>
-      <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6">
+      <HorizontalScroll className="gap-4">
         {tours.map((tour) => (
           <Link
             key={tour.id}
             href={`/tours/${tour.slug}`}
             className="shrink-0"
           >
-            <div className="w-28 aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-2 bg-surface-container-low shadow-ambient">
+            <div className="w-28 md:w-32 lg:w-36 aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-2 bg-surface-container-low shadow-ambient">
               <Image
                 src={tour.cover_image_url || placeholderImage(200, 250, tour.title)}
                 alt={tour.title}
-                width={112}
-                height={140}
+                width={144}
+                height={180}
                 className="w-full h-full object-cover"
               />
             </div>
-            <p className="font-semibold text-sm text-foreground text-center truncate w-28">{tour.city || tour.country}</p>
+            <p className="font-semibold text-sm text-foreground text-center truncate w-28 md:w-32 lg:w-36">{tour.city || tour.country}</p>
           </Link>
         ))}
-      </div>
+      </HorizontalScroll>
     </section>
   );
 }

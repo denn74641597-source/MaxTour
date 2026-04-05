@@ -19,7 +19,7 @@ export const BottomNav = memo(function BottomNav() {
   ], [t.nav]);
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav" aria-label="Asosiy navigatsiya" style={{ paddingBottom: 'var(--tg-safe-bottom, env(safe-area-inset-bottom, 0px))' }}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 glass-nav md:hidden" aria-label="Asosiy navigatsiya" style={{ paddingBottom: 'var(--tg-safe-bottom, env(safe-area-inset-bottom, 0px))' }}>
       <div className="mx-auto flex items-center justify-around max-w-2xl py-2 px-6">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);

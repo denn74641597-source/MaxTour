@@ -95,14 +95,14 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       </div>
 
       {/* Hero Image */}
-      <div className="relative min-h-[260px] w-full overflow-hidden bg-muted">
+      <div className="relative min-h-[260px] md:min-h-[400px] lg:min-h-[450px] w-full overflow-hidden bg-muted">
         <Image
           src={allImages[0]}
           alt={tour.title}
           fill
           className="object-cover"
           priority
-          sizes="100vw"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 768px, 1024px"
         />
         {/* Favorite button */}
         <button
@@ -601,7 +601,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           <h2 className="text-lg font-bold text-foreground mb-3">
             {t.similarTours?.title ?? "O'xshash turlar"}
           </h2>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
             {similarTours.map((st) => (
               <TourCard key={st.id} tour={st} />
             ))}
@@ -609,9 +609,9 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         </section>
       )}
 
-      {/* CTA Bar — sits above BottomNav */}
-      <div className="sticky bottom-16 glass-nav px-6 py-2.5 z-40 mt-4">
-        <div className="max-w-2xl mx-auto space-y-2">
+      {/* CTA Bar — sits above BottomNav on mobile, at bottom on desktop */}
+      <div className="sticky bottom-16 md:bottom-0 glass-nav px-6 py-2.5 z-40 mt-4">
+        <div className="max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl mx-auto space-y-2">
           <div className="flex gap-2">
             <button
               onClick={() => setShowLeadForm(true)}

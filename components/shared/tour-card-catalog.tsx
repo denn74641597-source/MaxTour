@@ -85,13 +85,13 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
       </div>
 
       {/* Image */}
-      <div className="relative aspect-square w-full overflow-hidden">
+      <div className="relative aspect-square md:aspect-[4/3] w-full overflow-hidden">
         <Image
           src={tour.cover_image_url || placeholderImage(800, 1000, tour.title)}
           alt={tour.title}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
-          sizes="(max-width: 768px) 100vw, 480px"
+          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
 
         {/* Promoted/featured star badge */}

@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
   return (
-    <div className="px-6 py-4 space-y-8">
+    <div className="px-6 md:px-8 py-4 space-y-8">
       {/* Search bar skeleton */}
       <Skeleton className="w-full h-14 rounded-[1.5rem]" />
 

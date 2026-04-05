@@ -5,12 +5,14 @@ import { ChevronDown } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { useMouseDragScroll } from '@/hooks/use-mouse-drag-scroll';
 
 export function ToursFilterBar() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeFilter = searchParams.get('filter') ?? 'all';
   const { t } = useTranslation();
+  const scrollRef = useMouseDragScroll<HTMLDivElement>();
 
   const FILTER_CHIPS = [
     { key: 'all', label: t.tours.allDestinations },
@@ -40,7 +42,7 @@ export function ToursFilterBar() {
   const isVerifiedActive = searchParams.get('verified') === 'true';
 
   return (
-    <div className="flex gap-2 overflow-x-auto no-scrollbar py-1">
+    <div ref={scrollRef} className="flex gap-2 overflow-x-auto no-scrollbar py-1 cursor-grab active:cursor-grabbing">
       {FILTER_CHIPS.map((chip) => {
         const isActive =
           chip.key === 'all'

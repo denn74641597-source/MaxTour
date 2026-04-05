@@ -3,6 +3,7 @@
 import { cn } from '@/lib/utils';
 import { TOUR_CATEGORIES } from '@/types';
 import { useTranslation } from '@/lib/i18n';
+import { useMouseDragScroll } from '@/hooks/use-mouse-drag-scroll';
 
 interface FilterChipsProps {
   selected?: string;
@@ -11,9 +12,10 @@ interface FilterChipsProps {
 
 export function FilterChips({ selected, onSelect }: FilterChipsProps) {
   const { t } = useTranslation();
+  const scrollRef = useMouseDragScroll<HTMLDivElement>();
 
   return (
-    <div className="flex gap-2.5 overflow-x-auto no-scrollbar py-1">
+    <div ref={scrollRef} className="flex gap-2.5 overflow-x-auto no-scrollbar py-1 cursor-grab active:cursor-grabbing">
       {TOUR_CATEGORIES.map((cat) => {
         const isActive = selected === cat;
         const label = t.tourCategories[cat as keyof typeof t.tourCategories] ?? t.categories[cat] ?? cat;

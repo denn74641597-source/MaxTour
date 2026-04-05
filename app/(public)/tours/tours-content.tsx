@@ -48,7 +48,7 @@ export function ToursContent({ tours, promotions = { featured: [], hotDeals: [],
       </div>
 
       {/* Tour list */}
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-6 md:space-y-0">
         {tours.length > 0 ? (
           tours.map((tour) => (
             <TourCardCatalog
@@ -60,10 +60,12 @@ export function ToursContent({ tours, promotions = { featured: [], hotDeals: [],
             />
           ))
         ) : (
-          <EmptyState
-            title={t.tours.noToursFound}
-            description={t.tours.noToursHint}
-          />
+          <div className="md:col-span-2 lg:col-span-3">
+            <EmptyState
+              title={t.tours.noToursFound}
+              description={t.tours.noToursHint}
+            />
+          </div>
         )}
       </div>
     </div>

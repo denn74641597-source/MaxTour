@@ -2,6 +2,7 @@
 import { SearchBar } from '@/components/shared/search-bar';
 import { AgencyCard } from '@/components/shared/agency-card';
 import { PopularDestinations } from '@/components/shared/popular-destinations';
+import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
 import { CategoryChips, RotatingHero, AgenciesHeading } from './home-client';
 import type { Tour, Agency } from '@/types';
 
@@ -47,11 +48,11 @@ export function HomeAgenciesSection({ agencies }: { agencies: Agency[] }) {
   return (
     <section className="mb-10">
       <AgenciesHeading />
-      <div className="flex gap-5 overflow-x-auto no-scrollbar items-start py-1 -mx-6 px-6">
+      <HorizontalScroll className="gap-5 items-start py-1">
         {agencies.map((agency) => (
           <AgencyCard key={agency.id} agency={agency} />
         ))}
-      </div>
+      </HorizontalScroll>
     </section>
   );
 }

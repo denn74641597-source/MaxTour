@@ -30,7 +30,14 @@ export async function getPromotionTiers() {
     .from('promotion_tiers')
     .select('*')
     .order('sort_order', { ascending: true });
-  return data ?? [];
+  // Deduplicate by placement+days (in case DB has duplicate rows)
+  const seen = new Set<string>();
+  return (data ?? []).filter(t => {
+    const key = `${t.placement}_${t.days}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export async function getActivePromotions(agencyId: string) {

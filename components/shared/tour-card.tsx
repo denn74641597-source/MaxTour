@@ -27,7 +27,7 @@ export function TourCard({ tour }: TourCardProps) {
             alt={tour.title}
             fill
             className="object-cover"
-            sizes="(max-width: 768px) 45vw, 200px"
+            sizes="(max-width: 768px) 45vw, (max-width: 1024px) 30vw, 200px"
           />
           {tour.is_featured && (
             <div className="absolute top-2 right-2">

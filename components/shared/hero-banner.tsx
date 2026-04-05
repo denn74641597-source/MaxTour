@@ -23,13 +23,13 @@ export function HeroBanner({ tour, featured }: HeroBannerProps) {
   return (
     <Link href={`/tours/${tour.slug}`}>
       <div className="relative overflow-hidden rounded-[1.5rem] bg-foreground group">
-        <div className="aspect-[16/10] w-full relative">
+        <div className="aspect-[16/10] lg:aspect-[21/9] w-full relative">
           <Image
             src={tour.cover_image_url || placeholderImage(800, 500, tour.title)}
             alt={tour.title}
             fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 672px"
+            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 768px, 1024px"
             priority
           />
           {/* Gradient overlay */}

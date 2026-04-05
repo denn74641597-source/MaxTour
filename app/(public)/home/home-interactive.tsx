@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Star, MapPin, Heart, Zap, Flame } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
+import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
 import { placeholderImage, formatComboDestinations } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useHomeFavorites } from './home-favorites-provider';
@@ -117,13 +118,13 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
         <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
       </div>
       {hotDeals.length > 0 ? (
-        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
+        <HorizontalScroll className="gap-3 pb-2">
           {hotDeals.map((tour) => (
-            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px]">
+            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
               <HotDealCard tour={tour} />
             </div>
           ))}
-        </div>
+        </HorizontalScroll>
       ) : (
         <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
       )}
@@ -139,13 +140,13 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
         <h3 className="text-lg font-bold text-foreground">{t.home.hotTours}</h3>
       </div>
       {hotTours.length > 0 ? (
-        <div className="flex gap-3 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
+        <HorizontalScroll className="gap-3 pb-2">
           {hotTours.map((tour) => (
-            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px]">
+            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
               <HotTourCard tour={tour} />
             </div>
           ))}
-        </div>
+        </HorizontalScroll>
       ) : (
         <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
       )}
@@ -161,11 +162,11 @@ export function HomeTopRatedSection({ topAgencies }: { topAgencies: Agency[] }) 
   return (
     <section>
       <h3 className="text-lg font-bold text-foreground mb-4">{t.home.topRated}</h3>
-      <div className="flex gap-4 overflow-x-auto no-scrollbar -mx-6 px-6 pb-2">
+      <HorizontalScroll className="gap-4 pb-2">
         {sorted.map((agency) => (
           <TopRatedAgencyCard key={agency.id} agency={agency} />
         ))}
-      </div>
+      </HorizontalScroll>
     </section>
   );
 }
