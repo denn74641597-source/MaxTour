@@ -6,16 +6,21 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Format price with currency */
+/** Format price with currency (uses space as thousand separator) */
 export function formatPrice(price: number, currency: string = 'USD'): string {
   if (currency === 'UZS') {
-    return `${price.toLocaleString()} UZS`;
+    return `${price.toLocaleString('en-US').replace(/,/g, ' ')} UZS`;
   }
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-  }).format(price);
+  }).format(price).replace(/,/g, ' ');
+}
+
+/** Format a number with space as thousand separator (no currency symbol) */
+export function formatNumber(value: number): string {
+  return value.toLocaleString('en-US').replace(/,/g, ' ');
 }
 
 /** Format date for display */

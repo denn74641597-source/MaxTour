@@ -12,7 +12,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useTranslation } from '@/lib/i18n';
 import { createClient } from '@/lib/supabase/client';
-import { placeholderImage } from '@/lib/utils';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import type { Agency } from '@/types';
 
@@ -188,13 +187,19 @@ export default function FavoritesPage() {
                           <Link href={`/agencies/${agency.slug}`} className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="relative shrink-0">
                               <div className="w-12 h-12 rounded-full overflow-hidden bg-surface">
-                                <Image
-                                  src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
-                                  alt={agency.name}
-                                  width={48}
-                                  height={48}
-                                  className="object-cover w-full h-full"
-                                />
+                                {agency.logo_url ? (
+                                  <Image
+                                    src={agency.logo_url}
+                                    alt={agency.name}
+                                    width={48}
+                                    height={48}
+                                    className="object-cover w-full h-full"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+                                    <span className="text-white font-bold text-lg">{agency.name?.[0]?.toUpperCase() || 'M'}</span>
+                                  </div>
+                                )}
                               </div>
                               {agency.is_verified && (
                                 <div className="absolute -bottom-0.5 -right-0.5 bg-surface rounded-full p-[1px]">

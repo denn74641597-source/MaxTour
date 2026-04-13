@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Star, MapPin, Heart, Zap, Flame } from 'lucide-react';
 import { EmptyState } from '@/components/shared/empty-state';
 import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
-import { placeholderImage, formatComboDestinations } from '@/lib/utils';
+import { placeholderImage, formatComboDestinations, formatPrice } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useHomeFavorites } from './home-favorites-provider';
 import type { Tour, Agency } from '@/types';
@@ -41,7 +41,7 @@ function HotDealCard({ tour }: { tour: Tour }) {
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
-            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2">{tour.title}</h4>
+            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2 min-h-[30px]">{tour.title}</h4>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
               className="shrink-0 mt-0.5"
@@ -53,7 +53,7 @@ function HotDealCard({ tour }: { tour: Tour }) {
             <MapPin className="h-2.5 w-2.5 shrink-0" />
             <span className="truncate">{location}</span>
           </p>
-          <p className="text-sm font-bold text-primary mt-1">${tour.price.toLocaleString()}</p>
+          <p className="text-sm font-bold text-primary mt-1">{formatPrice(tour.price, tour.currency)}</p>
         </div>
       </div>
     </Link>
@@ -89,7 +89,7 @@ function HotTourCard({ tour }: { tour: Tour }) {
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
-            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2">{tour.title}</h4>
+            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2 min-h-[30px]">{tour.title}</h4>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
               className="shrink-0 mt-0.5"
@@ -101,7 +101,7 @@ function HotTourCard({ tour }: { tour: Tour }) {
             <MapPin className="h-2.5 w-2.5 shrink-0" />
             <span className="truncate">{location}</span>
           </p>
-          <p className="text-sm font-bold text-primary mt-1">${tour.price.toLocaleString()}</p>
+          <p className="text-sm font-bold text-primary mt-1">{formatPrice(tour.price, tour.currency)}</p>
         </div>
       </div>
     </Link>
@@ -179,13 +179,19 @@ function TopRatedAgencyCard({ agency }: { agency: Agency }) {
     <Link href={`/agencies/${agency.slug}`} className="shrink-0 w-40">
       <div className="bg-surface rounded-[1.5rem] p-4 flex flex-col items-center text-center shadow-ambient">
         <div className="w-16 h-16 rounded-full overflow-hidden mb-3 bg-primary/5 ring-2 ring-primary/10">
-          <Image
-            src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
-            alt={agency.name}
-            width={64}
-            height={64}
-            className="object-cover w-full h-full"
-          />
+          {agency.logo_url ? (
+            <Image
+              src={agency.logo_url}
+              alt={agency.name}
+              width={64}
+              height={64}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+              <span className="text-white font-bold text-xl">{agency.name?.[0]?.toUpperCase() || 'M'}</span>
+            </div>
+          )}
         </div>
         <h4 className="font-bold text-sm text-foreground truncate w-full">{agency.name}</h4>
         <div className="flex items-center gap-0.5 mt-1.5 mb-2">
@@ -195,8 +201,13 @@ function TopRatedAgencyCard({ agency }: { agency: Agency }) {
               className={`h-3.5 w-3.5 ${i < Math.round(rating) ? 'text-tertiary fill-tertiary' : 'text-muted fill-muted'}`}
             />
           ))}
-          <span className="text-xs text-muted-foreground ml-1 font-medium">{rating > 0 ? rating.toFixed(1) : ''}</span>
+          <span className="text-xs text-muted-foreground ml-1 font-semibold">{rating.toFixed(1)}</span>
         </div>
+        {(agency.review_count ?? 0) > 0 && (
+          <span className="text-[10px] text-muted-foreground mb-1">
+            {agency.review_count} {t.agencyProfile.reviews}
+          </span>
+        )}
         <span className="text-xs font-bold text-primary uppercase tracking-wide">{t.home.viewAgency}</span>
       </div>
     </Link>

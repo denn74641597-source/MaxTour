@@ -31,7 +31,7 @@ export function PopularDestinations({ tours }: PopularDestinationsProps) {
             href={`/tours/${tour.slug}`}
             className="shrink-0"
           >
-            <div className="w-28 md:w-32 lg:w-36 aspect-[4/5] rounded-[1.5rem] overflow-hidden mb-2 bg-surface-container-low shadow-ambient">
+            <div className="w-28 md:w-32 lg:w-36 aspect-[4/5] rounded-[1.5rem] overflow-hidden bg-surface-container-low shadow-ambient relative">
               <Image
                 src={tour.cover_image_url || placeholderImage(200, 250, tour.title)}
                 alt={tour.title}
@@ -39,8 +39,13 @@ export function PopularDestinations({ tours }: PopularDestinationsProps) {
                 height={180}
                 className="w-full h-full object-cover"
               />
+              {/* Gradient overlay */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              {/* City name inside card at bottom */}
+              <p className="absolute bottom-3 left-0 right-0 font-semibold text-sm text-white text-center truncate px-2 drop-shadow-md">
+                {tour.city || tour.country}
+              </p>
             </div>
-            <p className="font-semibold text-sm text-foreground text-center truncate w-28 md:w-32 lg:w-36">{tour.city || tour.country}</p>
           </Link>
         ))}
       </HorizontalScroll>

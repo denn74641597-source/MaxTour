@@ -173,13 +173,19 @@ export function AgencyProfileContent({ initialAgency }: AgencyProfileContentProp
           <div className="relative p-4 flex items-center gap-4">
             {/* Logo */}
             <div className="relative h-16 w-16 rounded-full overflow-hidden ring-2 ring-card shadow-md bg-card shrink-0">
-              <Image
-                src={agency.logo_url || placeholderImage(200, 200, agency.name[0])}
-                alt={agency.name}
-                fill
-                className="object-cover"
-                sizes="64px"
-              />
+              {agency.logo_url ? (
+                <Image
+                  src={agency.logo_url}
+                  alt={agency.name}
+                  fill
+                  className="object-cover"
+                  sizes="64px"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">{agency.name?.[0]?.toUpperCase() || 'M'}</span>
+                </div>
+              )}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1.5">

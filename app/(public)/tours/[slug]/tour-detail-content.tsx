@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 import { DOMESTIC_CATEGORIES } from '@/lib/tour-data';
 import { useTranslation } from '@/lib/i18n';
-import { formatDate, formatComboDestinations, placeholderImage } from '@/lib/utils';
+import { formatDate, formatComboDestinations, placeholderImage, formatPrice } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -145,9 +145,9 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           </div>
           <div className="text-right shrink-0">
             {tour.old_price && (
-              <p className="text-muted-foreground text-xs line-through">${tour.old_price.toLocaleString()}</p>
+              <p className="text-muted-foreground text-xs line-through">{formatPrice(tour.old_price)}</p>
             )}
-            <p className="text-primary text-xl font-bold">${tour.price.toLocaleString()}</p>
+            <p className="text-primary text-xl font-bold">{formatPrice(tour.price, tour.currency)}</p>
             <p className="text-muted-foreground text-xs">{t.common.perPerson}</p>
           </div>
         </div>
@@ -206,13 +206,19 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
           <div className="bg-primary/5 rounded-xl p-3 flex items-center justify-between border border-primary/10">
             <div className="flex items-center gap-2.5">
               <div className="size-10 rounded-full bg-muted overflow-hidden relative shrink-0">
-                <Image
-                  src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
-                  alt={agency.name}
-                  fill
-                  className="object-cover"
-                  sizes="48px"
-                />
+                {agency.logo_url ? (
+                  <Image
+                    src={agency.logo_url}
+                    alt={agency.name}
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">{agency.name?.[0]?.toUpperCase() || 'M'}</span>
+                  </div>
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-1">
@@ -440,7 +446,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                         ))}
                       </div>
                       <div className="mt-1.5">
-                        <p className="text-primary text-base font-bold">${variant.price.toLocaleString()}</p>
+                        <p className="text-primary text-base font-bold">{formatPrice(variant.price)}</p>
                         <p className="text-muted-foreground text-[10px]">{t.tours.comboTotalPrice}</p>
                       </div>
                       <div className="mt-auto pt-1.5">
@@ -541,7 +547,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
                       )}
                     </div>
                     <div className="mt-1.5">
-                      <p className="text-primary text-base font-bold">${hotel.price.toLocaleString()}</p>
+                      <p className="text-primary text-base font-bold">{formatPrice(hotel.price)}</p>
                       <p className="text-muted-foreground text-[10px]">{t.common.perPerson}</p>
                     </div>
                     <div className="mt-auto pt-1.5">

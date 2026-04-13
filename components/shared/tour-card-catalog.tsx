@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Star, MapPin, Zap, Flame } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
-import { placeholderImage } from '@/lib/utils';
+import { placeholderImage, formatPrice } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useFollows } from '@/hooks/use-follows';
@@ -59,13 +59,19 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
           className="flex items-center gap-2.5 flex-1 min-w-0"
         >
           <div className="w-8 h-8 rounded-full overflow-hidden bg-muted shrink-0">
-            <Image
-              src={agencyLogo || placeholderImage(64, 64, agencyName[0])}
-              alt={agencyName}
-              width={32}
-              height={32}
-              className="object-cover w-full h-full"
-            />
+            {agencyLogo ? (
+              <Image
+                src={agencyLogo}
+                alt={agencyName}
+                width={32}
+                height={32}
+                className="object-cover w-full h-full"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+                <span className="text-white font-bold text-xs">{agencyName?.[0]?.toUpperCase() || 'M'}</span>
+              </div>
+            )}
           </div>
           <span className="text-sm font-semibold truncate">{agencyName}</span>
           {isVerified && <VerifiedBadge size="sm" />}
@@ -147,11 +153,11 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
           <div>
             {tour.old_price && tour.old_price > tour.price && (
               <span className="text-xs text-muted-foreground line-through block mb-0.5">
-                ${tour.old_price.toLocaleString()}
+                {formatPrice(tour.old_price, tour.currency)}
               </span>
             )}
             <span className="text-xl font-bold text-primary">
-              ${tour.price.toLocaleString()}
+              {formatPrice(tour.price, tour.currency)}
             </span>
             <span className="text-xs text-muted-foreground ml-1">{t.common.from}</span>
           </div>

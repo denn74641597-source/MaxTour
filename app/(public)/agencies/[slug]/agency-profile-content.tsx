@@ -8,7 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
-import { placeholderImage } from '@/lib/utils';
+import { placeholderImage, formatPrice } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useFavorites } from '@/hooks/use-favorites';
@@ -89,13 +89,19 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
       {/* Logo + Name + Badges */}
       <div className="flex flex-col items-center px-4 pt-2 pb-4">
         <div className="relative h-24 w-24 rounded-full overflow-hidden ring-4 ring-primary/20 bg-muted mb-3">
-          <Image
-            src={agency.logo_url || placeholderImage(200, 200, agency.name[0])}
-            alt={agency.name}
-            fill
-            className="object-cover"
-            sizes="96px"
-          />
+          {agency.logo_url ? (
+            <Image
+              src={agency.logo_url}
+              alt={agency.name}
+              fill
+              className="object-cover"
+              sizes="96px"
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+              <span className="text-white font-bold text-3xl">{agency.name?.[0]?.toUpperCase() || 'M'}</span>
+            </div>
+          )}
         </div>
         <h1 className="text-xl font-bold mb-1.5">{agency.name}</h1>
         {/* Verified + Approved badges */}
@@ -454,10 +460,10 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
           <div className="flex items-center justify-between">
             <div>
               {tour.old_price && (
-                <span className="text-xs text-muted-foreground line-through mr-1">${tour.old_price.toLocaleString()}</span>
+                <span className="text-xs text-muted-foreground line-through mr-1">{formatPrice(tour.old_price)}</span>
               )}
               <span className="text-xs text-muted-foreground">{t.common.from} </span>
-              <span className="text-lg font-bold text-primary">${tour.price.toLocaleString()}</span>
+              <span className="text-lg font-bold text-primary">{formatPrice(tour.price)}</span>
               <span className="text-xs text-muted-foreground"> / {t.common.perPerson}</span>
             </div>
             <span className="bg-primary text-white px-4 py-1.5 rounded-full text-xs font-semibold">

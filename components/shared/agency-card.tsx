@@ -1,9 +1,16 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Star } from 'lucide-react';
-import { placeholderImage } from '@/lib/utils';
 import { VerifiedBadge } from './verified-badge';
 import type { Agency } from '@/types';
+
+function AgencyLogoFallback({ name }: { name: string }) {
+  return (
+    <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+      <span className="text-white font-bold text-xl">{name?.[0]?.toUpperCase() || 'M'}</span>
+    </div>
+  );
+}
 
 interface AgencyCardProps {
   agency: Agency;
@@ -14,13 +21,17 @@ export function AgencyCard({ agency }: AgencyCardProps) {
     <Link href={`/agencies/${agency.slug}`} className="flex flex-col items-center gap-1.5 shrink-0">
       <div className="relative">
         <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-surface-container-low flex items-center justify-center overflow-hidden shadow-ambient">
-          <Image
-            src={agency.logo_url || placeholderImage(100, 100, agency.name[0])}
-            alt={agency.name}
-            width={64}
-            height={64}
-            className="object-cover w-full h-full"
-          />
+          {agency.logo_url ? (
+            <Image
+              src={agency.logo_url}
+              alt={agency.name}
+              width={64}
+              height={64}
+              className="object-cover w-full h-full"
+            />
+          ) : (
+            <AgencyLogoFallback name={agency.name} />
+          )}
         </div>
         {agency.is_verified && (
           <div className="absolute -bottom-0.5 -right-0.5 bg-surface rounded-full p-[1px]">
