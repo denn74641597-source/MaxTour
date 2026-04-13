@@ -23,6 +23,8 @@ agencies,responsible_person,text,YES,
 agencies,license_pdf_url,text,YES,
 agencies,certificate_pdf_url,text,YES,
 agencies,profile_views,integer,NO,0
+agencies,avg_rating,"numeric(3,2)",NO,0
+agencies,review_count,integer,NO,0
 agency_follows,id,uuid,NO,gen_random_uuid()
 agency_follows,user_id,uuid,NO,
 agency_follows,agency_id,uuid,NO,
