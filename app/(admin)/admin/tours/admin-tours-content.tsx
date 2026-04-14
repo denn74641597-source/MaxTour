@@ -137,7 +137,7 @@ export function AdminToursContent({ tours }: AdminToursContentProps) {
               {filtered.map((tour) => {
                 const style = statusStyles[tour.status] || statusStyles.draft;
                 return (
-                  <tr key={tour.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                  <tr key={tour.id} onClick={() => router.push(`/admin/tours/${tour.id}`)} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors cursor-pointer">
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-3">
                         <div className="h-8 w-8 rounded-lg bg-emerald-100 flex items-center justify-center shrink-0">
@@ -176,7 +176,7 @@ export function AdminToursContent({ tours }: AdminToursContentProps) {
                         </span>
                       )}
                     </td>
-                    <td className="py-3 px-4 text-right">
+                    <td className="py-3 px-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={tour.status}
                         onChange={(e) => handleStatusChange(tour.id, e.target.value)}

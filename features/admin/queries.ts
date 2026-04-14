@@ -22,6 +22,18 @@ export async function getAllTours() {
   return data ?? [];
 }
 
+/** Admin: get a single tour by ID with full details */
+export async function getAdminTourById(id: string) {
+  const supabase = await createAdminClient();
+  const { data } = await supabase
+    .from('tours')
+    .select('*, agency:agencies(id, name, slug, logo_url, is_verified, is_approved, phone, telegram_username), images:tour_images(id, image_url, sort_order)')
+    .eq('id', id)
+    .single();
+
+  return data;
+}
+
 /** Admin: approve or reject an agency */
 export async function setAgencyApproval(agencyId: string, approved: boolean) {
   const supabase = await createAdminClient();
