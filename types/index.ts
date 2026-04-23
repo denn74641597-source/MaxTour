@@ -36,6 +36,7 @@ export interface Profile {
   phone: string | null;
   email: string | null;
   avatar_url: string | null;
+  push_token: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -193,6 +194,20 @@ export interface Tour {
   guide_phone: string | null;
   created_at: string;
   updated_at: string;
+  // Translation columns (filled by translate-tour edge function via DeepL)
+  title_uz: string | null;
+  title_ru: string | null;
+  description_uz: string | null;
+  description_ru: string | null;
+  included_services_uz: string[] | null;
+  included_services_ru: string[] | null;
+  extra_charges_uz: { name: string; amount: number; required?: boolean }[] | null;
+  extra_charges_ru: { name: string; amount: number; required?: boolean }[] | null;
+  variable_charges_uz: { name: string; min_amount: number; max_amount: number; required?: boolean }[] | null;
+  variable_charges_ru: { name: string; min_amount: number; max_amount: number; required?: boolean }[] | null;
+  source_language: string | null;
+  translation_status: 'pending' | 'completed' | 'failed' | null;
+  translation_error: string | null;
   // Joined
   agency?: Agency;
   images?: TourImage[];
@@ -373,4 +388,55 @@ export interface CoinRequest {
   created_at: string;
   resolved_at: string | null;
   agency?: { name: string; slug: string; phone: string | null; telegram_username: string | null };
+}
+
+// =====================================================================
+// Notification system types (notification_preferences, notification_log)
+// =====================================================================
+
+export const NOTIFICATION_PREFERENCE_KEYS = [
+  // User preferences
+  'new_tour_from_followed',
+  'price_drop',
+  'seats_low',
+  'tour_cancelled',
+  'departure_reminder',
+  'hot_deals',
+  'lead_confirmed',
+  'lead_status_changed',
+  'agency_verified_notify',
+  'weekly_picks',
+  // Agency preferences
+  'new_lead',
+  'daily_leads_summary',
+  'pending_leads_reminder',
+  'tour_approved',
+  'tour_rejected',
+  'tour_milestone',
+  'seats_alert',
+  'tour_expiring',
+  'subscription_expiring',
+  'subscription_expired',
+  'new_review',
+  'new_follower',
+  'follower_milestone',
+  'verification_update',
+] as const;
+
+export type NotificationPreferenceKey = (typeof NOTIFICATION_PREFERENCE_KEYS)[number];
+
+export type NotificationPreferences = {
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+} & Partial<Record<NotificationPreferenceKey, boolean>>;
+
+export interface NotificationLogEntry {
+  id: string;
+  title: string;
+  body: string;
+  data: Record<string, unknown> | null;
+  recipient_count: number;
+  preference_key: NotificationPreferenceKey | string | null;
+  created_at: string;
 }

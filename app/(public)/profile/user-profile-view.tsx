@@ -14,6 +14,7 @@ import {
   Calendar,
   Loader2,
   Save,
+  Bell,
 } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 import { useTranslation } from '@/lib/i18n';
@@ -248,6 +249,26 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
           </Card>
         </Link>
       )}
+
+      {/* Notification settings */}
+      <Link href="/profile/notifications">
+        <Card className="cursor-pointer hover:bg-muted transition-colors">
+          <CardContent className="flex items-center gap-4 p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
+              <Bell className="h-5 w-5 text-blue-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="font-semibold text-foreground">
+                {t.notifications.title}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {t.notifications.subtitle}
+              </p>
+            </div>
+            <ChevronRight className="h-5 w-5 text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </Link>
 
 
 

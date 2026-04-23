@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { DOMESTIC_CATEGORIES } from '@/lib/tour-data';
 import { useTranslation } from '@/lib/i18n';
+import { pickTourTitle, pickTourDescription, pickIncludedServices, pickExtraCharges, pickVariableCharges } from '@/lib/i18n/tour-i18n';
 import { formatDate, formatComboDestinations, placeholderImage, formatPrice } from '@/lib/utils';
 import { HotelImageCarousel } from '@/components/shared/hotel-image-carousel';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
@@ -35,18 +36,20 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
 
   const agency = tour.agency;
   const images = tour.images ?? [];
+  const title = pickTourTitle(tour, language);
+  const fullDescription = pickTourDescription(tour, language);
   const allImages = [
-    tour.cover_image_url || placeholderImage(800, 600, tour.title),
+    tour.cover_image_url || placeholderImage(800, 600, title),
     ...images.map((img: any) => img.image_url),
   ];
-  const includedServices = (tour.included_services as string[]) ?? [];
+  const includedServices = pickIncludedServices(tour, language);
   const excludedServices = (tour.excluded_services as string[]) ?? [];
   const hotelImages = (tour.hotel_images as string[]) ?? [];
   const destinations = (tour.destinations as string[]) ?? [];
-  const extraCharges = (tour.extra_charges as { name: string; amount: number; required?: boolean }[]) ?? [];
+  const extraCharges = pickExtraCharges(tour, language);
   const mandatoryCharges = extraCharges.filter(c => c.required !== false);
   const optionalCharges = extraCharges.filter(c => c.required === false);
-  const allVarCharges = (tour.variable_charges as { name: string; min_amount: number; max_amount: number; required?: boolean }[]) ?? [];
+  const allVarCharges = pickVariableCharges(tour, language);
   const mandatoryVarCharges = allVarCharges.filter(c => c.required !== false);
   const optionalVarCharges = allVarCharges.filter(c => c.required === false);
   const hotels = (tour.hotels as TourHotel[]) ?? [];
@@ -82,7 +85,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   }
 
   return (
-    <div className="bg-background min-h-screen pb-4">
+    <div className="bg-background min-h-screen pb-4 lg:max-w-5xl xl:max-w-6xl lg:mx-auto">
       {/* Top App Bar */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background/95 backdrop-blur z-10">
         <button onClick={() => router.back()} className="p-1">
@@ -98,7 +101,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       <div className="relative min-h-[260px] md:min-h-[400px] lg:min-h-[450px] w-full overflow-hidden bg-muted">
         <Image
           src={allImages[0]}
-          alt={tour.title}
+          alt={title}
           fill
           className="object-cover"
           priority
@@ -128,7 +131,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
         <div className="flex justify-between items-start">
           <div className="flex-1 mr-3">
             <h1 className="text-xl font-bold leading-tight tracking-tight text-foreground">
-              {tour.title}
+              {title}
             </h1>
             <div className="flex items-center gap-1 mt-1">
               <MapPin className="h-4 w-4 text-primary" />
@@ -248,7 +251,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       {/* Content Sections */}
       <div className="px-6 mt-4 space-y-4">
         {/* About */}
-        {tour.full_description && (
+        {fullDescription && (
           <section>
             <h3 className="text-base font-bold mb-1.5 text-foreground">{t.tours.aboutTour}</h3>
             {isDomestic && tour.domestic_category && (
@@ -260,7 +263,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
               </div>
             )}
             <p className="text-sm text-muted-foreground leading-snug whitespace-pre-line">
-              {tour.full_description}
+              {fullDescription}
             </p>
           </section>
         )}

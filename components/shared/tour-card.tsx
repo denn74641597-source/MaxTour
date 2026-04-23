@@ -6,6 +6,7 @@ import { MapPin, Heart, Star } from 'lucide-react';
 import { PriceBlock } from './price-block';
 import { placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { pickTourTitle } from '@/lib/i18n/tour-i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import type { Tour } from '@/types';
 
@@ -14,17 +15,18 @@ interface TourCardProps {
 }
 
 export function TourCard({ tour }: TourCardProps) {
-  const { t } = useTranslation();
+  const { language } = useTranslation();
   const { isFavorite, toggleFavorite } = useFavorites();
   const liked = isFavorite(tour.id);
+  const title = pickTourTitle(tour, language);
 
   return (
     <Link href={`/tours/${tour.slug}`} className="block">
       <div className="rounded-2xl overflow-hidden bg-surface shadow-ambient">
         <div className="relative aspect-square">
           <Image
-            src={tour.cover_image_url || placeholderImage(400, 400, tour.title)}
-            alt={tour.title}
+            src={tour.cover_image_url || placeholderImage(400, 400, title)}
+            alt={title}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 45vw, (max-width: 1024px) 30vw, 200px"
@@ -39,7 +41,7 @@ export function TourCard({ tour }: TourCardProps) {
         </div>
         <div className="p-2.5">
           <div className="flex items-start justify-between gap-1">
-            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1">{tour.title}</h4>
+            <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-1">{title}</h4>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
               className="shrink-0 mt-0.5"

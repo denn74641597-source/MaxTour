@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { CalendarDays, ArrowRight, MapPin } from 'lucide-react';
 import { formatPrice, formatDate, placeholderImage } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { pickTourTitle } from '@/lib/i18n/tour-i18n';
 import type { Tour } from '@/types';
 
 interface TourCardHorizontalProps {
@@ -12,7 +13,8 @@ interface TourCardHorizontalProps {
 }
 
 export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
-  const { t } = useTranslation();
+  const { language } = useTranslation();
+  const title = pickTourTitle(tour, language);
 
   return (
     <Link href={`/tours/${tour.slug}`}>
@@ -20,8 +22,8 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
         {/* Image */}
         <div className="w-24 h-24 rounded-xl overflow-hidden shrink-0 bg-surface-container-low">
           <Image
-            src={tour.cover_image_url || placeholderImage(200, 200, tour.title)}
-            alt={tour.title}
+            src={tour.cover_image_url || placeholderImage(200, 200, title)}
+            alt={title}
             width={96}
             height={96}
             className="object-cover w-full h-full"
@@ -31,7 +33,7 @@ export function TourCardHorizontal({ tour }: TourCardHorizontalProps) {
         {/* Content */}
         <div className="flex-1 min-w-0">
           <h4 className="font-bold text-sm leading-tight line-clamp-2 text-foreground">
-            {tour.title}
+            {title}
           </h4>
           <p className="text-xs text-muted-foreground mt-1 flex items-center gap-0.5 truncate">
             <MapPin className="h-3 w-3 shrink-0" />

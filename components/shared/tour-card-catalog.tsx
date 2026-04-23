@@ -6,6 +6,7 @@ import { Heart, Star, MapPin, Zap, Flame } from 'lucide-react';
 import { VerifiedBadge } from '@/components/shared/verified-badge';
 import { placeholderImage, formatPrice } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
+import { pickTourTitle } from '@/lib/i18n/tour-i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useFollows } from '@/hooks/use-follows';
 import type { Tour, TourHotel } from '@/types';
@@ -27,7 +28,8 @@ function getMaxHotelStars(tour: Tour): number | null {
 }
 
 export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: TourCardCatalogProps) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const title = pickTourTitle(tour, language);
   const { isFavorite, toggleFavorite } = useFavorites();
   const { isFollowing, toggleFollow } = useFollows();
   const agencyName = tour.agency?.name ?? 'Agency';
@@ -93,8 +95,8 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
       {/* Image */}
       <div className="relative aspect-square md:aspect-[4/3] w-full overflow-hidden">
         <Image
-          src={tour.cover_image_url || placeholderImage(800, 1000, tour.title)}
-          alt={tour.title}
+          src={tour.cover_image_url || placeholderImage(800, 1000, title)}
+          alt={title}
           fill
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -131,7 +133,7 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
         {/* Title + Favorites */}
         <div className="flex items-start justify-between gap-2 mb-1">
           <h3 className="text-lg font-bold text-foreground leading-tight line-clamp-2">
-            {tour.title}
+            {title}
           </h3>
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}

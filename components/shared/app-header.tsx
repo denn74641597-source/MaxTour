@@ -26,8 +26,8 @@ export function AppHeader({ rightSlot }: { rightSlot?: React.ReactNode }) {
           <h1 className="text-xl font-bold tracking-tight text-foreground">MaxTour</h1>
         </Link>
 
-        {/* Desktop navigation — hidden on mobile */}
-        <nav className="hidden md:flex items-center gap-1">
+        {/* Tablet (md..lg) navigation — desktop has sidebar instead */}
+        <nav className="hidden md:flex lg:hidden items-center gap-1">
           {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const isActive = href === '/' ? pathname === '/' : pathname.startsWith(href);
             return (

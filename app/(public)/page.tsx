@@ -25,7 +25,7 @@ export default async function HomePage() {
   }
 
   return (
-    <div className="px-6 md:px-8 pb-8">
+    <div className="px-6 md:px-8 lg:px-0 pb-8 lg:max-w-6xl xl:max-w-7xl lg:mx-auto">
       <HomeContent
         featuredTours={promotedFeatured.length > 0 ? promotedFeatured : featuredTours}
         popularTours={popularTours}
