@@ -177,6 +177,48 @@ export function VerificationContent({ agency, requests }: VerificationContentPro
       </div>
 
       {/* Status Banner */}
+      {/* Two-Badge Status Display */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <Card className={agency.is_approved ? 'border-blue-200 bg-blue-50' : 'border-muted bg-muted/30'}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 ${agency.is_approved ? 'bg-blue-100' : 'bg-muted'}`}>
+                <ShieldCheck className={`h-4 w-4 ${agency.is_approved ? 'text-blue-600' : 'text-muted-foreground'}`} />
+              </div>
+              <div className="min-w-0">
+                <h3 className={`font-semibold text-sm ${agency.is_approved ? 'text-blue-900' : 'text-foreground'}`}>
+                  {t.verification.approvedBadge}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {agency.is_approved
+                    ? t.verification.approvedBadgeYes
+                    : t.verification.approvedBadgeNo}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className={agency.is_verified ? 'border-emerald-200 bg-emerald-50' : 'border-muted bg-muted/30'}>
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className={`h-9 w-9 rounded-full flex items-center justify-center shrink-0 ${agency.is_verified ? 'bg-emerald-100' : 'bg-muted'}`}>
+                <CheckCircle2 className={`h-4 w-4 ${agency.is_verified ? 'text-emerald-600' : 'text-muted-foreground'}`} />
+              </div>
+              <div className="min-w-0">
+                <h3 className={`font-semibold text-sm ${agency.is_verified ? 'text-emerald-900' : 'text-foreground'}`}>
+                  {t.verification.verifiedBadge}
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {agency.is_verified
+                    ? t.verification.verifiedBadgeYes
+                    : t.verification.verifiedBadgeNo}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       {hasPending && (
         <Card className="border-yellow-200 bg-yellow-50">
           <CardContent className="p-4">

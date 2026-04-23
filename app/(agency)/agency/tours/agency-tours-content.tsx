@@ -62,7 +62,7 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
       </div>
 
       {tours.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-3 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
           {tours.map((tour) => (
             <Card key={tour.id} className="overflow-hidden">
               <CardContent className="p-0">

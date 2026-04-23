@@ -8,6 +8,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
+import { pickTourTitle } from '@/lib/i18n/tour-i18n';
 import { placeholderImage, formatPrice } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -67,7 +68,7 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
   ];
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background min-h-screen lg:max-w-6xl xl:max-w-7xl lg:mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background/95 backdrop-blur z-10">
         <button onClick={() => router.back()} className="p-1">
@@ -250,7 +251,7 @@ export function AgencyProfileContent({ agency, tours, reviews: initialReviews, f
       <div className="px-4 py-4">
         {/* Active Tours Tab */}
         {activeTab === 'tours' && (
-          <div className="space-y-4 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:space-y-0">
+          <div className="space-y-4 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4 md:space-y-0">
             {tours.length > 0 ? (
               tours.map((tour) => (
                 <AgencyTourCard key={tour.id} tour={tour} />
@@ -410,7 +411,8 @@ function getMaxHotelStars(tour: Tour): number | null {
 }
 
 function AgencyTourCard({ tour }: { tour: Tour }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
+  const title = pickTourTitle(tour, language);
   const { isFavorite, toggleFavorite } = useFavorites();
   const location = [tour.city, tour.country].filter(Boolean).join(', ');
   const maxStars = getMaxHotelStars(tour);
@@ -421,8 +423,8 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
       <div className="bg-card rounded-2xl overflow-hidden shadow-sm border border-border">
         <div className="relative aspect-[16/10] w-full overflow-hidden">
           <Image
-            src={tour.cover_image_url || placeholderImage(600, 375, tour.title)}
-            alt={tour.title}
+            src={tour.cover_image_url || placeholderImage(600, 375, title)}
+            alt={title}
             fill
             className="object-cover"
             sizes="(max-width: 768px) 100vw, 480px"
@@ -442,7 +444,7 @@ function AgencyTourCard({ tour }: { tour: Tour }) {
           )}
         </div>
         <div className="p-3.5">
-          <h3 className="font-bold text-base mb-1 line-clamp-1">{tour.title}</h3>
+          <h3 className="font-bold text-base mb-1 line-clamp-1">{title}</h3>
           <div className="flex items-center gap-3 text-xs text-muted-foreground mb-3">
             {tour.duration_days && (
               <span className="flex items-center gap-1">

@@ -38,7 +38,7 @@ export function AnalyticsContent({ analytics, totalRequests }: AnalyticsContentP
       {analytics.length > 0 ? (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="bg-sky-50 rounded-2xl p-4 text-center border border-sky-100">
               <Users className="h-5 w-5 text-sky-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-sky-600">{totalRequests}</p>

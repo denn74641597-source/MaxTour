@@ -369,6 +369,12 @@ export const ru: Translations = {
     licensePdf: 'Туристическая лицензия (PDF)',
     pdfHint: 'PDF, до 10МБ',
     allFieldsRequired: 'Все поля обязательны для заполнения',
+    approvedBadge: 'Подтверждённое агентство',
+    approvedBadgeYes: 'Ваше агентство подтверждено администратором',
+    approvedBadgeNo: 'Пока не подтверждено',
+    verifiedBadge: 'Премиум верификация',
+    verifiedBadgeYes: 'Премиум верификация получена',
+    verifiedBadgeNo: 'Документы не подтверждены',
   },
   agencyTours: {
     title: 'Туры',

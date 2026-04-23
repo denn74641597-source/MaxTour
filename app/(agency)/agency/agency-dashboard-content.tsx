@@ -181,7 +181,7 @@ export function AgencyDashboardContent({ data }: AgencyDashboardContentProps) {
       {/* Quick Actions */}
       <section>
         <h2 className="text-base font-bold text-foreground mb-4">{t.agency.quickActions}</h2>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Link href={data.isProfileComplete ? '/agency/tours/new' : '/agency/profile'} className={`flex flex-col items-center gap-2 py-5 bg-surface rounded-[1.5rem] shadow-ambient hover:shadow-ambient-lg transition-all ${!data.isProfileComplete ? 'opacity-60' : ''}`}>
             <div className="h-12 w-12 rounded-full bg-indigo-50 flex items-center justify-center">
               <Plus className="h-5 w-5 text-indigo-600" />

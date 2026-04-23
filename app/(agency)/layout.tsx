@@ -29,7 +29,7 @@ export default async function AgencyLayout({
       </div>
       <div className="flex-1 flex flex-col md:flex-row">
         <DashboardNav type="agency" />
-        <main className="flex-1 p-4 md:p-6 max-w-4xl bg-background pb-24 md:pb-6">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 xl:p-10 max-w-full xl:max-w-7xl 2xl:max-w-[88rem] bg-background pb-24 md:pb-6">
           <Suspense fallback={<AgencyLoadingFallback />}>
             {children}
           </Suspense>

@@ -47,7 +47,7 @@ export function AgencyLeadsContent({ initialLeads }: AgencyLeadsContentProps) {
       </div>
 
       {leads.length > 0 ? (
-        <div className="space-y-3">
+        <div className="space-y-3 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
           {leads.map((lead) => {
             const tour = (lead as any).tour;
             return (

@@ -368,6 +368,12 @@ export const uz: Translations = {
     licensePdf: 'Turizm litsenziyasi (PDF)',
     pdfHint: 'PDF, 10MB gacha',
     allFieldsRequired: 'Barcha maydonlar to\'ldirilishi shart',
+    approvedBadge: 'Tasdiqlangan agentlik',
+    approvedBadgeYes: 'Sizning agentlikingiz admin tomonidan tasdiqlangan',
+    approvedBadgeNo: 'Hali tasdiqlanmagan',
+    verifiedBadge: 'Premium verifikatsiya',
+    verifiedBadgeYes: 'Premium verifikatsiya olingan',
+    verifiedBadgeNo: 'Hujjatlar tasdiqlanmagan',
   },
   agencyTours: {
     title: 'Turlar',

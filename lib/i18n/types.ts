@@ -329,6 +329,12 @@ export interface Translations {
     licensePdf: string;
     pdfHint: string;
     allFieldsRequired: string;
+    approvedBadge: string;
+    approvedBadgeYes: string;
+    approvedBadgeNo: string;
+    verifiedBadge: string;
+    verifiedBadgeYes: string;
+    verifiedBadgeNo: string;
   };
   agencyTours: {
     title: string;
