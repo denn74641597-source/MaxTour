@@ -137,9 +137,9 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
       </div>
       {hotDeals.length > 0 ? (
         <div className="relative">
-          <HorizontalScroll className="gap-3 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
+          <HorizontalScroll className="gap-4 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
             {hotDeals.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[240px] md:w-[220px] lg:w-[calc((100%-3.75rem)/6)] lg:max-w-none">
+              <div key={tour.id} className="shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[260px] lg:w-[calc((100%-3rem)/4)] xl:w-[calc((100%-4rem)/5)] 2xl:w-[calc((100%-5rem)/6)]">
                 <HotDealCard tour={tour} />
               </div>
             ))}
@@ -162,9 +162,9 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
       </div>
       {hotTours.length > 0 ? (
         <div className="relative">
-          <HorizontalScroll className="gap-3 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
+          <HorizontalScroll className="gap-4 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
             {hotTours.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[240px] md:w-[220px] lg:w-[calc((100%-3.75rem)/6)] lg:max-w-none">
+              <div key={tour.id} className="shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[260px] lg:w-[calc((100%-3rem)/4)] xl:w-[calc((100%-4rem)/5)] 2xl:w-[calc((100%-5rem)/6)]">
                 <HotTourCard tour={tour} />
               </div>
             ))}
@@ -187,7 +187,7 @@ export function HomeTopRatedSection({ topAgencies }: { topAgencies: Agency[] }) 
     <section className="home-enter-up home-enter-delay-6">
       <h3 className="text-lg font-bold text-foreground mb-4">{t.home.topRated}</h3>
       <div className="relative">
-        <HorizontalScroll className="gap-4 pb-7 pt-1">
+        <HorizontalScroll className="gap-4 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
           {sorted.map((agency) => (
             <TopRatedAgencyCard key={agency.id} agency={agency} />
           ))}
@@ -204,9 +204,12 @@ function TopRatedAgencyCard({ agency }: { agency: Agency }) {
   const reviewsCount = agency.review_count ?? 0;
 
   return (
-    <Link href={`/agencies/${agency.slug}`} className="shrink-0 w-52 md:w-56 block">
+    <Link
+      href={`/agencies/${agency.slug}`}
+      className="block shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[240px] lg:w-[calc((100%-3rem)/4)] xl:w-[calc((100%-4rem)/5)] 2xl:w-[calc((100%-5rem)/6)]"
+    >
       <FlipCard
-        className="h-[226px] rounded-[1.5rem]"
+        className="h-[226px] w-full rounded-[1.5rem]"
         front={
           <div className="h-full rounded-[1.5rem] border border-white/45 bg-surface p-5 flex flex-col items-center justify-center text-center shadow-[0_24px_42px_-24px_rgba(15,23,42,0.75)] dark:border-white/10">
             <div className="w-20 h-20 rounded-full overflow-hidden mb-3 bg-primary/5 ring-2 ring-primary/10 shadow-[0_12px_22px_-12px_rgba(15,23,42,0.62)] flex items-center justify-center">

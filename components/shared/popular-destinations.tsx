@@ -22,15 +22,16 @@ export function PopularDestinations({ tours }: PopularDestinationsProps) {
       <div className="mb-4">
         <h3 className="text-lg font-bold text-foreground">{t.home.popularDestinations}</h3>
       </div>
-      <HorizontalScroll className="gap-3" showControls itemsPerStep={6} bleed={false}>
+      <HorizontalScroll className="gap-4" showControls itemsPerStep={6} bleed={false}>
         {tours.map((tour) => (
           <Link
             key={tour.id}
             href={`/tours/${tour.slug}`}
-            className="shrink-0"
+            className="relative block shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[260px] lg:w-[calc((100%-3rem)/4)] xl:w-[calc((100%-4rem)/5)] 2xl:w-[calc((100%-5rem)/6)]"
           >
+            <div className="pointer-events-none absolute inset-x-5 -bottom-4 h-10 rounded-full bg-gradient-to-b from-slate-950/40 via-slate-900/15 to-transparent blur-lg" />
             <GlassCard
-              className="w-[36vw] max-w-[220px] md:w-[240px] lg:w-[calc((100%-3.75rem)/6)] lg:max-w-none rounded-[1.6rem] p-[2px] shadow-[0_22px_42px_-25px_rgba(15,23,42,0.75)]"
+              className="w-full rounded-[1.6rem] p-[2px] shadow-[0_22px_42px_-25px_rgba(15,23,42,0.75)]"
               contentClassName="rounded-[1.4rem]"
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.4rem] bg-surface-container-low">
