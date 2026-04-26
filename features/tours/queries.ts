@@ -364,7 +364,7 @@ export async function getHomePopularTours(limit = 10): Promise<Tour[]> {
 }
 
 /** Homepage popular places from Supabase Storage: images/popular-places/* */
-export async function getHomePopularPlaces(limit = 12): Promise<PopularPlace[]> {
+export async function getHomePopularPlaces(limit = 24): Promise<PopularPlace[]> {
   return withTTLCache(`home:popular-places:${limit}`, async () => {
     const supabase = createPublicSupabaseClient();
 
@@ -439,7 +439,7 @@ export async function getHomePromotedTours(placement: string, limit = 20): Promi
       .select(HOMEPAGE_TOUR_SELECT)
       .eq('status', 'published')
       .order('created_at', { ascending: false })
-      .limit(Math.min(limit, 12));
+      .limit(limit);
 
     return (fallback ?? []) as unknown as Tour[];
   }, 60);

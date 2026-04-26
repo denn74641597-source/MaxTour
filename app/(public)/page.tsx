@@ -19,7 +19,7 @@ export default async function HomePage() {
       getHomeFeaturedTours(),
       getHomePopularTours(10),
       getHomePromotedTours('featured', 12),
-      getHomePopularPlaces(12),
+      getHomePopularPlaces(24),
     ]);
   } catch (error) {
     console.error('HomePage critical data fetch error:', error);
