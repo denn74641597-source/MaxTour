@@ -139,7 +139,7 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
         <div className="relative">
           <HorizontalScroll className="gap-4 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
             {hotDeals.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[260px] lg:w-[calc((100%-3rem)/4)] xl:w-[calc((100%-4rem)/5)] 2xl:w-[calc((100%-5rem)/6)]">
+              <div key={tour.id} className="shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[260px] lg:w-[calc((100%-5rem)/6)] lg:max-w-none xl:w-[calc((100%-5rem)/6)] 2xl:w-[calc((100%-5rem)/6)]">
                 <HotDealCard tour={tour} />
               </div>
             ))}
@@ -164,7 +164,7 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
         <div className="relative">
           <HorizontalScroll className="gap-4 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
             {hotTours.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[260px] lg:w-[calc((100%-3rem)/4)] xl:w-[calc((100%-4rem)/5)] 2xl:w-[calc((100%-5rem)/6)]">
+              <div key={tour.id} className="shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[260px] lg:w-[calc((100%-5rem)/6)] lg:max-w-none xl:w-[calc((100%-5rem)/6)] 2xl:w-[calc((100%-5rem)/6)]">
                 <HotTourCard tour={tour} />
               </div>
             ))}
@@ -206,7 +206,7 @@ function TopRatedAgencyCard({ agency }: { agency: Agency }) {
   return (
     <Link
       href={`/agencies/${agency.slug}`}
-      className="block shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[240px] lg:w-[calc((100%-3rem)/4)] xl:w-[calc((100%-4rem)/5)] 2xl:w-[calc((100%-5rem)/6)]"
+      className="block shrink-0 w-[52vw] max-w-[280px] sm:w-[42vw] md:w-[240px] lg:w-[calc((100%-5rem)/6)] lg:max-w-none xl:w-[calc((100%-5rem)/6)] 2xl:w-[calc((100%-5rem)/6)]"
     >
       <FlipCard
         className="h-[226px] w-full rounded-[1.5rem]"
