@@ -137,9 +137,9 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
       </div>
       {hotDeals.length > 0 ? (
         <div className="relative">
-          <HorizontalScroll className="gap-4 pb-7 pt-1" showControls>
+          <HorizontalScroll className="gap-3 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
             {hotDeals.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[58vw] max-w-[260px] md:w-[260px]">
+              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[240px] md:w-[220px] lg:w-[calc((100%-3.75rem)/6)] lg:max-w-none">
                 <HotDealCard tour={tour} />
               </div>
             ))}
@@ -162,9 +162,9 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
       </div>
       {hotTours.length > 0 ? (
         <div className="relative">
-          <HorizontalScroll className="gap-4 pb-7 pt-1" showControls>
+          <HorizontalScroll className="gap-3 pb-7 pt-1" showControls itemsPerStep={6} bleed={false}>
             {hotTours.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[58vw] max-w-[260px] md:w-[260px]">
+              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[240px] md:w-[220px] lg:w-[calc((100%-3.75rem)/6)] lg:max-w-none">
                 <HotTourCard tour={tour} />
               </div>
             ))}

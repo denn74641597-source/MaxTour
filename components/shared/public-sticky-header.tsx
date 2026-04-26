@@ -48,7 +48,7 @@ export function PublicStickyHeader() {
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-indigo-500/45 via-blue-500/35 to-purple-500/45" />
       <div className="pointer-events-none absolute -left-16 top-1/2 h-40 w-40 -translate-y-1/2 rounded-full bg-white/25 blur-3xl" />
-      <div className="relative mx-auto w-full max-w-6xl">
+      <div className="relative mx-auto w-full max-w-[1480px]">
         <div className="grid grid-cols-[auto_1fr_auto] items-center gap-3">
           <div className="flex items-center gap-2 justify-self-start text-2xl leading-none sm:text-3xl">
             <h1 className="text-left font-extrabold tracking-tight">MaxTour</h1>

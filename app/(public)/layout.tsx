@@ -14,7 +14,7 @@ export default function PublicLayout({
       <PullToRefresh>
         <div className="min-h-screen">
           <PublicStickyHeader />
-          <main className="mx-auto w-full max-w-2xl px-4 pb-8 md:max-w-3xl lg:max-w-5xl lg:px-8 xl:max-w-6xl xl:px-12">
+          <main className="mx-auto w-full max-w-[1480px] px-4 pb-8 md:px-6 lg:px-8 xl:px-10 2xl:px-12">
             {children}
           </main>
         </div>
