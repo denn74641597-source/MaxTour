@@ -7,6 +7,7 @@ import { EmptyState } from '@/components/shared/empty-state';
 import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
 import { TiltCard } from '@/components/pioneerui/tilt-card';
 import { GlowCard } from '@/components/pioneerui/glow-card';
+import { FlipCard } from '@/components/pioneerui/flip-card';
 import { placeholderImage, formatComboDestinations, formatPrice } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { useHomeFavorites } from './home-favorites-provider';
@@ -200,45 +201,52 @@ export function HomeTopRatedSection({ topAgencies }: { topAgencies: Agency[] }) 
 function TopRatedAgencyCard({ agency }: { agency: Agency }) {
   const { t } = useTranslation();
   const rating = agency.avg_rating ?? 0;
+  const reviewsCount = agency.review_count ?? 0;
 
   return (
     <Link href={`/agencies/${agency.slug}`} className="shrink-0 w-52 md:w-56 block">
-      <GlowCard
-        className="rounded-[1.5rem]"
-        contentClassName="rounded-[1.5rem] border border-white/45 bg-surface p-5 flex flex-col items-center text-center shadow-[0_24px_42px_-24px_rgba(15,23,42,0.75)] dark:border-white/10"
-      >
-        <div className="w-20 h-20 rounded-full overflow-hidden mb-3 bg-primary/5 ring-2 ring-primary/10 shadow-[0_12px_22px_-12px_rgba(15,23,42,0.62)] flex items-center justify-center">
-          {agency.logo_url ? (
-            <Image
-              src={agency.logo_url}
-              alt={agency.name}
-              width={80}
-              height={80}
-              className="object-cover object-center w-full h-full"
-            />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
-              <span className="text-white font-bold text-xl">{agency.name?.[0]?.toUpperCase() || 'M'}</span>
+      <FlipCard
+        className="h-[226px] rounded-[1.5rem]"
+        front={
+          <div className="h-full rounded-[1.5rem] border border-white/45 bg-surface p-5 flex flex-col items-center justify-center text-center shadow-[0_24px_42px_-24px_rgba(15,23,42,0.75)] dark:border-white/10">
+            <div className="w-20 h-20 rounded-full overflow-hidden mb-3 bg-primary/5 ring-2 ring-primary/10 shadow-[0_12px_22px_-12px_rgba(15,23,42,0.62)] flex items-center justify-center">
+              {agency.logo_url ? (
+                <Image
+                  src={agency.logo_url}
+                  alt={agency.name}
+                  width={80}
+                  height={80}
+                  className="object-cover object-center w-full h-full"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">{agency.name?.[0]?.toUpperCase() || 'M'}</span>
+                </div>
+              )}
             </div>
-          )}
-        </div>
-        <h4 className="font-bold text-base text-foreground truncate w-full">{agency.name}</h4>
-        <div className="flex items-center gap-0.5 mt-1.5 mb-2">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Star
-              key={i}
-              className={`h-4 w-4 ${i < Math.round(rating) ? 'text-tertiary fill-tertiary' : 'text-muted fill-muted'}`}
-            />
-          ))}
-          <span className="text-sm text-muted-foreground ml-1 font-semibold">{rating.toFixed(1)}</span>
-        </div>
-        {(agency.review_count ?? 0) > 0 && (
-          <span className="text-xs text-muted-foreground mb-1">
-            {agency.review_count} {t.agencyProfile.reviews}
-          </span>
-        )}
-        <span className="text-sm font-bold text-primary uppercase tracking-wide">{t.home.viewAgency}</span>
-      </GlowCard>
+            <h4 className="font-bold text-base text-foreground line-clamp-2 w-full">{agency.name}</h4>
+          </div>
+        }
+        back={
+          <div className="h-full rounded-[1.5rem] border border-white/45 bg-surface p-5 flex flex-col items-center justify-center text-center shadow-[0_24px_42px_-24px_rgba(15,23,42,0.75)] dark:border-white/10">
+            <div className="flex items-center gap-1 mb-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`h-4 w-4 ${i < Math.round(rating) ? 'text-tertiary fill-tertiary' : 'text-muted fill-muted'}`}
+                />
+              ))}
+              <span className="text-sm text-muted-foreground ml-1 font-semibold">{rating.toFixed(1)}</span>
+            </div>
+            <span className="text-sm text-muted-foreground mb-4">
+              {reviewsCount} {t.agencyProfile.reviews}
+            </span>
+            <span className="inline-flex items-center justify-center rounded-xl bg-primary/10 px-4 py-2 text-sm font-bold uppercase tracking-wide text-primary">
+              {t.home.viewAgency}
+            </span>
+          </div>
+        }
+      />
     </Link>
   );
 }
