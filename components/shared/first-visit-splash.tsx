@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { MaxTourLoader } from './max-tour-loader';
 
 const SPLASH_SEEN_KEY = 'maxtour_splash_seen_v1';
-const SPLASH_DURATION_MS = 2200;
+const SPLASH_DURATION_MS = 2500;
 
 type FirstVisitSplashProps = {
   children: React.ReactNode;
@@ -42,9 +42,8 @@ export function FirstVisitSplash({ children }: FirstVisitSplashProps) {
   if (showSplash) {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2563EB]">
-        <div className="flex flex-col items-center gap-3">
+        <div className="flex flex-col items-center">
           <MaxTourLoader className="h-[min(80vw,32rem)] w-[min(80vw,32rem)] md:h-[36rem] md:w-[36rem]" />
-          <p className="text-sm text-white/90">MaxTour yuklanmoqda...</p>
         </div>
       </div>
     );
