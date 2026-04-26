@@ -41,10 +41,10 @@ export function FirstVisitSplash({ children }: FirstVisitSplashProps) {
 
   if (showSplash) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2563EB]">
         <div className="flex flex-col items-center gap-3">
-          <MaxTourLoader className="h-64 w-64 md:h-72 md:w-72" />
-          <p className="text-sm text-muted-foreground">MaxTour yuklanmoqda...</p>
+          <MaxTourLoader className="h-[min(80vw,32rem)] w-[min(80vw,32rem)] md:h-[36rem] md:w-[36rem]" />
+          <p className="text-sm text-white/90">MaxTour yuklanmoqda...</p>
         </div>
       </div>
     );
