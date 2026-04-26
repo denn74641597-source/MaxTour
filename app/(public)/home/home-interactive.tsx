@@ -37,8 +37,8 @@ function HotDealCard({ tour }: { tour: Tour }) {
             />
             {/* Lightning icon */}
             <div className="absolute top-2 right-2">
-              <span className="inline-flex items-center justify-center p-1 bg-gradient-to-br from-blue-400 to-indigo-500 backdrop-blur rounded-full shadow-lg">
-                <Zap className="h-3 w-3 text-white fill-white" />
+              <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-blue-400 to-indigo-500 backdrop-blur rounded-full shadow-lg">
+                <Zap className="h-4 w-4 text-white fill-white" />
               </span>
             </div>
           </div>
@@ -47,21 +47,21 @@ function HotDealCard({ tour }: { tour: Tour }) {
             className="px-2 pb-2 pt-1"
             contentClassName="rounded-b-2xl rounded-t-xl border border-white/45 bg-surface dark:border-white/10"
           >
-            <div className="p-2.5">
+            <div className="p-3.5">
               <div className="flex items-start justify-between gap-1">
-                <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2 min-h-[30px]">{tour.title}</h4>
+                <h4 className="text-sm md:text-base font-bold text-foreground leading-tight line-clamp-2 min-h-[44px]">{tour.title}</h4>
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
-                  className="shrink-0 mt-0.5"
+                  className="shrink-0 mt-0"
                 >
-                  <Heart className={`h-3.5 w-3.5 ${liked ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
+                  <Heart className={`h-5 w-5 ${liked ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
                 </button>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-0.5 truncate">
-                <MapPin className="h-2.5 w-2.5 shrink-0" />
+              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1 truncate">
+                <MapPin className="h-3 w-3 shrink-0" />
                 <span className="truncate">{location}</span>
               </p>
-              <p className="text-sm font-bold text-primary mt-1">{formatPrice(tour.price, tour.currency)}</p>
+              <p className="text-lg md:text-xl font-bold text-primary mt-1.5">{formatPrice(tour.price, tour.currency)}</p>
             </div>
           </GlowCard>
         </div>
@@ -93,8 +93,8 @@ function HotTourCard({ tour }: { tour: Tour }) {
             />
             {/* Fire icon */}
             <div className="absolute top-2 right-2">
-              <span className="inline-flex items-center justify-center p-1 bg-gradient-to-br from-orange-400 to-red-500 backdrop-blur rounded-full shadow-lg">
-                <Flame className="h-3 w-3 text-white fill-white" />
+              <span className="inline-flex items-center justify-center p-1.5 bg-gradient-to-br from-orange-400 to-red-500 backdrop-blur rounded-full shadow-lg">
+                <Flame className="h-4 w-4 text-white fill-white" />
               </span>
             </div>
           </div>
@@ -102,21 +102,21 @@ function HotTourCard({ tour }: { tour: Tour }) {
             className="px-2 pb-2 pt-1"
             contentClassName="rounded-b-2xl rounded-t-xl border border-white/45 bg-surface dark:border-white/10"
           >
-            <div className="p-2.5">
+            <div className="p-3.5">
               <div className="flex items-start justify-between gap-1">
-                <h4 className="text-xs font-bold text-foreground leading-tight line-clamp-2 min-h-[30px]">{tour.title}</h4>
+                <h4 className="text-sm md:text-base font-bold text-foreground leading-tight line-clamp-2 min-h-[44px]">{tour.title}</h4>
                 <button
                   onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFavorite(tour.id); }}
-                  className="shrink-0 mt-0.5"
+                  className="shrink-0 mt-0"
                 >
-                  <Heart className={`h-3.5 w-3.5 ${liked ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
+                  <Heart className={`h-5 w-5 ${liked ? 'text-red-500 fill-red-500' : 'text-muted-foreground'}`} />
                 </button>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-0.5 truncate">
-                <MapPin className="h-2.5 w-2.5 shrink-0" />
+              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1 truncate">
+                <MapPin className="h-3 w-3 shrink-0" />
                 <span className="truncate">{location}</span>
               </p>
-              <p className="text-sm font-bold text-primary mt-1">{formatPrice(tour.price, tour.currency)}</p>
+              <p className="text-lg md:text-xl font-bold text-primary mt-1.5">{formatPrice(tour.price, tour.currency)}</p>
             </div>
           </GlowCard>
         </div>
@@ -136,9 +136,9 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
       </div>
       {hotDeals.length > 0 ? (
         <div className="relative">
-          <HorizontalScroll className="gap-3 pb-7 pt-1">
+          <HorizontalScroll className="gap-4 pb-7 pt-1" showControls>
             {hotDeals.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
+              <div key={tour.id} className="shrink-0 w-[58vw] max-w-[260px] md:w-[260px]">
                 <HotDealCard tour={tour} />
               </div>
             ))}
@@ -161,9 +161,9 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
       </div>
       {hotTours.length > 0 ? (
         <div className="relative">
-          <HorizontalScroll className="gap-3 pb-7 pt-1">
+          <HorizontalScroll className="gap-4 pb-7 pt-1" showControls>
             {hotTours.map((tour) => (
-              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
+              <div key={tour.id} className="shrink-0 w-[58vw] max-w-[260px] md:w-[260px]">
                 <HotTourCard tour={tour} />
               </div>
             ))}
@@ -202,19 +202,19 @@ function TopRatedAgencyCard({ agency }: { agency: Agency }) {
   const rating = agency.avg_rating ?? 0;
 
   return (
-    <Link href={`/agencies/${agency.slug}`} className="shrink-0 w-40 block">
+    <Link href={`/agencies/${agency.slug}`} className="shrink-0 w-52 md:w-56 block">
       <GlowCard
         className="rounded-[1.5rem]"
-        contentClassName="rounded-[1.5rem] border border-white/45 bg-surface p-4 flex flex-col items-center text-center shadow-[0_24px_42px_-24px_rgba(15,23,42,0.75)] dark:border-white/10"
+        contentClassName="rounded-[1.5rem] border border-white/45 bg-surface p-5 flex flex-col items-center text-center shadow-[0_24px_42px_-24px_rgba(15,23,42,0.75)] dark:border-white/10"
       >
-        <div className="w-16 h-16 rounded-full overflow-hidden mb-3 bg-primary/5 ring-2 ring-primary/10 shadow-[0_12px_22px_-12px_rgba(15,23,42,0.62)]">
+        <div className="w-20 h-20 rounded-full overflow-hidden mb-3 bg-primary/5 ring-2 ring-primary/10 shadow-[0_12px_22px_-12px_rgba(15,23,42,0.62)] flex items-center justify-center">
           {agency.logo_url ? (
             <Image
               src={agency.logo_url}
               alt={agency.name}
-              width={64}
-              height={64}
-              className="object-cover w-full h-full"
+              width={80}
+              height={80}
+              className="object-cover object-center w-full h-full"
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-primary via-primary/80 to-primary/60 flex items-center justify-center">
@@ -222,22 +222,22 @@ function TopRatedAgencyCard({ agency }: { agency: Agency }) {
             </div>
           )}
         </div>
-        <h4 className="font-bold text-sm text-foreground truncate w-full">{agency.name}</h4>
+        <h4 className="font-bold text-base text-foreground truncate w-full">{agency.name}</h4>
         <div className="flex items-center gap-0.5 mt-1.5 mb-2">
           {Array.from({ length: 5 }).map((_, i) => (
             <Star
               key={i}
-              className={`h-3.5 w-3.5 ${i < Math.round(rating) ? 'text-tertiary fill-tertiary' : 'text-muted fill-muted'}`}
+              className={`h-4 w-4 ${i < Math.round(rating) ? 'text-tertiary fill-tertiary' : 'text-muted fill-muted'}`}
             />
           ))}
-          <span className="text-xs text-muted-foreground ml-1 font-semibold">{rating.toFixed(1)}</span>
+          <span className="text-sm text-muted-foreground ml-1 font-semibold">{rating.toFixed(1)}</span>
         </div>
         {(agency.review_count ?? 0) > 0 && (
-          <span className="text-[10px] text-muted-foreground mb-1">
+          <span className="text-xs text-muted-foreground mb-1">
             {agency.review_count} {t.agencyProfile.reviews}
           </span>
         )}
-        <span className="text-xs font-bold text-primary uppercase tracking-wide">{t.home.viewAgency}</span>
+        <span className="text-sm font-bold text-primary uppercase tracking-wide">{t.home.viewAgency}</span>
       </GlowCard>
     </Link>
   );

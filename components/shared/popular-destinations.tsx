@@ -19,13 +19,10 @@ export function PopularDestinations({ tours }: PopularDestinationsProps) {
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4">
         <h3 className="text-lg font-bold text-foreground">{t.home.popularDestinations}</h3>
-        <Link href="/tours?sortBy=popular" className="text-primary text-sm font-semibold">
-          {t.home.seeAll}
-        </Link>
       </div>
-      <HorizontalScroll className="gap-4">
+      <HorizontalScroll className="gap-5" showControls>
         {tours.map((tour) => (
           <Link
             key={tour.id}
@@ -33,7 +30,7 @@ export function PopularDestinations({ tours }: PopularDestinationsProps) {
             className="shrink-0"
           >
             <GlassCard
-              className="w-28 md:w-32 lg:w-36 rounded-[1.5rem] p-[2px] shadow-[0_22px_42px_-25px_rgba(15,23,42,0.75)]"
+              className="w-40 md:w-48 lg:w-56 rounded-[1.6rem] p-[2px] shadow-[0_22px_42px_-25px_rgba(15,23,42,0.75)]"
               contentClassName="rounded-[1.4rem]"
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden rounded-[1.4rem] bg-surface-container-low">

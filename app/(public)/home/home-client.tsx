@@ -135,7 +135,7 @@ function OverlayTourCard({ tour, language, badge }: { tour: Tour; language: 'uz'
       <div className="pointer-events-none absolute inset-x-8 -bottom-5 h-12 rounded-full bg-gradient-to-b from-slate-950/40 via-slate-900/15 to-transparent blur-xl" />
       <BorderBeam className="rounded-[1.6rem]" contentClassName="rounded-[1.6rem]" duration={5400}>
         <Link href={`/tours/${tour.slug}`} className="group relative block overflow-hidden rounded-[1.6rem] bg-surface shadow-[0_24px_45px_-28px_rgba(15,23,42,0.8)]">
-          <div className="relative aspect-[16/10] w-full">
+          <div className="relative aspect-[5/4] w-full">
             <Image
               src={tour.cover_image_url || placeholderImage(800, 500, title)}
               alt={title}
@@ -163,7 +163,7 @@ function OverlayFallbackCard({ badge }: { badge: string }) {
     <div className="relative">
       <div className="pointer-events-none absolute inset-x-8 -bottom-5 h-12 rounded-full bg-gradient-to-b from-slate-950/40 via-slate-900/15 to-transparent blur-xl" />
       <BorderBeam className="rounded-[1.6rem]" contentClassName="rounded-[1.6rem]" duration={5400}>
-        <div className="relative overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 px-5 py-9 text-white shadow-[0_24px_45px_-28px_rgba(15,23,42,0.8)]">
+        <div className="relative overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 px-5 py-12 text-white shadow-[0_24px_45px_-28px_rgba(15,23,42,0.8)]">
           <span className="label-meta inline-flex rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold tracking-[0.08em]">
             {badge}
           </span>
