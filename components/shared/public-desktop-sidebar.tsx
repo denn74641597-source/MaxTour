@@ -10,7 +10,6 @@ import {
   BellRing,
   Building2,
   ShieldCheck,
-  Search as SearchIcon,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { useProfile } from '@/hooks';
@@ -29,7 +28,6 @@ export function PublicDesktopSidebar() {
   const PRIMARY_ITEMS = [
     { href: '/', label: t.nav.explore, icon: Compass },
     { href: '/tours', label: t.nav.bookings, icon: Map },
-    { href: '/search', label: t.common.search, icon: SearchIcon },
     { href: '/favorites', label: t.nav.subscriptions, icon: Heart },
     { href: '/profile', label: t.nav.profile, icon: User },
   ];
