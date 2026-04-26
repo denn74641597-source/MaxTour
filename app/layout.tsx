@@ -4,7 +4,6 @@ import Script from 'next/script';
 import { Toaster } from '@/components/ui/sonner';
 import { LanguageProvider } from '@/lib/i18n';
 import { HapticProvider } from '@/components/shared/haptic-provider';
-import { BeamBackground } from '@/components/pioneerui/beam-background';
 import './globals.css';
 
 const plusJakartaSans = Plus_Jakarta_Sans({
@@ -56,23 +55,7 @@ export default function RootLayout({
       <body
         className={`${manrope.variable} ${plusJakartaSans.variable} font-sans antialiased`}
       >
-        <LanguageProvider>
-          <div className="relative min-h-screen">
-            <BeamBackground
-              className="pointer-events-none fixed inset-0 z-0 min-h-screen bg-transparent [&>div:nth-child(2)]:hidden"
-              beams={[
-                { color: '#2563eb', opacity: 0.28, width: 34, height: '62%' },
-                { color: '#4f46e5', opacity: 0.24, width: 24, height: '48%' },
-                { color: '#0ea5e9', opacity: 0.26, width: 44, height: '70%' },
-                { color: '#6366f1', opacity: 0.22, width: 30, height: '56%' },
-                { color: '#38bdf8', opacity: 0.24, width: 40, height: '64%' },
-                { color: '#8b5cf6', opacity: 0.2, width: 22, height: '44%' },
-                { color: '#3b82f6', opacity: 0.26, width: 36, height: '58%' },
-              ]}
-            />
-            <div className="relative z-10">{children}</div>
-          </div>
-        </LanguageProvider>
+        <LanguageProvider>{children}</LanguageProvider>
         <HapticProvider />
         <Toaster position="top-center" />
         {/* Telegram Mini App SDK — loaded after page is interactive */}
