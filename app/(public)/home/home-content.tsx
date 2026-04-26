@@ -12,12 +12,12 @@ interface HomeContentProps {
 export function HomeContent({ featuredTours, popularTours = [] }: HomeContentProps) {
   return (
     <>
-      <div className="mt-4 mb-10">
+      <div className="mt-0 mb-10">
         <MapHeroShowcase tours={featuredTours} fallbackTours={popularTours} />
       </div>
 
       {/* Popular Destinations (dynamic - most viewed tours) */}
-      <div className="mb-10">
+      <div className="mb-10 home-enter-up home-enter-delay-2">
         <PopularDestinations tours={popularTours} />
       </div>
     </>
@@ -29,7 +29,7 @@ export function HomeContent({ featuredTours, popularTours = [] }: HomeContentPro
 export function HomeAgenciesSection({ agencies }: { agencies: Agency[] }) {
   if (agencies.length === 0) return null;
   return (
-    <section className="mb-10">
+    <section className="mb-10 home-enter-up home-enter-delay-3">
       <AgenciesHeading />
       <HorizontalScroll className="gap-5 items-start py-1">
         {agencies.map((agency) => (

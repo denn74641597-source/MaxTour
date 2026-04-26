@@ -259,3 +259,87 @@
 html, body {
   overscroll-behavior-y: contain;
 }
+
+@keyframes home-enter-from-top {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes home-enter-from-bottom {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pioneer-border-beam-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.home-enter-header {
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: home-enter-from-top 920ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.home-enter-map {
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: home-enter-from-top 1080ms cubic-bezier(0.2, 0.92, 0.24, 1) forwards;
+}
+
+.home-enter-up {
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: home-enter-from-bottom 1120ms cubic-bezier(0.2, 0.9, 0.24, 1) forwards;
+}
+
+.home-enter-delay-map {
+  animation-delay: 140ms;
+}
+
+.home-enter-delay-1 {
+  animation-delay: 240ms;
+}
+
+.home-enter-delay-2 {
+  animation-delay: 360ms;
+}
+
+.home-enter-delay-3 {
+  animation-delay: 500ms;
+}
+
+.home-enter-delay-4 {
+  animation-delay: 640ms;
+}
+
+.home-enter-delay-5 {
+  animation-delay: 780ms;
+}
+
+.home-enter-delay-6 {
+  animation-delay: 920ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-enter-header,
+  .home-enter-map,
+  .home-enter-up {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+}

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import Lottie from 'lottie-react';
 import { HeroBanner } from '@/components/shared/hero-banner';
 import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
+import { BorderBeam } from '@/components/pioneerui/border-beam';
 import mapAnimation from '@/Animation/Map.json';
 import { placeholderImage } from '@/lib/utils';
 import { pickTourTitle } from '@/lib/i18n/tour-i18n';
@@ -78,15 +79,15 @@ export function MapHeroShowcase({ tours, fallbackTours = [] }: MapHeroShowcasePr
   const advertisingTour = tours[1] ?? fallbackTours[1] ?? fallbackTours[0] ?? recommendedTour;
 
   return (
-    <section className="relative mb-12 md:mb-14">
-      <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden border-b border-white/20 bg-[#2563EB]">
+    <section className="relative mb-8 md:mb-10">
+      <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen overflow-hidden bg-[#2563EB] home-enter-map home-enter-delay-map">
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-indigo-500/45 via-blue-500/35 to-purple-500/45" />
         <div className="pointer-events-none absolute -left-16 top-1/2 h-44 w-44 -translate-y-1/2 rounded-full bg-white/25 blur-3xl" />
         <div className="pointer-events-none absolute -right-20 top-8 h-44 w-44 rounded-full bg-cyan-300/25 blur-3xl" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[30%] bg-gradient-to-b from-transparent via-slate-900/20 to-slate-950/55" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-b from-transparent via-slate-900/20 to-slate-950/50" />
 
-        <div className="relative mx-auto w-full max-w-6xl px-6 pb-16 pt-5 md:px-8 md:pb-20 md:pt-7 lg:px-10 lg:pb-24">
-          <div className="mx-auto h-[220px] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/30 bg-white/10 backdrop-blur-sm md:h-[300px] lg:h-[340px]">
+        <div className="relative mx-auto w-full max-w-6xl px-6 pt-0 md:px-8 lg:px-10">
+          <div className="relative mx-auto h-[220px] w-full max-w-5xl overflow-hidden md:h-[300px] lg:h-[340px]">
             <Lottie
               animationData={mapAnimation}
               loop
@@ -99,7 +100,7 @@ export function MapHeroShowcase({ tours, fallbackTours = [] }: MapHeroShowcasePr
         </div>
       </div>
 
-      <div className="relative z-20 -mt-10 md:-mt-12 lg:-mt-14">
+      <div className="relative z-20 -mt-9 md:-mt-12 lg:-mt-14 home-enter-up home-enter-delay-1">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {recommendedTour ? (
             <OverlayTourCard
@@ -132,25 +133,27 @@ function OverlayTourCard({ tour, language, badge }: { tour: Tour; language: 'uz'
   return (
     <div className="relative">
       <div className="pointer-events-none absolute inset-x-8 -bottom-5 h-12 rounded-full bg-gradient-to-b from-slate-950/40 via-slate-900/15 to-transparent blur-xl" />
-      <Link href={`/tours/${tour.slug}`} className="group relative block overflow-hidden rounded-[1.6rem] border border-white/40 bg-surface shadow-[0_24px_45px_-28px_rgba(15,23,42,0.8)]">
-        <div className="relative aspect-[16/10] w-full">
-          <Image
-            src={tour.cover_image_url || placeholderImage(800, 500, title)}
-            alt={title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-            sizes="(max-width: 640px) 100vw, 50vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" />
-          <span className="label-meta absolute left-3 top-3 inline-flex rounded-full bg-black/45 px-3 py-1 text-[10px] font-bold tracking-[0.08em] text-white backdrop-blur-sm">
-            {badge}
-          </span>
-          <div className="absolute inset-x-0 bottom-0 p-4">
-            <p className="line-clamp-2 text-base font-bold leading-tight text-white md:text-lg">{title}</p>
-            <p className="mt-1 text-xs text-white/80">{getTourLocation(tour)}</p>
+      <BorderBeam className="rounded-[1.6rem]" contentClassName="rounded-[1.6rem]" duration={5400}>
+        <Link href={`/tours/${tour.slug}`} className="group relative block overflow-hidden rounded-[1.6rem] bg-surface shadow-[0_24px_45px_-28px_rgba(15,23,42,0.8)]">
+          <div className="relative aspect-[16/10] w-full">
+            <Image
+              src={tour.cover_image_url || placeholderImage(800, 500, title)}
+              alt={title}
+              fill
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 100vw, 50vw"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-black/5" />
+            <span className="label-meta absolute left-3 top-3 inline-flex rounded-full bg-black/45 px-3 py-1 text-[10px] font-bold tracking-[0.08em] text-white backdrop-blur-sm">
+              {badge}
+            </span>
+            <div className="absolute inset-x-0 bottom-0 p-4">
+              <p className="line-clamp-2 text-base font-bold leading-tight text-white md:text-lg">{title}</p>
+              <p className="mt-1 text-xs text-white/80">{getTourLocation(tour)}</p>
+            </div>
           </div>
-        </div>
-      </Link>
+        </Link>
+      </BorderBeam>
     </div>
   );
 }
@@ -159,11 +162,13 @@ function OverlayFallbackCard({ badge }: { badge: string }) {
   return (
     <div className="relative">
       <div className="pointer-events-none absolute inset-x-8 -bottom-5 h-12 rounded-full bg-gradient-to-b from-slate-950/40 via-slate-900/15 to-transparent blur-xl" />
-      <div className="relative overflow-hidden rounded-[1.6rem] border border-white/35 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 px-5 py-9 text-white shadow-[0_24px_45px_-28px_rgba(15,23,42,0.8)]">
-        <span className="label-meta inline-flex rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold tracking-[0.08em]">
-          {badge}
-        </span>
-      </div>
+      <BorderBeam className="rounded-[1.6rem]" contentClassName="rounded-[1.6rem]" duration={5400}>
+        <div className="relative overflow-hidden rounded-[1.6rem] bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 px-5 py-9 text-white shadow-[0_24px_45px_-28px_rgba(15,23,42,0.8)]">
+          <span className="label-meta inline-flex rounded-full bg-white/15 px-3 py-1 text-[10px] font-bold tracking-[0.08em]">
+            {badge}
+          </span>
+        </div>
+      </BorderBeam>
     </div>
   );
 }

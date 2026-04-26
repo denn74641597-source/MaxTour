@@ -22,6 +22,7 @@ function getActiveTabValue(pathname: string): string {
 export function PublicStickyHeader() {
   const pathname = usePathname();
   const router = useRouter();
+  const shouldAnimateEntrance = pathname === '/';
   const activeTab = getActiveTabValue(pathname);
   const [loaderSeed, setLoaderSeed] = useState(0);
 
@@ -42,7 +43,7 @@ export function PublicStickyHeader() {
 
   return (
     <header
-      className="sticky top-0 z-50 overflow-hidden border-b border-white/20 bg-[#2563EB] px-3 py-2 text-white"
+      className={`sticky top-0 z-50 overflow-hidden border-b border-white/20 bg-[#2563EB] px-3 py-2 text-white ${shouldAnimateEntrance ? 'home-enter-header' : ''}`}
       style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 8px)' }}
     >
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-indigo-500/45 via-blue-500/35 to-purple-500/45" />
