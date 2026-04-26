@@ -14,7 +14,7 @@ export function MaxTourLoader({ className, loop = true }: MaxTourLoaderProps) {
     <Lottie
       animationData={maxTourAnimation}
       loop={loop}
-      className={cn('h-52 w-52 md:h-64 md:w-64', className)}
+      className={cn('h-52 w-52', className)}
       rendererSettings={{
         preserveAspectRatio: 'xMidYMid meet',
       }}
