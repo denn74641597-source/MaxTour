@@ -46,7 +46,6 @@ function HotDealCard({ tour }: { tour: Tour }) {
           <GlowCard
             className="px-2 pb-2 pt-1"
             contentClassName="rounded-b-2xl rounded-t-xl border border-white/45 bg-surface dark:border-white/10"
-            glowClassName="inset-x-3"
           >
             <div className="p-2.5">
               <div className="flex items-start justify-between gap-1">
@@ -102,7 +101,6 @@ function HotTourCard({ tour }: { tour: Tour }) {
           <GlowCard
             className="px-2 pb-2 pt-1"
             contentClassName="rounded-b-2xl rounded-t-xl border border-white/45 bg-surface dark:border-white/10"
-            glowClassName="inset-x-3"
           >
             <div className="p-2.5">
               <div className="flex items-start justify-between gap-1">
@@ -137,13 +135,16 @@ export function HomeHotDealsSection({ hotDeals }: { hotDeals: Tour[] }) {
         <h3 className="text-lg font-bold text-foreground">{t.home.hotDeals}</h3>
       </div>
       {hotDeals.length > 0 ? (
-        <HorizontalScroll className="gap-3 pb-7 pt-1">
-          {hotDeals.map((tour) => (
-            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
-              <HotDealCard tour={tour} />
-            </div>
-          ))}
-        </HorizontalScroll>
+        <div className="relative">
+          <HorizontalScroll className="gap-3 pb-7 pt-1">
+            {hotDeals.map((tour) => (
+              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
+                <HotDealCard tour={tour} />
+              </div>
+            ))}
+          </HorizontalScroll>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-b from-transparent via-background/75 to-background" />
+        </div>
       ) : (
         <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
       )}
@@ -159,13 +160,16 @@ export function HomeHotToursSection({ hotTours }: { hotTours: Tour[] }) {
         <h3 className="text-lg font-bold text-foreground">{t.home.hotTours}</h3>
       </div>
       {hotTours.length > 0 ? (
-        <HorizontalScroll className="gap-3 pb-7 pt-1">
-          {hotTours.map((tour) => (
-            <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
-              <HotTourCard tour={tour} />
-            </div>
-          ))}
-        </HorizontalScroll>
+        <div className="relative">
+          <HorizontalScroll className="gap-3 pb-7 pt-1">
+            {hotTours.map((tour) => (
+              <div key={tour.id} className="shrink-0 w-[44vw] max-w-[200px] md:w-[200px]">
+                <HotTourCard tour={tour} />
+              </div>
+            ))}
+          </HorizontalScroll>
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-b from-transparent via-background/75 to-background" />
+        </div>
       ) : (
         <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
       )}
@@ -181,11 +185,14 @@ export function HomeTopRatedSection({ topAgencies }: { topAgencies: Agency[] }) 
   return (
     <section className="home-enter-up home-enter-delay-6">
       <h3 className="text-lg font-bold text-foreground mb-4">{t.home.topRated}</h3>
-      <HorizontalScroll className="gap-4 pb-7 pt-1">
-        {sorted.map((agency) => (
-          <TopRatedAgencyCard key={agency.id} agency={agency} />
-        ))}
-      </HorizontalScroll>
+      <div className="relative">
+        <HorizontalScroll className="gap-4 pb-7 pt-1">
+          {sorted.map((agency) => (
+            <TopRatedAgencyCard key={agency.id} agency={agency} />
+          ))}
+        </HorizontalScroll>
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-6 bg-gradient-to-b from-transparent via-background/75 to-background" />
+      </div>
     </section>
   );
 }
@@ -199,7 +206,6 @@ function TopRatedAgencyCard({ agency }: { agency: Agency }) {
       <GlowCard
         className="rounded-[1.5rem]"
         contentClassName="rounded-[1.5rem] border border-white/45 bg-surface p-4 flex flex-col items-center text-center shadow-[0_24px_42px_-24px_rgba(15,23,42,0.75)] dark:border-white/10"
-        glowClassName="inset-x-6 -bottom-3 h-10"
       >
         <div className="w-16 h-16 rounded-full overflow-hidden mb-3 bg-primary/5 ring-2 ring-primary/10 shadow-[0_12px_22px_-12px_rgba(15,23,42,0.62)]">
           {agency.logo_url ? (

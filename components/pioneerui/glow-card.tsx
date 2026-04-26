@@ -8,10 +8,9 @@ interface GlowCardProps {
   children: ReactNode;
   className?: string;
   contentClassName?: string;
-  glowClassName?: string;
 }
 
-export function GlowCard({ children, className, contentClassName, glowClassName }: GlowCardProps) {
+export function GlowCard({ children, className, contentClassName }: GlowCardProps) {
   const cardRef = useRef<HTMLDivElement | null>(null);
 
   const handleMouseMove = (event: React.MouseEvent<HTMLDivElement>) => {
@@ -39,12 +38,6 @@ export function GlowCard({ children, className, contentClassName, glowClassName 
 
   return (
     <div className={cn('relative', className)}>
-      <div
-        className={cn(
-          'pointer-events-none absolute inset-x-4 -bottom-2 h-9 rounded-full bg-gradient-to-r from-cyan-400/35 via-blue-500/30 to-indigo-500/35 blur-xl',
-          glowClassName,
-        )}
-      />
       <div
         ref={cardRef}
         onMouseMove={handleMouseMove}
