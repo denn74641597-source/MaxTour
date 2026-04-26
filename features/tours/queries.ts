@@ -2,7 +2,7 @@ import { createServerSupabaseClient, createPublicSupabaseClient } from '@/lib/su
 import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { withTTLCache } from '@/lib/cache';
 import { cache } from 'react';
-import type { Tour, TourFilters } from '@/types';
+import type { PopularPlace, Tour, TourFilters } from '@/types';
 
 /* ─── Reusable narrow-select constants for list / card queries ─── */
 
@@ -17,6 +17,21 @@ const TOUR_AGENCY_LIST_SELECT = 'id, slug, title, cover_image_url, price, old_pr
 
 /** Narrow select for homepage tour cards — only the fields card components actually read */
 const HOMEPAGE_TOUR_SELECT = 'id, slug, title, cover_image_url, price, old_price, currency, tour_type, region, city, country, district, destinations, is_featured, agency_id, category, view_count, agency:agencies(id, name, slug, logo_url, is_verified, is_approved)' as const;
+
+const IMAGE_EXT_PATTERN = /\.(avif|gif|jpe?g|png|webp)$/i;
+
+function fileNameToPlaceTitle(fileName: string): string {
+  const decoded = decodeURIComponent(fileName);
+  const baseName = decoded.replace(/\.[^/.]+$/, '');
+  const normalized = baseName.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+  if (!normalized) return 'Mashhur joy';
+
+  return normalized
+    .split(' ')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
 
 /** Fetch published tours with optional filters */
 export async function getTours(filters?: TourFilters): Promise<Tour[]> {
@@ -346,6 +361,42 @@ export async function getHomePopularTours(limit = 10): Promise<Tour[]> {
     }
     return (data ?? []) as unknown as Tour[];
   }, 60);
+}
+
+/** Homepage popular places from Supabase Storage: images/popular-places/* */
+export async function getHomePopularPlaces(limit = 12): Promise<PopularPlace[]> {
+  return withTTLCache(`home:popular-places:${limit}`, async () => {
+    const supabase = createPublicSupabaseClient();
+
+    const { data, error } = await supabase.storage
+      .from('images')
+      .list('popular-places', {
+        limit,
+        sortBy: { column: 'name', order: 'asc' },
+      });
+
+    if (error) {
+      console.error('getHomePopularPlaces error:', error);
+      await notifySystemError({ source: 'Query: getHomePopularPlaces', message: error.message });
+      return [];
+    }
+
+    return (data ?? [])
+      .filter((file) => Boolean(file.name) && IMAGE_EXT_PATTERN.test(file.name))
+      .slice(0, limit)
+      .map((file, index) => {
+        const filePath = `popular-places/${file.name}`;
+        const { data: urlData } = supabase.storage.from('images').getPublicUrl(filePath);
+        const title = fileNameToPlaceTitle(file.name);
+
+        return {
+          id: file.id ?? `${file.name}-${index}`,
+          title,
+          imageUrl: urlData.publicUrl,
+          query: title,
+        } satisfies PopularPlace;
+      });
+  }, 120);
 }
 
 /** Homepage promoted tours — narrow select, cached 60s. Falls back to published tours. */

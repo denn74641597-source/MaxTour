@@ -2,14 +2,15 @@
 import { PopularDestinations } from '@/components/shared/popular-destinations';
 import { HorizontalScroll } from '@/components/shared/horizontal-scroll';
 import { MapHeroShowcase, AgenciesHeading } from './home-client';
-import type { Tour, Agency } from '@/types';
+import type { Agency, PopularPlace, Tour } from '@/types';
 
 interface HomeContentProps {
   featuredTours: Tour[];
   popularTours?: Tour[];
+  popularPlaces?: PopularPlace[];
 }
 
-export function HomeContent({ featuredTours, popularTours = [] }: HomeContentProps) {
+export function HomeContent({ featuredTours, popularTours = [], popularPlaces = [] }: HomeContentProps) {
   return (
     <>
       <div className="mt-0 mb-10">
@@ -18,7 +19,7 @@ export function HomeContent({ featuredTours, popularTours = [] }: HomeContentPro
 
       {/* Popular Destinations (dynamic - most viewed tours) */}
       <div className="mb-10 home-enter-up home-enter-delay-2">
-        <PopularDestinations tours={popularTours} />
+        <PopularDestinations places={popularPlaces} />
       </div>
     </>
   );

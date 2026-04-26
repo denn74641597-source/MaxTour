@@ -262,6 +262,13 @@ export interface FeaturedItem {
   agency?: Agency;
 }
 
+export interface PopularPlace {
+  id: string;
+  title: string;
+  imageUrl: string;
+  query: string;
+}
+
 export interface Favorite {
   id: string;
   user_id: string;

@@ -1,23 +1,25 @@
 import { Suspense } from 'react';
-import { getHomeFeaturedTours, getHomePopularTours, getHomePromotedTours } from '@/features/tours/queries';
+import { getHomeFeaturedTours, getHomePopularPlaces, getHomePopularTours, getHomePromotedTours } from '@/features/tours/queries';
 import { getHomeVerifiedAgencies, getHomeTopRatedAgencies } from '@/features/agencies/queries';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { HomeContent, HomeAgenciesSection } from './home/home-content';
 import { HomeHotDealsSection, HomeHotToursSection, HomeTopRatedSection } from './home/home-interactive';
 import { HomeFavoritesProvider } from './home/home-favorites-provider';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { Tour } from '@/types';
+import type { PopularPlace, Tour } from '@/types';
 
 export default async function HomePage() {
   let featuredTours: Tour[] = [];
   let popularTours: Tour[] = [];
   let promotedFeatured: Tour[] = [];
+  let popularPlaces: PopularPlace[] = [];
 
   try {
-    [featuredTours, popularTours, promotedFeatured] = await Promise.all([
+    [featuredTours, popularTours, promotedFeatured, popularPlaces] = await Promise.all([
       getHomeFeaturedTours(),
       getHomePopularTours(10),
       getHomePromotedTours('featured', 12),
+      getHomePopularPlaces(12),
     ]);
   } catch (error) {
     console.error('HomePage critical data fetch error:', error);
@@ -29,6 +31,7 @@ export default async function HomePage() {
       <HomeContent
         featuredTours={promotedFeatured.length > 0 ? promotedFeatured : featuredTours}
         popularTours={popularTours}
+        popularPlaces={popularPlaces}
       />
       <Suspense fallback={<AgenciesSkeleton />}>
         <DeferredAgencies />
