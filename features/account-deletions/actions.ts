@@ -1,7 +1,8 @@
 'use server';
 
-import { createAdminClient, createServerSupabaseClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
+import { cookies } from 'next/headers';
 
 /**
  * Account deletion requests — admin actions.
@@ -35,6 +36,11 @@ export interface AccountDeletionRequest {
   user_email: string | null;
   user_phone: string | null;
   agency_name: string | null;
+}
+
+async function isAdminPanelAuthenticated() {
+  const cookieStore = await cookies();
+  return cookieStore.get('admin_authenticated')?.value === 'true';
 }
 
 export async function getAllAccountDeletionRequests(): Promise<AccountDeletionRequest[]> {
@@ -89,37 +95,22 @@ export async function getAllAccountDeletionRequests(): Promise<AccountDeletionRe
 }
 
 export async function approveDeletionRequestAction(requestId: string, adminNotes?: string) {
-  // Caller adminligini tekshirish — middleware odatda buni qiladi, lekin
-  // server action mustaqil chaqirilishi mumkinligi uchun ikki tomonlama himoya.
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Not authenticated' };
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!callerProfile || callerProfile.role !== 'admin') {
-    return { error: 'Forbidden: admin only' };
-  }
-
-  // User session token bilan edge functionga POST qilamiz (function ham
-  // o'z ichida adminlik tekshiruvini bajaradi).
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session?.access_token) {
-    return { error: 'No session' };
+  // Web admin panel Supabase auth bilan emas, `admin_authenticated` cookie
+  // orqali ishlaydi. Shu sabab server action ham shu cookieni tekshiradi.
+  if (!(await isAdminPanelAuthenticated())) {
+    return { error: 'Not authenticated' };
   }
 
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url) return { error: 'Missing NEXT_PUBLIC_SUPABASE_URL' };
+  if (!serviceRoleKey) return { error: 'Missing SUPABASE_SERVICE_ROLE_KEY' };
 
   try {
     const res = await fetch(`${url}/functions/v1/approve-account-deletion`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${session.access_token}`,
+        'Authorization': `Bearer ${serviceRoleKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -157,18 +148,8 @@ export async function approveDeletionRequestAction(requestId: string, adminNotes
 }
 
 export async function rejectDeletionRequestAction(requestId: string, adminNotes?: string) {
-  const supabase = await createServerSupabaseClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return { error: 'Not authenticated' };
-
-  const { data: callerProfile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (!callerProfile || callerProfile.role !== 'admin') {
-    return { error: 'Forbidden: admin only' };
+  if (!(await isAdminPanelAuthenticated())) {
+    return { error: 'Not authenticated' };
   }
 
   const admin = await createAdminClient();
@@ -193,7 +174,7 @@ export async function rejectDeletionRequestAction(requestId: string, adminNotes?
     .from('account_deletion_requests')
     .update({
       status: 'rejected',
-      reviewed_by: user.id,
+      reviewed_by: null,
       reviewed_at: new Date().toISOString(),
       admin_notes: adminNotes ?? null,
     })
