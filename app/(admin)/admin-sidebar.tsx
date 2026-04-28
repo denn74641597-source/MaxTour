@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Building2, MapPin, ShieldCheck, Coins,
   Star, Users, FileText, Settings, LogOut, Menu, X,
-  ChevronRight, MessageSquareText, Globe,
+  ChevronRight, MessageSquareText, Globe, Trash2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
@@ -19,6 +19,7 @@ const navItems = [
   { href: '/admin/tours?mode=admin', label: 'Tours', icon: MapPin },
   { href: '/admin/leads?mode=admin', label: 'Tour Requests', icon: MessageSquareText },
   { href: '/admin/verification?mode=admin', label: 'Verification', icon: ShieldCheck },
+  { href: '/admin/account-deletions?mode=admin', label: 'Hisob o\'chirish', icon: Trash2 },
   { href: '/admin/coin-requests?mode=admin', label: 'Coins', icon: Coins },
   { href: '/admin/featured?mode=admin', label: 'Promotions', icon: Star },
   { href: '/admin/subscriptions?mode=admin', label: 'Subscriptions', icon: Users },
