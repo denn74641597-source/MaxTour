@@ -101,28 +101,32 @@ export async function approveDeletionRequestAction(requestId: string, adminNotes
     return { error: 'Not authenticated' };
   }
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url) return { error: 'Missing NEXT_PUBLIC_SUPABASE_URL' };
-  if (!serviceRoleKey) return { error: 'Missing SUPABASE_SERVICE_ROLE_KEY' };
+  const admin = await createAdminClient();
 
   try {
-    const res = await fetch(`${url}/functions/v1/approve-account-deletion`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${serviceRoleKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+    const { data, error } = await admin.functions.invoke('approve-account-deletion', {
+      body: {
         request_id: requestId,
         admin_notes: adminNotes ?? null,
-      }),
+      },
     });
 
-    const body = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      const message = (body as { error?: string }).error ?? `HTTP ${res.status}`;
+    if (error) {
+      let message = error.message;
+      const ctx = (error as unknown as { context?: { clone?: () => { json?: () => Promise<{ error?: string }>; text?: () => Promise<string> } } }).context;
+      if (ctx?.clone) {
+        try {
+          const body = await ctx.clone().json?.();
+          if (body?.error) message = body.error;
+        } catch {
+          try {
+            const text = await ctx.clone().text?.();
+            if (text) message = text;
+          } catch {
+            // no-op
+          }
+        }
+      }
       await notifySystemError({
         source: 'Action: approveDeletionRequestAction',
         message,
@@ -133,8 +137,8 @@ export async function approveDeletionRequestAction(requestId: string, adminNotes
 
     return {
       success: true,
-      deleted_storage_objects: (body as { deleted_storage_objects?: number }).deleted_storage_objects ?? 0,
-      warnings: (body as { warnings?: string[] }).warnings ?? [],
+      deleted_storage_objects: (data as { deleted_storage_objects?: number } | null)?.deleted_storage_objects ?? 0,
+      warnings: (data as { warnings?: string[] } | null)?.warnings ?? [],
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
