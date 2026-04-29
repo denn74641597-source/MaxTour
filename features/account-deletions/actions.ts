@@ -101,32 +101,43 @@ export async function approveDeletionRequestAction(requestId: string, adminNotes
     return { error: 'Not authenticated' };
   }
 
-  const admin = await createAdminClient();
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url) return { error: 'Missing NEXT_PUBLIC_SUPABASE_URL' };
+  if (!serviceRoleKey) return { error: 'Missing SUPABASE_SERVICE_ROLE_KEY' };
 
   try {
-    const { data, error } = await admin.functions.invoke('approve-account-deletion', {
-      body: {
+    const res = await fetch(`${url}/functions/v1/approve-account-deletion`, {
+      method: 'POST',
+      headers: {
+        // Supabase gateway ba'zi holatlarda ikkalasini ham kutadi.
+        Authorization: `Bearer ${serviceRoleKey}`,
+        apikey: serviceRoleKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
         request_id: requestId,
         admin_notes: adminNotes ?? null,
-      },
+      }),
     });
 
-    if (error) {
-      let message = error.message;
-      const ctx = (error as unknown as { context?: { clone?: () => { json?: () => Promise<{ error?: string }>; text?: () => Promise<string> } } }).context;
-      if (ctx?.clone) {
-        try {
-          const body = await ctx.clone().json?.();
-          if (body?.error) message = body.error;
-        } catch {
-          try {
-            const text = await ctx.clone().text?.();
-            if (text) message = text;
-          } catch {
-            // no-op
-          }
-        }
+    const rawText = await res.text();
+    let parsed: { error?: string; deleted_storage_objects?: number; warnings?: string[] } | null = null;
+    if (rawText) {
+      try {
+        parsed = JSON.parse(rawText) as { error?: string; deleted_storage_objects?: number; warnings?: string[] };
+      } catch {
+        parsed = null;
       }
+    }
+
+    if (!res.ok) {
+      let message = parsed?.error ?? rawText ?? `HTTP ${res.status}`;
+      if (!message || message.trim() === '') {
+        message = `HTTP ${res.status}`;
+      }
+      // HTTP statusni ham qo'shib qaytaramiz, keyingi diagnostika oson bo'ladi.
+      message = `${message} (status ${res.status})`;
       await notifySystemError({
         source: 'Action: approveDeletionRequestAction',
         message,
@@ -135,10 +146,18 @@ export async function approveDeletionRequestAction(requestId: string, adminNotes
       return { error: message };
     }
 
+    if (!parsed) {
+      return {
+        success: true,
+        deleted_storage_objects: 0,
+        warnings: [],
+      };
+    }
+
     return {
       success: true,
-      deleted_storage_objects: (data as { deleted_storage_objects?: number } | null)?.deleted_storage_objects ?? 0,
-      warnings: (data as { warnings?: string[] } | null)?.warnings ?? [],
+      deleted_storage_objects: parsed.deleted_storage_objects ?? 0,
+      warnings: parsed.warnings ?? [],
     };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
