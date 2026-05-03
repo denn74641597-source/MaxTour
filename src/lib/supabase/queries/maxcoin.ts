@@ -83,6 +83,6 @@ export async function getActivePromotions(
     const promotion = item as PromotionActivityRow;
     if (promotion.status === 'waitlist') return true;
     if (promotion.status && promotion.status !== 'active') return false;
-    return promotion.is_active === true && promotion.ends_at >= nowIso;
+    return promotion.is_active === true && typeof promotion.ends_at === 'string' && promotion.ends_at >= nowIso;
   });
 }
