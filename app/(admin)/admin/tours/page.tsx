@@ -1,9 +1,9 @@
-import { getAllTours } from '@/features/admin/queries';
+import { getAdminToursPanelData } from '@/features/admin/queries';
 import { AdminToursContent } from './admin-tours-content';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminToursPage() {
-  const tours = await getAllTours();
-  return <AdminToursContent tours={tours} />;
+  const payload = await getAdminToursPanelData();
+  return <AdminToursContent payload={payload} />;
 }

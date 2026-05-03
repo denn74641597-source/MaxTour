@@ -3,6 +3,7 @@
 import { createAdminClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { assertAdminAccess } from './guard';
+import { getAdminAgencyDetailById } from './queries';
 
 export async function updateTourStatusAction(tourId: string, status: string) {
   await assertAdminAccess();
@@ -104,4 +105,24 @@ export async function rejectCoinRequest(requestId: string) {
     return { error: error.message };
   }
   return { success: true };
+}
+
+/** Admin: fetch one agency drill-down payload for agencies panel */
+export async function getAdminAgencyDetailAction(agencyId: string) {
+  await assertAdminAccess();
+  if (!agencyId) return { error: 'Agency ID is required' };
+
+  try {
+    const detail = await getAdminAgencyDetailById(agencyId);
+    if (!detail) return { error: 'Agency not found' };
+    return { data: detail };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    await notifySystemError({
+      source: 'Action: getAdminAgencyDetailAction',
+      message,
+      extra: `Agency: ${agencyId}`,
+    });
+    return { error: message };
+  }
 }
