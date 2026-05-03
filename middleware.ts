@@ -11,26 +11,19 @@ function redirectToHost(request: NextRequest, host: string, pathname: string, se
   return NextResponse.redirect(url);
 }
 
-function redirectToProfile(request: NextRequest, forceMxtrHost: boolean) {
-  if (forceMxtrHost) {
-    const loginUrl = new URL(request.url);
-    const nextUrl = new URL(request.url);
-
-    loginUrl.protocol = 'https:';
-    loginUrl.host = 'mxtr.uz';
-    loginUrl.pathname = '/profile';
-    loginUrl.search = '';
-
-    nextUrl.protocol = 'https:';
-    nextUrl.host = 'agency.mxtr.uz';
-    loginUrl.searchParams.set('next', `${nextUrl.pathname}${nextUrl.search}`);
-
-    return NextResponse.redirect(loginUrl);
+function normalizeAgencyNext(nextPath: string | null | undefined): string {
+  if (!nextPath || !nextPath.startsWith('/agency') || nextPath.startsWith('/agency/login')) {
+    return '/agency';
   }
 
+  return nextPath;
+}
+
+function redirectToAgencyLogin(request: NextRequest, nextPath: string) {
   const loginUrl = request.nextUrl.clone();
-  loginUrl.pathname = '/profile';
+  loginUrl.pathname = '/agency/login';
   loginUrl.search = '';
+  loginUrl.searchParams.set('next', normalizeAgencyNext(nextPath));
   return NextResponse.redirect(loginUrl);
 }
 
@@ -97,9 +90,13 @@ export async function middleware(request: NextRequest) {
   const { supabaseResponse, user, supabase } = await updateSession(request);
 
   if (pathname.startsWith('/agency')) {
+    const isAgencyAuthRoute = pathname === '/agency/login';
+
     if (!user) {
-      const forceMxtrHost = hostContext.domainTarget === 'agency' && !hostContext.isDevelopmentHost;
-      return redirectToProfile(request, forceMxtrHost);
+      if (isAgencyAuthRoute) {
+        return supabaseResponse;
+      }
+      return redirectToAgencyLogin(request, `${pathname}${request.nextUrl.search}`);
     }
 
     let role: string | null = null;
@@ -119,8 +116,18 @@ export async function middleware(request: NextRequest) {
         return redirectToHost(request, 'remote.mxtr.uz', '/admin');
       }
 
-      const forceMxtrHost = hostContext.domainTarget === 'agency' && !hostContext.isDevelopmentHost;
-      return redirectToProfile(request, forceMxtrHost);
+      if (isAgencyAuthRoute) {
+        return supabaseResponse;
+      }
+
+      return redirectToAgencyLogin(request, `${pathname}${request.nextUrl.search}`);
+    }
+
+    if (isAgencyAuthRoute) {
+      const dashboardUrl = request.nextUrl.clone();
+      dashboardUrl.pathname = normalizeAgencyNext(request.nextUrl.searchParams.get('next'));
+      dashboardUrl.search = '';
+      return NextResponse.redirect(dashboardUrl);
     }
   }
 

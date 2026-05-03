@@ -1493,3 +1493,149 @@ Source: `src/screens/agency-panel/TourFormScreen.tsx` payload builder.
   - Expect: agency panel works with existing role/auth guard behavior.
 - `remote.mxtr.uz admin`:
   - Expect: admin-only behavior unchanged.
+
+## 33. Agency auth entry implementation notes (2026-05-04)
+
+### 1) Date/time
+- Implementation timestamp: `2026-05-04 01:19:33 +08:00` (Asia/Singapore)
+
+### 2) What was changed
+- Added a dedicated agency auth entry screen at `/agency/login` for `agency.mxtr.uz`.
+- Added Kirish / Ro'yxatdan o'tish modes with agency-focused UI.
+- Implemented agency registration with email OTP verification, then profile + agency provisioning (mobile parity logic).
+- Updated middleware so `/agency/login` is the only public agency path; protected `/agency*` routes redirect to this screen.
+- Preserved admin/public domain behavior and did not touch admin internals.
+
+### 3) Files changed
+- `middleware.ts`
+- `app/(agency-auth)/agency/login/page.tsx`
+- `app/(agency-auth)/agency/login/agency-auth-screen.tsx`
+- `docs/agency_panel_design.md`
+
+### 4) Mobile source-of-truth files inspected
+- `C:\Users\adbax\OneDrive\Desktop\maxtour-mobile\src\screens\auth\LoginScreen.tsx`
+- `C:\Users\adbax\OneDrive\Desktop\maxtour-mobile\src\store\auth-store.ts`
+- `C:\Users\adbax\OneDrive\Desktop\maxtour-mobile\src\navigation\RootNavigator.tsx`
+- `C:\Users\adbax\OneDrive\Desktop\maxtour-mobile\src\screens\profile\ProfileScreen.tsx`
+
+### 5) Existing MaxTour auth utilities used
+- `lib/supabase/client.ts#createClient`
+- `middleware.ts` + `lib/supabase/middleware.ts#updateSession`
+- Existing fallback phone lookup endpoint: `app/api/auth-phone/route.ts`
+- Existing utility: `lib/utils.ts#slugify`
+
+### 6) Supabase auth methods used
+- `supabase.auth.signInWithPassword`
+- `supabase.auth.signInWithOtp`
+- `supabase.auth.verifyOtp`
+- `supabase.auth.setSession`
+- `supabase.auth.updateUser`
+- `supabase.auth.getUser`
+- `supabase.auth.signOut`
+- Data writes aligned to existing flows:
+  - `profiles` upsert (`role`, identity fields)
+  - `agencies` upsert (`owner_id`, `name`, `slug`, `phone`, `country`)
+
+### 7) Login behavior
+- Login accepts `email OR phone` + `password`.
+- If identifier is phone:
+  - tries mapped auth email (`<phone>@user.maxtour.uz`)
+  - tries legacy email fallback (`<digits>@maxtour.local`)
+  - uses `/api/auth-phone` lookup fallback for existing auth email(s)
+- If identifier is email and login fails:
+  - attempts fallback by looking up profile phone and mapped auth email.
+- On success:
+  - `agency_manager` -> redirect to `next` agency path or `/agency`
+  - `admin` -> safe admin-access state with action to open `remote.mxtr.uz/admin`
+  - non-agency roles -> safe no-access state with actions to switch account or register agency account
+
+### 8) Registration behavior
+- Registration fields (agency flow):
+  - `email`
+  - `full name`
+  - `phone`
+  - `password`
+- Validation:
+  - required fields
+  - valid email format
+  - Uzbekistan phone format (`+998XXXXXXXXX`)
+  - password min length `6`
+- After OTP verification:
+  - set/update auth password
+  - upsert `profiles` with `role='agency_manager'`
+  - upsert `agencies` row for `owner_id`
+  - redirect to agency dashboard entry route
+
+### 9) OTP behavior
+- Uses existing Supabase email OTP flow:
+  - `signInWithOtp({ shouldCreateUser: true })`
+  - `verifyOtp({ type: 'email' })`
+- Includes resend OTP with cooldown (`60s`).
+- Handles expired/invalid OTP messages with localized UI.
+
+### 10) Phone login support status
+- Phone+password is supported via current/mobile-compatible mapping fallback strategy.
+- Direct native phone-password auth provider is not introduced (no new backend/provider added).
+
+### 11) Role/onboarding behavior
+- Middleware now allows `/agency/login` without agency role.
+- Protected `/agency*` routes still require authenticated `agency_manager`.
+- Non-agency authenticated users are kept on auth entry with safe access/onboarding messaging (no unsafe role mutation).
+- Admin users are directed to admin surface (`remote.mxtr.uz/admin`) via explicit action.
+
+### 12) i18n labels added
+- Implemented agency-auth-specific copy as an agency-local `uz/ru` dictionary in:
+  - `app/(agency-auth)/agency/login/agency-auth-screen.tsx`
+- Reused existing global i18n keys (`t.auth.*`, `t.common.*`) for shared auth labels/placeholders/statuses.
+- Included a language switcher (`uz`/`ru`) on the agency auth screen.
+
+### 13) Components used (shared-ui / animate-ui / Pioneer UI)
+- Shared/UI components:
+  - `components/ui/button`
+  - `components/ui/card`
+  - `components/ui/input`
+  - `components/ui/label`
+  - `components/shared/language-switcher`
+- Icons: `lucide-react` (already installed)
+- No new dependencies installed.
+- No Pioneer UI component copied or overwritten.
+
+### 14) What was intentionally not implemented
+- No forgot-password flow link (no confirmed safe existing agency-specific web reset flow in current scope).
+- No new auth provider.
+- No custom OTP tables/functions.
+- No role auto-promotion outside existing mobile parity flow.
+- No admin/public route redesign.
+
+### 15) Local test command
+- Run dev server:
+  - `npm run dev`
+
+### 16) Local test URLs
+- Agency auth entry:
+  - `http://localhost:3000/agency/login`
+- Agency dashboard (requires agency role):
+  - `http://localhost:3000/agency`
+- Agency protected route redirect check:
+  - `http://localhost:3000/agency/tours` (unauth -> `/agency/login?next=/agency/tours`)
+- Optional host-based preview (if hosts/proxy configured):
+  - `https://agency.mxtr.uz/agency/login`
+
+### 17) Manual QA checklist
+- [ ] `agency/login` loads dedicated agency auth UI (not public homepage).
+- [ ] Language switcher toggles all auth screen copy between `uz` and `ru`.
+- [ ] Login with agency email+password redirects to `/agency` or `next`.
+- [ ] Login with phone+password works via mapping/fallback.
+- [ ] Non-agency account login shows safe no-access/onboarding state.
+- [ ] Admin account login shows safe admin handoff state.
+- [ ] Registration validates required fields/email/phone/password.
+- [ ] OTP send, verify, and resend flow works.
+- [ ] After successful registration, `profiles.role` and agency row are provisioned by existing logic and redirect works.
+- [ ] Unauthenticated access to `/agency` redirects to `/agency/login`.
+- [ ] `remote.mxtr.uz` admin behavior remains unchanged.
+- [ ] `mxtr.uz` public/user pages remain unchanged.
+
+### 18) Known limitations
+- Forgot-password shortcut is not surfaced on this screen due lack of a confirmed safe agency-specific reset route in current project flow.
+- Phone login depends on existing mapping fallback (`@user.maxtour.uz` / legacy / API lookup), not native phone-password auth.
+- If backend email OTP configuration is disabled in Supabase, registration OTP step will fail with backend error (no custom OTP fallback added by design).
