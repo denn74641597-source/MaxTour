@@ -528,3 +528,1206 @@ Shared/admin UI primitives used from existing project:
 - No dedicated admin user detail route exists for direct manager profile drill-down from agencies.
 - `/admin/tours` and `/admin/leads` routes currently open as global lists (no guaranteed agency-pre-filter in route state).
 - Project-wide `npx tsc --noEmit` currently reports unrelated existing issues in admin tours files outside this agencies scope; agencies redesign files were adjusted to avoid introducing additional TypeScript errors in this area.
+
+---
+
+## Delete Account Panel Redesign (Admin Safety Review Mode)
+
+### 1) Date/time of change
+
+- 2026-05-03 17:51:10 +08:00
+
+### 2) What was changed
+
+- Fully redesigned only the admin Delete Account panel under `/admin/account-deletions`.
+- Replaced the old destructive-first UI with a safety-first review workflow:
+  - premium operations header
+  - explicit safety banner
+  - KPI row (real request/risk counts)
+  - advanced search/filter/sort toolbar
+  - desktop table + responsive mobile cards
+  - rich account impact detail sheet
+  - reject-request confirmation flow
+- Added route-specific loading skeleton for account deletion panel.
+- Reworked account-deletion server action module to:
+  - provide enriched admin review payload with linked-data/risk metrics
+  - disable hard-delete processing action in this panel
+  - keep safe reject flow only, including reviewer audit field update (`reviewed_by`).
+
+### 3) Files changed
+
+- `features/account-deletions/actions.ts`
+- `app/(admin)/admin/account-deletions/page.tsx`
+- `app/(admin)/admin/account-deletions/admin-account-deletions-content.tsx`
+- `app/(admin)/admin/account-deletions/loading.tsx`
+- `docs/admin_design.md`
+
+### 4) Data sources used
+
+- Server-side admin-safe reads through existing `createAdminClient()` + `assertAdminAccess()`.
+- Primary source: `account_deletion_requests` queue.
+- Fallback source when queue table is unavailable: `profiles` lookup rows.
+- Linked impact sources:
+  - `profiles`
+  - `agencies`
+  - `tours`
+  - `leads`
+  - `tour_promotions`
+  - `maxcoin_transactions`
+  - `verification_requests`
+  - `favorites`
+  - `reviews`
+  - optional `featured_items` when available
+
+### 5) Supabase tables/RPC/functions used
+
+- Tables queried:
+  - `account_deletion_requests`
+  - `profiles`
+  - `agencies`
+  - `tours`
+  - `leads`
+  - `tour_promotions`
+  - `maxcoin_transactions`
+  - `verification_requests`
+  - `favorites`
+  - `reviews`
+  - `featured_items` (optional; gracefully handled if unavailable)
+- Mutations used:
+  - `account_deletion_requests` status update to `rejected` (existing flow)
+  - `profiles.deletion_requested_at` / `profiles.deletion_request_id` reset on reject
+  - `agencies.deletion_requested_at` reset on reject (when linked)
+- RPC/functions:
+  - No new RPC/function added.
+  - Hard-delete processing action is disabled in this web admin panel.
+
+### 6) Components used
+
+- Existing shared/admin UI:
+  - `Button`
+  - `Input`
+  - `Textarea`
+  - `Select`
+  - `Badge`
+  - `Dialog`
+  - `Sheet`
+  - `Skeleton`
+- Existing utilities/icons:
+  - `cn`, `formatDate`, `formatNumber` from `lib/utils`
+  - existing `lucide-react` icon set
+  - existing toast system (`sonner`)
+- No new dependencies installed.
+
+### 7) Design decisions
+
+- Treated account deletion as high-risk and shifted to a review-first model with explicit risk visibility.
+- Kept all metrics grounded in real linked table data; unavailable sources render as `Not available` instead of fake values.
+- Implemented clear risk hierarchy (low/medium/high/critical) using transparent rule-based flags.
+- Preserved existing admin guard model (`profiles.role = 'admin'`) and route structure.
+- Disabled destructive delete action in UI and server action output to avoid unsafe hard-delete execution from this panel.
+- Retained safe reject workflow with explicit typed confirmation (`REJECT`) and refresh-on-success.
+
+### 8) What was intentionally not changed
+
+- No changes to middleware.
+- No changes to `/admin/login`.
+- No changes to admin auth guard rules.
+- No changes to sidebar structure (existing Delete Account nav route retained).
+- No changes to dashboard/agencies/tours/users/verification/leads/promotions/featured panels.
+- No changes to public/user/agency pages.
+- No Supabase schema changes.
+- No migrations added.
+- No RLS policy changes.
+- No mobile project edits.
+
+### 9) Local test command
+
+- `npm run dev`
+
+### 10) Manual QA checklist
+
+- Open `http://localhost:3000/admin/account-deletions`.
+- Confirm header, subtitle, refresh button, and last-updated indicator are visible.
+- Confirm red safety banner clearly states destructive deletion is disabled.
+- Confirm KPI cards populate with real values from available data.
+- Test search by:
+  - full name
+  - email
+  - phone
+  - role
+  - request ID
+  - agency name
+  - reason text
+- Test filters:
+  - role
+  - request status
+  - linked agency
+  - active tours
+  - leads
+  - promotions
+  - high-risk only
+  - created/requested date range
+- Test sort options:
+  - newest
+  - oldest
+  - pending first
+  - highest risk
+  - role
+  - linked data count
+- Open detail sheet from list row and verify:
+  - identity section
+  - linked agency section
+  - impact summary section
+  - request/review section
+  - risk warnings
+  - action center buttons
+- Confirm `Process deletion` is visibly disabled with reason text.
+- Confirm `Reject request` flow:
+  - dialog opens
+  - requires typing `REJECT`
+  - optional admin note persists through submission
+  - success toast appears and list refreshes
+- Confirm empty/error states render correctly when filters remove all rows or sources fail.
+- Confirm mobile/tablet fallback layout remains usable.
+
+### 11) Known limitations or missing data
+
+- `bookings/orders` impact metrics are not available in current admin query layer/table mapping and are shown as `Not available`.
+- `featured_items` may not exist in some environments; this metric is optional and rendered as unavailable when absent.
+- In this web repo there is no integrated vetted admin deletion executor endpoint currently wired for safe hard-delete from the panel.
+
+### 12) Safety notes for account deletion
+
+- Destructive account deletion is treated as high-risk and is intentionally blocked in this panel.
+- UI exposes explicit risk flags (admin target, self-target, active tours/promotions/leads, MaxCoin balance, unresolved verification, recent activity).
+- No client-side direct delete is performed.
+- No direct `auth.users` delete is performed from client code.
+- No direct profile hard-delete is exposed via this panel.
+- Reject flow is explicit and auditable (`reviewed_by`, `reviewed_at`, `admin_notes`).
+
+### 13) Whether actual deletion is implemented or disabled/read-only
+
+- Actual deletion is **disabled** in this admin panel.
+- Panel operates in safe review mode with non-destructive actions.
+
+### 14) If disabled, exact missing backend requirements
+
+- Dedicated admin-safe deletion processor must be explicitly wired for web admin use (Edge Function or server endpoint) with verified admin JWT checks.
+- Backend must enforce hard guardrails:
+  - block deletion of `profiles.role = 'admin'` targets unless explicitly approved by policy
+  - block current-admin self-delete
+- Backend should expose deterministic impact preview contract before destructive execution.
+- Backend should guarantee idempotent request locking and reliable reviewer audit trail.
+- Backend should define partial-failure recovery/compensation behavior for storage and relational cleanup.
+
+---
+
+## Leads Panel Redesign (Admin Leads)
+
+### 1) Date/time of change
+
+- 2026-05-03 18:23:00 +08:00
+
+### 2) What was changed
+
+- Completely redesigned only `/admin/leads` into a desktop-first CRM/inbox operations panel.
+- Added leads operations header with:
+  - title `Leads`
+  - subtitle for inquiry tracking and response operations
+  - refresh action
+  - last-updated indicator
+- Added KPI cards with click-to-filter behavior:
+  - total leads
+  - new/unread (`status = new`)
+  - open/in-progress (`status = contacted`)
+  - converted/closed (`status in won, closed`)
+  - lost/cancelled (`status = lost`)
+  - leads in last 24h
+  - leads in last 7d
+  - stale unresolved leads (derived from `updated_at`/`created_at`)
+- Added advanced search/filter/sort toolbar with only real field-backed controls:
+  - search by customer/contact/tour/agency/destination/message
+  - status filter
+  - agency filter
+  - tour filter
+  - destination filter
+  - outcome filter (open/converted/lost derived from real statuses)
+  - contact presence filter
+  - created date range filter
+  - sort: newest, oldest, unresolved first, status, agency, tour
+- Replaced old simple cards with a stronger admin table + responsive mobile cards.
+- Added row-level quick actions:
+  - open detail
+  - copy contact
+  - safe status progression quick action (`new -> contacted`, `contacted -> closed`)
+- Added rich lead detail sheet with:
+  - lead identity and status
+  - customer/contact block
+  - full inquiry message
+  - tour context with admin/public links
+  - agency context with verification/approval state
+  - workflow metadata
+  - quality warnings
+  - admin action center
+- Added safe status update workflow using existing admin-authenticated server action with:
+  - confirmation dialog
+  - loading/disable state
+  - success/error feedback
+  - local state update + route refresh
+- Added lead-specific loading skeleton route state (`/admin/leads/loading.tsx`).
+
+### 3) Files changed
+
+- `app/(admin)/admin/leads/page.tsx`
+- `app/(admin)/admin/leads/admin-leads-content.tsx`
+- `app/(admin)/admin/leads/loading.tsx` (new)
+- `features/admin/queries.ts`
+- `features/admin/types.ts`
+- `features/admin/actions.ts`
+- `docs/admin_design.md`
+
+### 4) Data sources used
+
+- Server-side admin leads payload query from `features/admin/queries.ts`:
+  - `getAdminLeadsPanelData()`
+- Existing admin auth/role guard path (`assertAdminAccess`) and admin Supabase client (`createAdminClient`).
+- Existing client-side refresh flow (`router.refresh`) for synchronization after status actions.
+
+### 5) Supabase tables/RPC/functions used
+
+Tables queried:
+- `leads`
+- `tours` (joined as `tour`)
+- `agencies` (joined as `agency`)
+- `profiles` (joined as `user` via `user_id`)
+
+Mutations:
+- `leads` status update via new admin server action `updateLeadStatusAction()` in `features/admin/actions.ts`
+
+RPC/functions:
+- No new RPC used
+- No database functions added/changed
+
+### 6) Components used
+
+Shared/admin:
+- `PageTitle`
+- `SectionShell`
+
+UI:
+- `Card`, `CardContent`
+- `Badge`
+- `Button`
+- `Input`
+- `Select`
+- `Sheet`
+- `Dialog`
+- `Skeleton` (loading file)
+
+Icons:
+- Existing `lucide-react` icons only
+
+Notifications:
+- Existing `sonner` toast usage
+
+### 7) Design decisions
+
+- Chosen layout: CRM-style operations table on desktop + compact cards on smaller screens for operational scanability.
+- Every major metric card is interactive and applies a useful filter preset.
+- Detail workflow is in-sheet (not route change) for faster triage.
+- Quality checks are warnings only (non-blocking) and based strictly on real current fields.
+- No synthetic/fake stats were introduced; all metrics are computed from fetched leads rows and existing relations.
+- Lead status action is confirmation-gated and strictly limited to known schema statuses (`new`, `contacted`, `closed`, `won`, `lost`).
+- Where requested data dimensions were not present in schema/query layer, UI explicitly shows unavailable state instead of guessing.
+
+### 8) What was intentionally not changed
+
+- Sidebar layout/design unchanged.
+- Dashboard unchanged.
+- Agencies/Tours/Users/Verification panel designs unchanged.
+- Admin login page unchanged.
+- Middleware unchanged.
+- Admin auth guard unchanged (`profiles.role = 'admin'` restriction preserved).
+- Public/user/agency pages untouched.
+- No Supabase schema changes, no migrations, no RLS changes.
+- No new dependency/library added.
+
+### 9) Local test command
+
+- `npm run dev`
+
+### 10) Manual QA checklist
+
+- Open `http://localhost:3000/admin/leads`.
+- Confirm header renders title/subtitle, refresh, and last-updated indicator.
+- Confirm KPI cards show real counts and apply filters when clicked.
+- Test global search across:
+  - customer name
+  - phone/email
+  - tour title
+  - agency
+  - destination
+  - message text
+- Test filters:
+  - status
+  - agency
+  - tour
+  - destination
+  - outcome
+  - contact presence
+  - recent window
+  - created date range
+- Test sorting options:
+  - newest
+  - oldest
+  - unresolved first
+  - status
+  - agency
+  - tour
+- Open lead detail from both desktop row and mobile card.
+- In detail, verify:
+  - customer/contact values
+  - full inquiry text
+  - tour context links
+  - agency verification/approval indicators
+  - workflow metadata block
+  - quality warnings block
+- Trigger status update:
+  - confirmation dialog appears
+  - button disables/spinner appears during request
+  - success/error toast shown
+  - status updates and data refresh behavior remains correct
+- Verify loading skeleton appears while route loads.
+- Resize to tablet/mobile widths and verify list remains usable.
+
+### 11) Known limitations or missing data
+
+- `leads` schema in this project currently does not expose explicit source/channel, response-time, assignment-owner, admin-note, or agency-response-note columns in existing query layer.
+- No dedicated admin agency detail route is currently present; agency context links to `/admin/agencies` panel rather than `/admin/agencies/[id]`.
+- No dedicated admin user detail route is currently present; user context links to `/admin/users`.
+- Conversation/activity timeline beyond lead timestamps is not available from existing lead query relations.
+- High-intent scoring is not available because no lead-scoring field exists in the current schema/query path.
+
+---
+
+## Promotions / MaxCoin Panel Redesign (Admin Only)
+
+### 1) Date/time of change
+
+- 2026-05-03 17:48:56 +08:00
+
+### 2) What was changed
+
+- Fully redesigned the admin Promotions / MaxCoin operations experience on ` /admin/coin-requests ` (existing panel route).
+- Added premium operations layout with:
+  - page header/subtitle
+  - refresh button
+  - last-updated indicator
+  - KPI strip (active, scheduled/pending, ending soon, expired, spent, low balance)
+  - placement monitoring cards
+  - advanced search/filter/sort toolbar
+  - promotions operations table
+  - MaxCoin ledger section
+  - agency balances section
+  - pending coin request operations section
+  - data-quality warning section
+  - promotion detail drawer
+  - agency MaxCoin detail drawer
+- Replaced old coin-request-only list UI with a unified promotion + MaxCoin operations panel.
+- Added route-level loading and error states for this panel.
+- Updated `/admin/featured` route to redirect into the new operations panel with featured placement preset for compatibility.
+- Added new typed admin query payload for promotions/maxcoin aggregation with partial-data health reporting.
+
+### 3) Files changed
+
+- `features/admin/types.ts`
+- `features/admin/queries.ts`
+- `app/(admin)/admin/coin-requests/page.tsx`
+- `app/(admin)/admin/coin-requests/admin-coin-requests-content.tsx`
+- `app/(admin)/admin/coin-requests/loading.tsx`
+- `app/(admin)/admin/coin-requests/error.tsx`
+- `app/(admin)/admin/featured/page.tsx`
+- `docs/admin_design.md`
+
+### 4) Data sources used
+
+- Server-side admin payload:
+  - `getAdminPromotionsMaxcoinPanelData()` from `features/admin/queries.ts`
+- Existing safe mutation actions:
+  - `approveCoinRequest()`
+  - `rejectCoinRequest()`
+- Existing admin guard/client:
+  - `assertAdminAccess()`
+  - `createAdminClient()`
+
+### 5) Supabase tables/RPC/functions used
+
+- Tables queried:
+  - `tour_promotions`
+  - `featured_items`
+  - `maxcoin_transactions`
+  - `coin_requests`
+  - `agencies`
+  - `promotion_tiers`
+  - `leads` (tour lead metrics for promoted tours)
+- RPC used for this redesign:
+  - None added
+- Mutations used:
+  - Existing server actions for coin requests only (approve/reject)
+
+### 6) Components used
+
+- Shared/admin:
+  - `PageTitle`
+  - `SectionShell`
+- UI:
+  - `Card`, `CardHeader`, `CardContent`, `CardTitle`, `CardDescription`
+  - `Button`
+  - `Input`
+  - `Select`
+  - `Badge`
+  - `Dialog`
+  - `Sheet`
+  - `Separator`
+  - `Skeleton` (loading file)
+- Existing icon set:
+  - `lucide-react`
+- Styling:
+  - Tailwind CSS only
+
+### 7) Design decisions
+
+- Kept this redesign isolated to admin Promotions/MaxCoin routes/components only.
+- Built one operations panel that combines promotions and MaxCoin in a single admin workflow surface.
+- Preserved existing data integrity boundaries:
+  - no direct client-side balance mutation
+  - no service-role exposure in client
+  - only existing server actions for financial state changes
+- Promotion statuses are computed from real date/activity fields (`starts_at`, `ends_at`, `is_active`) to avoid fabricating unsupported states.
+- Placement cards use real placement values present in data and display generic labels where schema does not provide humanized names.
+- Slot-capacity and rotation controls are monitoring-only because no explicit safe editable slot config exists in current admin flow.
+
+### 8) What was intentionally not changed
+
+- Sidebar design was not changed.
+- Dashboard, Agencies, Tours, Users, Verification, Leads panels were not redesigned.
+- `/admin/login`, middleware, and admin auth guard behavior were not changed.
+- No public/user/agency-facing pages were modified.
+- No Supabase schema, migrations, RLS, or promotion algorithm changes were made.
+- No new package dependencies/libraries were added.
+- No cancel/expire/extend promotion mutation was added because no existing safe admin mutation flow exists in this codebase.
+
+### 9) Local test command
+
+- `npm run dev`
+
+### 10) Manual QA checklist
+
+- Open `http://localhost:3000/admin/coin-requests`.
+- Verify header title/subtitle, refresh button, and last-updated indicator.
+- Verify KPI cards render and clicking them applies useful filters/sort.
+- Verify placement monitoring cards render from real placement values and click-to-filter works.
+- Verify toolbar filters:
+  - search
+  - placement
+  - promotion status
+  - agency
+  - tour
+  - transaction type
+  - date range
+  - balance range
+  - sort selector
+  - reset
+- Verify promotions table shows:
+  - tour title/image
+  - agency name
+  - placement
+  - status
+  - start/end
+  - MaxCoin cost (when available)
+  - warning indicator
+  - actions
+- Open promotion detail drawer and verify:
+  - identity/source
+  - linked tour preview
+  - linked agency preview
+  - schedule/duration
+  - MaxCoin cost
+  - warning list
+  - action center with unsupported actions clearly disabled
+- Open agency balance and transaction rows; verify agency MaxCoin detail drawer.
+- Verify pending coin requests can be approved/rejected with confirmation dialog and refresh.
+- Verify empty states for promotions/transactions/agencies when filters remove all rows.
+- Verify `http://localhost:3000/admin/featured` redirects to the redesigned operations page with featured placement preset.
+
+### 11) Known limitations or missing data
+
+- No explicit slot-capacity/rotation config table is currently wired in admin query layer, so over-capacity is monitoring-limited.
+- Click/impression metrics for promotions are not available in the queried admin payload; performance currently uses available `tour.view_count` and lead counts.
+- Ledger audit fields such as `admin_id`, `created_by`, `payment_id`, `order_id` are not present in the currently used transaction select fields, so they cannot be displayed.
+- Promotion mutation actions (cancel/expire/extend/manual adjustment) are intentionally disabled due missing existing safe admin server mutation flows.
+- `npx tsc --noEmit` still reports unrelated pre-existing errors in other admin modules (`users`, `leads`, `account-deletions`) outside this Promotions/MaxCoin scope.
+
+---
+
+## Verification Panel Redesign (Admin Verification)
+
+### 1) Date/time of change
+
+- 2026-05-03 17:40:37 +08:00
+
+### 2) What was changed
+
+- Completely redesigned only `/admin/verification` into a desktop-first moderation workspace for verification operations.
+- Replaced the old pending/processed list with:
+  - operations header (title/subtitle, refresh, last-updated)
+  - KPI strip (total, pending, approved/verified, rejected, incomplete)
+  - advanced search/filter/sort toolbar using only real fields
+  - verification queue table (desktop) and card stack (mobile)
+  - quick actions (view/approve/reject/copy contact)
+- Added rich verification detail sheet with tabs:
+  - Overview
+  - Documents
+  - Context
+  - Risk
+  - Actions
+- Added document/media handling:
+  - safe HTTP/HTTPS URL validation
+  - document count and source labeling
+  - image/document preview flows with fallback
+  - open-in-new-tab links
+- Added transparent risk/warning engine based on real fields only:
+  - missing logo
+  - missing legal/company name
+  - missing contact
+  - missing documents
+  - missing city/location
+  - no tours
+  - manager profile incomplete
+  - duplicate contact signature
+  - unverified agency with published tours
+- Added confirmation workflow for approve/reject:
+  - confirmation dialog
+  - loading state and double-submit protection
+  - rejection reason required in UI
+  - success/error toasts
+  - data refresh after mutation
+- Added verification-specific loading state file to prevent layout jump during route loading.
+- Upgraded verification server data function to return enriched admin-safe payload:
+  - agency
+  - owner profile
+  - related tours counts
+  - recent tours preview
+
+### 3) Files changed
+
+- `features/verification/actions.ts`
+- `features/verification/types.ts` (new)
+- `app/(admin)/admin/verification/page.tsx`
+- `app/(admin)/admin/verification/admin-verification-content.tsx` (rewritten)
+- `app/(admin)/admin/verification/verification-detail-sheet.tsx` (new)
+- `app/(admin)/admin/verification/verification-utils.ts` (new)
+- `app/(admin)/admin/verification/loading.tsx` (new)
+- `docs/admin_design.md`
+
+### 4) Data sources used
+
+- Server-side admin verification fetch from `getAllVerificationRequests()` in `features/verification/actions.ts`.
+- Existing admin drill-down action `getAdminAgencyDetailAction()` for linked agency/tours/verification history context in detail sheet.
+- Existing approval/rejection mutations:
+  - `approveVerificationAction()`
+  - `rejectVerificationAction()`
+
+### 5) Supabase tables/RPC/functions used
+
+Tables queried:
+- `verification_requests`
+- `agencies` (joined as `agency`)
+- `profiles` (joined as `owner`)
+- `tours` (for related tour count and preview)
+
+Tables mutated:
+- `verification_requests` (`status`, `admin_note`, `updated_at`)
+- `agencies` (`is_verified`, `updated_at`)
+
+RPC/functions:
+- No new RPC added.
+- Existing guard/helper usage:
+  - `assertAdminAccess()` (unchanged role rule: `profiles.role = 'admin'`)
+  - `createAdminClient()`
+
+### 6) Components used
+
+Shared/admin:
+- `PageTitle`
+- `SectionShell`
+
+UI primitives:
+- `Card`, `Badge`, `Button`, `Input`, `Select`, `Dialog`, `Sheet`, `Tabs`, `Textarea`, `Skeleton`
+
+Verification-specific admin components:
+- `verification-detail-sheet.tsx`
+- `verification-utils.ts`
+
+Other existing tools:
+- `lucide-react` icons
+- `sonner` toast
+- Tailwind CSS transitions and responsive utilities
+
+### 7) Design decisions
+
+- Used a queue + detail moderation workflow optimized for desktop review speed.
+- Kept all filtering/sorting strictly tied to known existing fields (no fabricated status types or fake metrics).
+- Implemented incomplete/risk visibility through transparent warnings derived from actual request/agency/profile/tour fields.
+- Kept unsupported actions visible but disabled (`request info`, `suspend`) to avoid fake mutation flows.
+- Kept document rendering resilient against missing or invalid URLs to avoid broken layouts.
+- Added detail tabs so identity, legal info, documents, context, and risk can be reviewed without route changes.
+
+### 8) What was intentionally not changed
+
+- No changes to middleware.
+- No changes to admin auth guard semantics.
+- No changes to `/admin/login`.
+- No changes to sidebar/dashboard/agencies/tours/users panel designs.
+- No changes to any public/user/agency-facing pages.
+- No Supabase schema changes.
+- No migrations.
+- No RLS policy changes.
+- No new package dependencies installed.
+
+### 9) Local test command
+
+- `npm run dev`
+
+### 10) Manual QA checklist
+
+- Open `http://localhost:3000/admin/verification`.
+- Verify header subtitle, refresh button, and last-updated indicator render.
+- Verify KPI cards show real values and are clickable.
+- Verify search works for:
+  - agency name/slug
+  - manager name
+  - email
+  - phone
+  - city/country
+- Verify filters:
+  - status
+  - owner role
+  - city
+  - documents present/missing
+  - legal info complete/missing
+  - created date range
+- Verify sorting:
+  - newest
+  - oldest
+  - pending first
+  - incomplete first
+  - agency name
+  - highest warning count
+- Verify queue actions:
+  - view detail
+  - approve pending request
+  - reject pending request
+  - copy contact
+- Verify reject flow enforces reason and shows success/error toast.
+- Verify detail sheet tabs and data blocks render on missing fields without layout breaks.
+- Verify document section:
+  - image preview
+  - non-image fallback
+  - open-in-new-tab links
+- Verify risk tab warning list and severity rendering.
+- Verify loading state at route load (`/admin/verification/loading.tsx`).
+- Verify responsive behavior on tablet/smaller desktop widths.
+
+### 11) Known limitations or missing data
+
+- Verification status currently supports only real existing values: `pending`, `approved`, `rejected`; no `needs_info`/`suspended` schema status exists.
+- No dedicated admin route exists for direct single-user detail or single-agency detail; actions route to existing list pages (`/admin/users`, `/admin/agencies`).
+- Document type is inferred from available URL fields and extension; there is no dedicated stored `document_type` column.
+- Private signed URL generation is not introduced; panel displays only URLs already available through existing data paths.
+- Full project `npx tsc --noEmit` still reports pre-existing unrelated type errors in `app/(admin)/admin/leads/page.tsx` and `app/(admin)/admin/users/page.tsx`.
+
+---
+
+## Audit Log Panel Redesign (Admin Audit)
+
+### 1) Date/time of change
+
+- 2026-05-03 17:48:10 +08:00
+
+### 2) What was changed
+
+- Replaced placeholder-only Audit Log with a real, admin-only, read-only monitoring panel at `/admin/audit-log`.
+- Added server-side audit data discovery and normalization layer that pulls only real operational records and converts them into a unified audit event stream.
+- Implemented explicit coverage modes:
+  - `Partial audit coverage` when operational sources exist but no canonical audit table exists.
+  - `Audit logging is not configured yet` when no source tables are readable.
+- Added premium desktop-first UI with:
+  - overview header and refresh
+  - coverage banner with covered/uncovered areas
+  - KPI row (total, 24h, high-risk, failed/error, admin actions, top module)
+  - search/filter/sort toolbar
+  - table/timeline hybrid event list
+  - rich event detail sheet
+  - source coverage table
+  - loading/empty/error states
+- Added metadata sanitization/redaction and safe detail rendering to avoid exposing tokens/secrets/auth internals.
+
+### 3) Files changed
+
+- `app/(admin)/admin/audit-log/page.tsx`
+- `app/(admin)/admin/audit-log/audit-log-content.tsx`
+- `app/(admin)/admin/audit-log/audit-log-detail-sheet.tsx` (new)
+- `app/(admin)/admin/audit-log/loading.tsx` (new)
+- `features/admin/audit-log.ts` (new)
+- `docs/admin_design.md`
+
+### 4) Data sources used
+
+- Admin-safe server reads via `createAdminClient()` after `assertAdminAccess()`.
+- Real operational sources queried (when present):
+  - verification workflow
+  - maxcoin/promotion workflow
+  - deletion review workflow
+  - notification operation logs
+- No fake or hardcoded audit records were introduced.
+
+### 5) Supabase tables/RPC/functions used
+
+- Tables used:
+  - `verification_requests`
+  - `coin_requests`
+  - `maxcoin_transactions`
+  - `tour_promotions`
+  - `account_deletion_requests` (queried with graceful fallback if unavailable)
+  - `notification_log` (queried with graceful fallback if unavailable)
+- RPC used:
+  - None
+- Admin guard/helpers:
+  - `assertAdminAccess()`
+  - `createAdminClient()`
+
+### 6) Components used
+
+- Existing UI/shared components only:
+  - `Button`, `Input`, `Select`, `Badge`, `Sheet`, `Separator`, `Skeleton`
+- Existing icon library:
+  - `lucide-react`
+- Tailwind CSS for layout/visual design.
+- No new dependencies installed.
+
+### 7) Design decisions
+
+- Kept audit view read-only by design; no create/update/delete actions are exposed.
+- Since no canonical `audit_logs` table exists, implemented transparent derived timeline from real operational tables and clearly labeled it as partial coverage.
+- Added high-risk signals based on real event classes (verification decisions, deletion approvals/reviews, financial moderation, debit ledger activity).
+- Added click-through filtering interactions from KPI cards and row-level quick detail.
+- Kept sensitive-data redaction centralized in server normalization (`features/admin/audit-log.ts`) to prevent accidental raw metadata leakage in UI.
+
+### 8) What was intentionally not changed
+
+- Middleware/domain routing was not touched.
+- `/admin/login` and admin auth guard flow were not changed.
+- Sidebar was not redesigned/modified.
+- Dashboard/Agencies/Tours/Users/Verification/Leads/Promotions/Featured/Delete Account panels were not redesigned.
+- No public/user/agency pages were changed.
+- No Supabase schema/migration/trigger/RLS changes were made.
+- No audit write/delete/edit/export actions were added.
+
+### 9) Local test command
+
+- `npm run dev`
+
+### 10) Manual QA checklist
+
+- Open `http://localhost:3000/admin/audit-log`.
+- Verify header, subtitle, refresh button, and last-updated indicator.
+- Verify coverage banner shows:
+  - partial coverage when at least one source table is available
+  - not configured mode when all sources are unavailable
+- Verify KPI cards:
+  - total events
+  - last 24h
+  - high-risk
+  - failed/error
+  - admin actions
+  - top module
+- Click KPI cards and verify filter behavior updates event list.
+- Test toolbar search/filter/sort:
+  - actor
+  - action type
+  - entity type
+  - severity
+  - status
+  - source module
+  - date range
+  - high-risk only
+  - failed only
+- Open several events and verify detail sheet sections:
+  - actor
+  - target entity
+  - status/severity
+  - risk notes
+  - sanitized metadata
+  - related admin route links
+- Verify no sensitive values (tokens/secrets/headers/cookies/service keys/passwords/refresh/access tokens) appear in metadata.
+- Verify source coverage table availability/counts and warning rendering.
+- Verify loading skeleton on route load.
+
+### 11) Known limitations or missing data
+
+- There is no canonical `audit_logs` table in the currently discovered source set, so this panel cannot provide full actor-accurate audit history for every admin mutation.
+- Some source tables may be environment-dependent (`account_deletion_requests`, `notification_log`) and can be unavailable; panel degrades gracefully.
+- Verification/coin moderation events do not always include explicit `reviewed_by` actor fields, so actor identity can be missing for some admin decisions.
+- Before/after diffs are not currently available from existing source tables.
+
+### 12) Audit coverage notes
+
+- Covered now (real/derived):
+  - verification request lifecycle and approve/reject decisions
+  - maxcoin request submission/resolution
+  - maxcoin ledger credits/debits
+  - promotion record creation windows
+  - account deletion request/review flow (if table present)
+  - notification operations log (if table present)
+- Not covered now:
+  - canonical login/auth security events
+  - generic admin settings/config mutation history
+  - complete actor-attribution trail for every admin action
+  - global error/event stream equivalent to a dedicated system audit table
+
+### 13) Whether audit data is real, partial, or unavailable
+
+- Current implementation status: **real + partial coverage**.
+- Events shown are derived only from real records in existing tables; no fake records are generated.
+- UI automatically switches to unavailable mode when no source table is readable.
+
+### 14) Missing backend requirements if no audit log table exists
+
+- For full audit capability, backend should provide a canonical `audit_logs` source with at least:
+  - `actor_id`
+  - `action`
+  - `entity_type`
+  - `entity_id`
+  - `status`
+  - `severity`
+  - `metadata JSONB`
+  - `created_at`
+- Also required for production-grade completeness:
+  - server-side logging at every admin mutation entrypoint
+  - explicit admin-only read policy (RLS/admin role)
+  - consistent actor attribution (`reviewed_by`/`performed_by`) for moderation flows
+
+---
+
+## Settings Panel Redesign (Admin Settings)
+
+### 1) Date/time of change
+
+- 2026-05-03 19:02:00 +08:00
+
+### 2) What was changed
+
+- Rebuilt only `/admin/settings` as a premium desktop-first admin operations settings panel.
+- Implemented a server-side admin settings snapshot loader to read safe status/config data and mask sensitive values.
+- Added settings coverage banner, readiness cards, grouped expandable settings sections, and warning rails.
+- Added settings-specific loading and error route states.
+- Implemented strict read-only behavior because no safe global settings mutation backend was detected.
+- Added backend requirements dialog and explicit “read-only by design” explanations.
+
+### 3) Files changed
+
+- `app/(admin)/admin/settings/page.tsx`
+- `app/(admin)/admin/settings/settings-content.tsx`
+- `app/(admin)/admin/settings/loading.tsx` (new)
+- `app/(admin)/admin/settings/error.tsx` (new)
+- `features/admin/settings-types.ts` (new)
+- `features/admin/settings.ts` (new)
+- `docs/admin_design.md`
+
+### 4) Data sources used
+
+- Server runtime env presence checks via `process.env` (status-only for secrets).
+- Admin-safe server queries through `createAdminClient()` after `assertAdminAccess()`.
+- Routing/domain expectations from:
+  - `lib/routing/domains.ts`
+  - `lib/routing/guards.ts`
+  - docs domain/deployment documents
+- Deployment command/domain expectations from `package.json` scripts and docs.
+- Existing admin feature docs and current panel implementations for audit/account-deletion status interpretation.
+
+### 5) Supabase tables/RPC/functions used
+
+Tables queried (read-only):
+- `profiles`
+- `verification_requests`
+- `tours`
+- `tour_promotions`
+- `featured_items`
+- `account_deletion_requests`
+- `notification_log`
+- `promotion_tiers`
+
+Functions/RPC:
+- No new RPC used.
+- No settings mutation action added.
+- Existing guard used: `assertAdminAccess()`.
+
+### 6) Components used
+
+- Shared UI:
+  - `PageTitle`
+  - `SectionShell`
+- UI primitives:
+  - `Card`
+  - `Badge`
+  - `Button`
+  - `Dialog`
+  - `Skeleton`
+- Icons from existing `lucide-react`.
+- Tailwind CSS for layout and visual states.
+
+### 7) Design decisions
+
+- Chose **read-only** settings mode to avoid unsafe production mutations without an audited backend flow.
+- Represented status with clear badges for:
+  - configured/missing/unknown/expected/not-available
+  - risk level
+  - source
+  - editability
+- Added expandable grouped sections to keep high-density configuration readable:
+  - General Platform
+  - Admin Access
+  - Marketplace Controls
+  - Promotions / MaxCoin
+  - Notifications / Admin Alerts
+  - Security / Compliance
+  - System Readiness
+- Used “Expected by config” wording for domain/routing behavior that is not live-network verified in-panel.
+- Enforced secret-safe display policy (never render raw tokens/keys/chat IDs/secrets).
+
+### 8) What was intentionally not changed
+
+- Middleware was not modified.
+- Admin auth logic and guard behavior were not modified.
+- `/admin/login` was not modified.
+- Sidebar/dashboard/agencies/tours/users/verification/leads/promotions/featured/delete-account/audit panels were not redesigned here.
+- No public/user/agency pages were modified.
+- No Supabase schema, migrations, RLS policies, or SQL were changed.
+- No new dependencies/packages were installed.
+
+### 9) Local test command
+
+- `npm run dev`
+
+### 10) Manual QA checklist
+
+- Open `http://localhost:3000/admin/settings`.
+- Confirm page header, subtitle, configuration mode, last-updated, and refresh button render.
+- Confirm coverage banner shows backend status and read-only explanation.
+- Confirm readiness cards render:
+  - Admin domain configured
+  - Supabase connectivity
+  - Audit status
+  - Account deletion flow
+  - Notification alerts
+  - Settings backend status
+- Expand each section and verify cards show:
+  - setting name
+  - value/status
+  - editability badge
+  - source badge
+  - risk badge
+  - sensitive masking note when applicable
+- Confirm no setting mutation controls are enabled.
+- Confirm backend requirements dialog opens and lists missing requirements.
+- Confirm warnings/limitations blocks render without layout breaks.
+- Verify loading skeleton appears on refresh/navigation.
+- Simulate error boundary and confirm retry UI appears.
+- Confirm `/admin/login` and non-settings admin pages remain unchanged.
+
+### 11) Known limitations or missing data
+
+- No dedicated global settings persistence backend exists for safe admin writes.
+- Some status metrics may be unknown if optional tables are unavailable in the runtime environment.
+- Domain/routing indicators are config-derived expectations, not active network probes.
+- Notification outbox status depends on `notification_log` availability and readable permissions.
+
+### 12) Settings safety notes
+
+- Secrets are never displayed:
+  - `SUPABASE_SERVICE_ROLE_KEY`
+  - `ADMIN_BOT_TOKEN`
+  - `ADMIN_BOT_WEBHOOK_SECRET`
+  - `ADMIN_CHAT_ID`
+  - `ADMIN_CHAT_ID_2`
+- Public values are shown only as safe summaries or masked previews when needed.
+- No environment-variable editing was implemented.
+- No destructive toggles/actions were implemented.
+- Production configuration management remains external (Cloudflare/Supabase dashboards).
+
+### 13) Whether settings are editable or read-only
+
+- Current implementation status: **read-only**.
+- Editable controls intentionally disabled until safe backend mutation flow exists.
+
+### 14) If read-only, exact missing backend requirements
+
+- A dedicated admin-safe settings persistence layer with allowlisted fields and strict server-side validation.
+- Server actions or RPC endpoints for global settings updates (marketplace defaults, notification policies, promotion policy) with transactional safety.
+- Immutable audit trail for every settings change (actor, timestamp, before/after values, reason).
+- High-risk change confirmation and rollback workflow before enabling editable controls.
+
+---
+
+## Featured Promotions Panel Redesign (Admin Featured)
+
+### 1) Date/time of change
+
+- 2026-05-03 18:09:52 +08:00
+
+### 2) What was changed
+
+- Replaced `/admin/featured` redirect behavior with a dedicated Featured Promotions admin operations panel.
+- Built a new premium, desktop-first featured operations surface with:
+  - page header + subtitle + refresh + last-updated indicator
+  - KPI row (active, scheduled, ending soon, expired, slot pressure, warnings)
+  - placement monitoring cards with active/ending-soon/warnings/slot usage
+  - search/filter/sort toolbar
+  - featured promotions list (image-rich table + responsive cards)
+  - drill-down detail sheet with linked tour/agency previews
+  - campaign quality warning panel
+  - read-only action center with safe disabled states for unsupported mutations
+- Added featured-specific utility module for:
+  - featured placement detection
+  - warning generation
+  - slot pressure math
+  - sorting helpers
+  - date/placement formatting helpers
+- Extended promotions tour preview shape with location fields (`country`, `city`, `region`, `district`) to support destination filtering and display.
+
+### 3) Files changed
+
+- `app/(admin)/admin/featured/page.tsx`
+- `app/(admin)/admin/featured/admin-featured-content.tsx`
+- `app/(admin)/admin/featured/featured-promotions-utils.ts` (new)
+- `features/admin/queries.ts`
+- `features/admin/types.ts`
+- `docs/admin_design.md`
+
+### 4) Data sources used
+
+- `getAdminPromotionsMaxcoinPanelData()` from `features/admin/queries.ts` (existing admin promotions payload).
+- Featured panel consumes real rows from that payload:
+  - `promotions` (combined `tour_promotions` + `featured_items`)
+  - `promotionTiers`
+- Last-updated metadata from payload `generatedAt`.
+
+### 5) Supabase tables/RPC/functions used
+
+Queried (via existing `getAdminPromotionsMaxcoinPanelData()` pipeline):
+- `tour_promotions`
+- `featured_items`
+- `promotion_tiers`
+- `leads` (tour lead summary enrichment)
+- `agencies` (joined agency metadata for promotions)
+- `maxcoin_transactions` and `coin_requests` are still queried by the reused existing payload function (not mutated by this featured panel)
+
+RPC/functions:
+- No new RPC added.
+- No mutation RPC/action added for featured cancellation/expiry/extension/priority.
+
+### 6) Components used
+
+- Shared components:
+  - `PageTitle`
+  - `SectionShell`
+- UI primitives:
+  - `Card`, `Badge`, `Button`, `Input`, `Select`, `Sheet`, `Separator`
+- Existing icons from `lucide-react`
+- Existing toast system `sonner`
+- Existing utility helpers:
+  - `formatNumber`
+  - `placeholderImage`
+  - `cn`
+
+### 7) Design decisions
+
+- Kept all work isolated to admin featured route/components and existing admin query/types.
+- Did not redesign other admin panels.
+- Kept panel read-only for monetization-sensitive campaign actions unless existing safe server mutation exists.
+- Featured placement detection is based on real placement values only:
+  - Union of:
+    - placements present in records sourced from `featured_items` (`source = featured_item`)
+    - real placement values in promotions/tiers matching known featured/recommended signals (`featured`, `recommended`, `tavsiya`, `main_banner`, `featured_banner`, `homepage_featured`, `home_featured`, `good_deals`, `hot_tours`, `hot_deals`, and keyword matches `featured/recommend/tavsiya/banner`)
+    - fallback to actual observed placement values if no featured-like values are detected
+- Slot monitoring is read-only:
+  - known limit map shown only when available
+  - no rotation/pricing/mutation logic changed
+- Destination filter uses real tour location fields now included in promotion tour preview (`country`, `city`, `region`, `district`).
+
+### 8) What was intentionally not changed
+
+- No middleware changes.
+- No admin auth guard changes.
+- `/admin/login` unchanged.
+- No changes to Dashboard, Agencies, Tours, Users, Verification, Leads, or general Promotions/MaxCoin panel route UI.
+- No public/user/agency page changes.
+- No Supabase schema/migration/RLS changes.
+- No pricing logic, MaxCoin mutation logic, or promotion rotation algorithm changes.
+- No new package dependencies.
+
+### 9) Local test command
+
+- `npm run dev`
+
+### 10) Manual QA checklist
+
+- Open `http://localhost:3000/admin/featured`.
+- Verify header/subtitle, refresh button, and last-updated badge.
+- Verify KPI cards render and click-to-filter works:
+  - active
+  - scheduled
+  - ending soon
+  - expired
+  - slot pressure
+  - warnings
+- Verify placement monitoring cards show real placement values and click-to-filter by placement works.
+- Verify toolbar behaviors:
+  - search (tour/agency/placement/contact/id/destination)
+  - placement filter
+  - status filter
+  - agency filter
+  - destination filter
+  - issue filter
+  - date range
+  - sort selector
+  - reset filters
+- Verify campaigns list rows show:
+  - image
+  - tour title
+  - agency
+  - placement
+  - status
+  - schedule
+  - quality/warning summary
+  - quick actions
+- Open detail sheet from table and mobile cards; verify:
+  - linked tour section
+  - linked agency section
+  - schedule/remaining/duration
+  - warnings
+  - action center (safe read-only disabled mutations)
+- Verify copy actions:
+  - copy campaign ID
+  - copy public link
+- Verify empty state appears when filters remove all rows.
+- Verify partial-data warning card appears when payload health reports errors.
+
+### 11) Known limitations or missing data
+
+- No existing safe admin mutation flow was found for cancel/expire/extend/priority updates; these actions are intentionally disabled.
+- Rotation fairness internals (e.g., rank, delivered impressions, serving order) are not exposed by current web admin payload tables, so fairness notes are limited to available status/time/pressure signals.
+- Slot-capacity display uses known values only when available in current logic; unknown placements remain `Not available`.
+- Existing query function still fetches broader promotions/maxcoin datasets because the panel reuses `getAdminPromotionsMaxcoinPanelData()` to avoid duplicating query logic.
+- If runtime schema differs from local snapshot/migration references, some metrics may be partial and are surfaced through payload health warnings.

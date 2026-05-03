@@ -1,9 +1,14 @@
-import { getFeaturedItems } from '@/features/admin/queries';
+import { getAdminPromotionsMaxcoinPanelData } from '@/features/admin/queries';
 import { AdminFeaturedContent } from './admin-featured-content';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminFeaturedPage() {
-  const items = await getFeaturedItems();
-  return <AdminFeaturedContent items={items} />;
+  try {
+    const payload = await getAdminPromotionsMaxcoinPanelData();
+    return <AdminFeaturedContent payload={payload} />;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown featured promotions loading error';
+    return <AdminFeaturedContent payload={null} errorMessage={message} />;
+  }
 }

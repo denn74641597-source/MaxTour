@@ -1,360 +1,1092 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import {
+  AlertTriangle,
+  ArrowUpDown,
+  CheckCircle2,
+  CircleSlash,
+  Clock3,
+  Copy,
+  FileText,
+  Loader2,
+  Mail,
+  MapPin,
+  Phone,
+  RefreshCw,
+  Search,
+  ShieldCheck,
+  ShieldX,
+  XCircle,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { PageTitle, SectionShell } from '@/components/shared-ui';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { getAdminAgencyDetailAction } from '@/features/admin/actions';
+import type { AdminAgencyDetailPayload } from '@/features/admin/types';
 import {
   approveVerificationAction,
   rejectVerificationAction,
 } from '@/features/verification/actions';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
+import type { AdminVerificationRequest } from '@/features/verification/types';
+import { cn, formatDate, formatNumber } from '@/lib/utils';
+import { VerificationDetailSheet } from './verification-detail-sheet';
 import {
-  ShieldCheck,
-  Check,
-  X,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  ExternalLink,
-  AlertCircle,
-  ChevronDown,
-  ChevronUp,
-  Building2,
-  Phone,
-  Mail,
-  Globe,
-  FileText,
-  Scale,
-} from 'lucide-react';
-import { formatDate } from '@/lib/utils';
-import type { VerificationFormData } from '@/types';
+  buildVerificationWarnings,
+  extractVerificationDocuments,
+  formatDateTime,
+  normalizeText,
+  type VerificationDocumentItem,
+  type VerificationWarningItem,
+} from './verification-utils';
 
-interface Props {
-  requests: any[];
+interface AdminVerificationContentProps {
+  requests: AdminVerificationRequest[];
+  generatedAt: string;
+  loadError?: string;
 }
 
-function FormDataDetails({ formData }: { formData: VerificationFormData | null }) {
-  if (!formData) return null;
+type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
+type DocumentFilter = 'all' | 'with_documents' | 'without_documents';
+type LegalFilter = 'all' | 'complete' | 'missing';
+type SortOption =
+  | 'newest'
+  | 'oldest'
+  | 'pending_first'
+  | 'incomplete_first'
+  | 'agency_name'
+  | 'highest_warning_count';
 
-  const fields: { label: string; value: string | undefined; isLink?: boolean }[] = [
-    { label: 'Kompaniya nomi', value: formData.company_name },
-    { label: "Ro'yxatdagi nomi", value: formData.registered_name },
-    { label: 'Mamlakat', value: formData.country },
-    { label: 'Ofis manzili', value: formData.office_address },
-    { label: 'Ish telefon', value: formData.work_phone },
-    { label: 'Ish email', value: formData.work_email },
-    { label: 'Telegram', value: formData.telegram_link },
-    { label: 'Instagram', value: formData.instagram_url },
-    { label: 'Veb-sayt', value: formData.website_url },
-    { label: 'INN', value: formData.inn },
-    { label: "Ro'yxatga olish raqami", value: formData.registration_number },
-  ];
+interface PreparedVerificationRequest {
+  request: AdminVerificationRequest;
+  documents: VerificationDocumentItem[];
+  warnings: VerificationWarningItem[];
+  hasDocuments: boolean;
+  hasLegalInfo: boolean;
+  warningCount: number;
+  createdAtMs: number;
+  searchIndex: string;
+  contactSignature: string | null;
+}
 
-  return (
-    <div className="space-y-3">
-      {/* Text fields */}
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-        {fields.map(({ label, value }) =>
-          value ? (
-            <div key={label}>
-              <p className="text-[10px] uppercase tracking-wide text-slate-400 font-medium">{label}</p>
-              <p className="text-xs text-slate-700 mt-0.5">{value}</p>
-            </div>
-          ) : null
-        )}
-      </div>
+function statusTone(status: AdminVerificationRequest['status']) {
+  if (status === 'pending') return 'border-amber-200 bg-amber-50 text-amber-700';
+  if (status === 'approved') return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+  return 'border-rose-200 bg-rose-50 text-rose-700';
+}
 
-      {/* PDF links */}
-      <div className="flex gap-2">
-        {formData.certificate_pdf_url && (
-          <a
-            href={formData.certificate_pdf_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors"
-          >
-            <FileText className="h-3 w-3" /> Sertifikat PDF
-          </a>
-        )}
-        {formData.license_pdf_url && (
-          <a
-            href={formData.license_pdf_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-50 text-violet-600 rounded-lg text-xs font-medium hover:bg-violet-100 transition-colors"
-          >
-            <Scale className="h-3 w-3" /> Litsenziya PDF
-          </a>
-        )}
-      </div>
-    </div>
+function statusLabel(status: AdminVerificationRequest['status']) {
+  if (status === 'pending') return 'Pending';
+  if (status === 'approved') return 'Approved';
+  return 'Rejected';
+}
+
+function buildContactSignature(request: AdminVerificationRequest): string | null {
+  const phone = normalizeText(
+    request.agency?.phone ??
+      request.agency?.owner?.phone ??
+      request.form_data?.work_phone ??
+      null
+  );
+  const email = normalizeText(
+    request.agency?.owner?.email ?? request.form_data?.work_email ?? null
+  );
+  if (!phone && !email) return null;
+  return `${phone}|${email}`;
+}
+
+function hasLegalInformation(request: AdminVerificationRequest): boolean {
+  return Boolean(
+    request.form_data?.company_name?.trim() ||
+      request.form_data?.registered_name?.trim() ||
+      request.form_data?.inn?.trim() ||
+      request.form_data?.registration_number?.trim() ||
+      request.agency?.inn?.trim()
   );
 }
 
-export function AdminVerificationContent({ requests }: Props) {
+function collectRoleOptions(requests: AdminVerificationRequest[]): string[] {
+  const roles = new Set<string>();
+  for (const item of requests) {
+    const role = item.agency?.owner?.role;
+    if (role && role.trim().length > 0) roles.add(role);
+  }
+  return Array.from(roles).sort((a, b) => a.localeCompare(b));
+}
+
+export function AdminVerificationContent({
+  requests,
+  generatedAt,
+  loadError,
+}: AdminVerificationContentProps) {
   const router = useRouter();
-  const [rejectNotes, setRejectNotes] = useState<Record<string, string>>({});
-  const [processing, setProcessing] = useState<string | null>(null);
-  const [tab, setTab] = useState<'pending' | 'processed'>('pending');
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
+  const [isRefreshing, startRefresh] = useTransition();
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(generatedAt);
 
-  const pendingRequests = requests.filter((r) => r.status === 'pending');
-  const processedRequests = requests.filter((r) => r.status !== 'pending');
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [roleFilter, setRoleFilter] = useState('all');
+  const [cityFilter, setCityFilter] = useState('all');
+  const [documentFilter, setDocumentFilter] = useState<DocumentFilter>('all');
+  const [legalFilter, setLegalFilter] = useState<LegalFilter>('all');
+  const [createdFrom, setCreatedFrom] = useState('');
+  const [createdTo, setCreatedTo] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('pending_first');
 
-  function toggleExpand(id: string) {
-    setExpandedIds(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [detailCache, setDetailCache] = useState<Record<string, AdminAgencyDetailPayload>>({});
+  const [detailLoadingAgencyId, setDetailLoadingAgencyId] = useState<string | null>(null);
+  const [detailErrorByAgencyId, setDetailErrorByAgencyId] = useState<Record<string, string>>({});
+
+  const [actionIntent, setActionIntent] = useState<{
+    requestId: string;
+    agencyId: string;
+    action: 'approve' | 'reject';
+  } | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [processingActionKey, setProcessingActionKey] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLastUpdatedAt(generatedAt);
+  }, [generatedAt]);
+
+  const roleOptions = useMemo(() => collectRoleOptions(requests), [requests]);
+  const cityOptions = useMemo(() => {
+    const set = new Set<string>();
+    for (const request of requests) {
+      if (request.agency?.city) set.add(request.agency.city);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [requests]);
+
+  const duplicateContactCountBySignature = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const request of requests) {
+      const signature = buildContactSignature(request);
+      if (!signature) continue;
+      map.set(signature, (map.get(signature) ?? 0) + 1);
+    }
+    return map;
+  }, [requests]);
+
+  const preparedRequests = useMemo<PreparedVerificationRequest[]>(() => {
+    return requests.map((request) => {
+      const documents = extractVerificationDocuments(request);
+      const contactSignature = buildContactSignature(request);
+      const warnings = buildVerificationWarnings({
+        request,
+        documentCount: documents.length,
+        duplicateContactCount: contactSignature
+          ? duplicateContactCountBySignature.get(contactSignature) ?? 0
+          : 0,
+      });
+
+      const searchIndex = [
+        request.agency?.name,
+        request.agency?.slug,
+        request.agency?.owner?.full_name,
+        request.agency?.owner?.email,
+        request.agency?.owner?.phone,
+        request.agency?.phone,
+        request.agency?.telegram_username,
+        request.agency?.city,
+        request.agency?.country,
+        request.form_data?.company_name,
+        request.form_data?.registered_name,
+        request.form_data?.work_email,
+        request.form_data?.work_phone,
+      ]
+        .map((value) => normalizeText(value))
+        .join(' ');
+
+      return {
+        request,
+        documents,
+        warnings,
+        hasDocuments: documents.length > 0,
+        hasLegalInfo: hasLegalInformation(request),
+        warningCount: warnings.length,
+        createdAtMs: new Date(request.created_at).getTime(),
+        searchIndex,
+        contactSignature,
+      };
+    });
+  }, [duplicateContactCountBySignature, requests]);
+
+  const filteredRequests = useMemo(() => {
+    const query = normalizeText(search);
+    const list = preparedRequests.filter((item) => {
+      const { request } = item;
+
+      if (query && !item.searchIndex.includes(query)) return false;
+      if (statusFilter !== 'all' && request.status !== statusFilter) return false;
+      if (roleFilter !== 'all' && request.agency?.owner?.role !== roleFilter) return false;
+      if (cityFilter !== 'all' && request.agency?.city !== cityFilter) return false;
+
+      if (documentFilter === 'with_documents' && !item.hasDocuments) return false;
+      if (documentFilter === 'without_documents' && item.hasDocuments) return false;
+
+      if (legalFilter === 'complete' && !item.hasLegalInfo) return false;
+      if (legalFilter === 'missing' && item.hasLegalInfo) return false;
+
+      if (createdFrom) {
+        const fromMs = new Date(`${createdFrom}T00:00:00`).getTime();
+        if (Number.isFinite(item.createdAtMs) && Number.isFinite(fromMs) && item.createdAtMs < fromMs) {
+          return false;
+        }
+      }
+
+      if (createdTo) {
+        const toMs = new Date(`${createdTo}T23:59:59`).getTime();
+        if (Number.isFinite(item.createdAtMs) && Number.isFinite(toMs) && item.createdAtMs > toMs) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    return [...list].sort((a, b) => {
+      switch (sortBy) {
+        case 'oldest':
+          return a.createdAtMs - b.createdAtMs;
+        case 'pending_first':
+          return (
+            Number(b.request.status === 'pending') - Number(a.request.status === 'pending') ||
+            b.createdAtMs - a.createdAtMs
+          );
+        case 'incomplete_first':
+          return b.warningCount - a.warningCount || b.createdAtMs - a.createdAtMs;
+        case 'agency_name':
+          return (a.request.agency?.name ?? '').localeCompare(b.request.agency?.name ?? '');
+        case 'highest_warning_count':
+          return b.warningCount - a.warningCount || b.createdAtMs - a.createdAtMs;
+        case 'newest':
+        default:
+          return b.createdAtMs - a.createdAtMs;
+      }
+    });
+  }, [
+    preparedRequests,
+    search,
+    statusFilter,
+    roleFilter,
+    cityFilter,
+    documentFilter,
+    legalFilter,
+    createdFrom,
+    createdTo,
+    sortBy,
+  ]);
+
+  const selectedPreparedRequest = useMemo(
+    () => preparedRequests.find((item) => item.request.id === selectedRequestId) ?? null,
+    [preparedRequests, selectedRequestId]
+  );
+
+  const selectedAgencyId = selectedPreparedRequest?.request.agency_id ?? null;
+  const selectedDetail = selectedAgencyId ? detailCache[selectedAgencyId] : undefined;
+  const selectedDetailError = selectedAgencyId
+    ? detailErrorByAgencyId[selectedAgencyId] ?? null
+    : null;
+
+  const stats = useMemo(() => {
+    const total = preparedRequests.length;
+    const pending = preparedRequests.filter((item) => item.request.status === 'pending').length;
+    const approvedOrVerified = preparedRequests.filter(
+      (item) => item.request.status === 'approved' || item.request.agency?.is_verified
+    ).length;
+    const rejected = preparedRequests.filter((item) => item.request.status === 'rejected').length;
+    const incomplete = preparedRequests.filter((item) => item.warningCount > 0).length;
+
+    return {
+      total,
+      pending,
+      approvedOrVerified,
+      rejected,
+      incomplete,
+    };
+  }, [preparedRequests]);
+
+  async function copyValue(value: string | null | undefined, label: string) {
+    if (!value || value.trim().length === 0) {
+      toast.error(`${label} is not available.`);
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+      toast.success(`${label} copied.`);
+    } catch {
+      toast.error(`Could not copy ${label.toLowerCase()}.`);
+    }
+  }
+
+  async function loadAgencyDetail(agencyId: string) {
+    if (detailCache[agencyId]) return;
+    setDetailLoadingAgencyId(agencyId);
+    setDetailErrorByAgencyId((current) => ({
+      ...current,
+      [agencyId]: '',
+    }));
+
+    const result = await getAdminAgencyDetailAction(agencyId);
+    setDetailLoadingAgencyId(null);
+
+    if (result.error || !result.data) {
+      setDetailErrorByAgencyId((current) => ({
+        ...current,
+        [agencyId]: result.error ?? 'Unable to load linked agency records.',
+      }));
+      return;
+    }
+
+    setDetailCache((current) => ({
+      ...current,
+      [agencyId]: result.data,
+    }));
+  }
+
+  function openRequestDetail(item: PreparedVerificationRequest) {
+    setSelectedRequestId(item.request.id);
+    if (item.request.agency_id) {
+      void loadAgencyDetail(item.request.agency_id);
+    }
+  }
+
+  function resetFilters() {
+    setSearch('');
+    setStatusFilter('all');
+    setRoleFilter('all');
+    setCityFilter('all');
+    setDocumentFilter('all');
+    setLegalFilter('all');
+    setCreatedFrom('');
+    setCreatedTo('');
+    setSortBy('pending_first');
+  }
+
+  function refreshData() {
+    startRefresh(() => {
+      setLastUpdatedAt(new Date().toISOString());
+      router.refresh();
     });
   }
 
-  async function handleApprove(requestId: string, agencyId: string) {
-    setProcessing(requestId);
-    const result = await approveVerificationAction(requestId, agencyId);
-    if (result.error) {
-      toast.error('Tizimda xatolik');
-    } else {
-      toast.success('Tasdiqlandi');
+  function openApproveDialog(item: PreparedVerificationRequest) {
+    setActionIntent({
+      requestId: item.request.id,
+      agencyId: item.request.agency_id,
+      action: 'approve',
+    });
+    setRejectReason('');
+  }
+
+  function openRejectDialog(item: PreparedVerificationRequest) {
+    setActionIntent({
+      requestId: item.request.id,
+      agencyId: item.request.agency_id,
+      action: 'reject',
+    });
+    setRejectReason(item.request.admin_note ?? '');
+  }
+
+  async function executeAction() {
+    if (!actionIntent) return;
+
+    if (actionIntent.action === 'reject' && rejectReason.trim().length === 0) {
+      toast.error('Rejection reason is required.');
+      return;
     }
-    setProcessing(null);
+
+    const actionKey = `${actionIntent.action}:${actionIntent.requestId}`;
+    setProcessingActionKey(actionKey);
+
+    const result =
+      actionIntent.action === 'approve'
+        ? await approveVerificationAction(actionIntent.requestId, actionIntent.agencyId)
+        : await rejectVerificationAction(
+            actionIntent.requestId,
+            actionIntent.agencyId,
+            rejectReason.trim()
+          );
+
+    setProcessingActionKey(null);
+    setActionIntent(null);
+    setRejectReason('');
+
+    if (result.error) {
+      toast.error('Could not update verification request.');
+      return;
+    }
+
+    toast.success(
+      actionIntent.action === 'approve'
+        ? 'Verification approved.'
+        : 'Verification rejected.'
+    );
+    setLastUpdatedAt(new Date().toISOString());
     router.refresh();
   }
 
-  async function handleReject(requestId: string, agencyId: string) {
-    setProcessing(requestId);
-    const note = rejectNotes[requestId] || '';
-    const result = await rejectVerificationAction(requestId, agencyId, note);
-    if (result.error) {
-      toast.error('Tizimda xatolik');
-    } else {
-      toast.success('Rad etildi');
-    }
-    setProcessing(null);
-    router.refresh();
-  }
+  const dialogBusy = processingActionKey !== null;
+  const selectedActionKey = actionIntent
+    ? `${actionIntent.action}:${actionIntent.requestId}`
+    : null;
+  const actionIsBusy = dialogBusy && selectedActionKey === processingActionKey;
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Verification & Request Center</h1>
-        <p className="text-sm text-slate-500">Agentlik sertifikatlarini tekshirish</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-amber-100 p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <Clock className="h-4 w-4 text-amber-500" />
-            <p className="text-sm text-amber-600">Pending Queue</p>
+    <SectionShell className="space-y-6 p-6">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <PageTitle
+          title="Verification"
+          subtitle="Agency identity review, approval workflow, and verification risk control"
+        />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={refreshData} disabled={isRefreshing}>
+            {isRefreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />}
+            Refresh
+          </Button>
+          <div className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600">
+            Last updated:{' '}
+            <span className="font-medium text-slate-900">{formatDateTime(lastUpdatedAt)}</span>
           </div>
-          <p className="text-2xl font-bold text-amber-700">{pendingRequests.length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-emerald-100 p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-            <p className="text-sm text-emerald-600">Approved</p>
-          </div>
-          <p className="text-2xl font-bold text-emerald-700">
-            {processedRequests.filter(r => r.status === 'approved').length}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl border border-red-100 p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <XCircle className="h-4 w-4 text-red-500" />
-            <p className="text-sm text-red-600">Rejected</p>
-          </div>
-          <p className="text-2xl font-bold text-red-700">
-            {processedRequests.filter(r => r.status === 'rejected').length}
-          </p>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setTab('pending')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'pending'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          }`}
-        >
-          Pending Queue
-          {pendingRequests.length > 0 && (
-            <span className="ml-2 bg-white/20 px-1.5 py-0.5 rounded-full text-xs">{pendingRequests.length}</span>
-          )}
-        </button>
-        <button
-          onClick={() => setTab('processed')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-            tab === 'processed'
-              ? 'bg-blue-600 text-white'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          }`}
-        >
-          Processed History ({processedRequests.length})
-        </button>
+      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <MetricCard
+          title="Total Requests"
+          value={stats.total}
+          tone="default"
+          onClick={() => setStatusFilter('all')}
+        />
+        <MetricCard
+          title="Pending"
+          value={stats.pending}
+          tone="warning"
+          onClick={() => setStatusFilter('pending')}
+        />
+        <MetricCard
+          title="Approved / Verified"
+          value={stats.approvedOrVerified}
+          tone="success"
+          onClick={() => setStatusFilter('approved')}
+        />
+        <MetricCard
+          title="Rejected"
+          value={stats.rejected}
+          tone="danger"
+          onClick={() => setStatusFilter('rejected')}
+        />
+        <MetricCard
+          title="Incomplete"
+          value={stats.incomplete}
+          tone="warning"
+          onClick={() => setSortBy('incomplete_first')}
+        />
       </div>
 
-      {/* Pending Queue */}
-      {tab === 'pending' && (
-        <div className="space-y-3">
-          {pendingRequests.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 py-12 text-center">
-              <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-3" />
-              <p className="text-sm text-slate-500">No pending verification requests</p>
+      <Card className="rounded-2xl border border-slate-200 bg-white py-3">
+        <CardContent className="space-y-3 px-4">
+          <div className="grid gap-2 xl:grid-cols-[1.2fr_repeat(5,minmax(0,1fr))]">
+            <div className="relative xl:col-span-2">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search agency, manager, email, phone, city..."
+                className="h-9 pl-8"
+              />
+            </div>
+
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => setStatusFilter(value as StatusFilter)}
+            >
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All statuses</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="approved">Approved</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={roleFilter} onValueChange={(value) => setRoleFilter(value ?? 'all')}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="Owner role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All owner roles</SelectItem>
+                {roleOptions.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {role}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={cityFilter} onValueChange={(value) => setCityFilter(value ?? 'all')}>
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="City" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All cities</SelectItem>
+                {cityOptions.map((city) => (
+                  <SelectItem key={city} value={city}>
+                    {city}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={documentFilter}
+              onValueChange={(value) => setDocumentFilter(value as DocumentFilter)}
+            >
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="Documents" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any documents</SelectItem>
+                <SelectItem value="with_documents">With documents</SelectItem>
+                <SelectItem value="without_documents">No documents</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select
+              value={legalFilter}
+              onValueChange={(value) => setLegalFilter(value as LegalFilter)}
+            >
+              <SelectTrigger className="h-9 w-full">
+                <SelectValue placeholder="Legal info" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Any legal state</SelectItem>
+                <SelectItem value="complete">Legal info complete</SelectItem>
+                <SelectItem value="missing">Legal info missing</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto_auto]">
+            <Input
+              type="date"
+              value={createdFrom}
+              onChange={(event) => setCreatedFrom(event.target.value)}
+              className="h-9"
+              aria-label="Created from"
+            />
+            <Input
+              type="date"
+              value={createdTo}
+              onChange={(event) => setCreatedTo(event.target.value)}
+              className="h-9"
+              aria-label="Created to"
+            />
+            <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+              <SelectTrigger className="h-9 w-full">
+                <ArrowUpDown />
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+                <SelectItem value="pending_first">Pending first</SelectItem>
+                <SelectItem value="incomplete_first">Incomplete first</SelectItem>
+                <SelectItem value="agency_name">Agency name</SelectItem>
+                <SelectItem value="highest_warning_count">Highest warning count</SelectItem>
+              </SelectContent>
+            </Select>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
+              Showing{' '}
+              <span className="font-semibold text-slate-900">
+                {formatNumber(filteredRequests.length)}
+              </span>{' '}
+              of{' '}
+              <span className="font-semibold text-slate-900">
+                {formatNumber(preparedRequests.length)}
+              </span>
+            </div>
+            <Button variant="outline" size="sm" onClick={resetFilters}>
+              Reset filters
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {loadError && preparedRequests.length === 0 ? (
+        <Card className="rounded-2xl border border-rose-200 bg-rose-50 py-4">
+          <CardContent className="flex items-center justify-between gap-3 px-5">
+            <div className="flex items-center gap-2 text-rose-700">
+              <AlertTriangle className="h-4 w-4" />
+              <span className="text-sm font-medium">{loadError}</span>
+            </div>
+            <Button variant="outline" size="sm" onClick={refreshData}>
+              Retry
+            </Button>
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <Card className="rounded-2xl border border-slate-200 bg-white py-2">
+        <CardContent className="px-2">
+          {filteredRequests.length === 0 ? (
+            <div className="flex min-h-[340px] flex-col items-center justify-center gap-2 text-center">
+              <CircleSlash className="h-10 w-10 text-slate-300" />
+              <h3 className="text-base font-semibold text-slate-800">
+                No verification requests match the current filters
+              </h3>
+              <p className="max-w-md text-sm text-slate-500">
+                Try changing search or filter values to expand the review queue.
+              </p>
+              <Button variant="outline" size="sm" onClick={resetFilters}>
+                Reset filters
+              </Button>
             </div>
           ) : (
-            pendingRequests.map((req) => {
-              const fd = req.form_data as VerificationFormData | null;
-              const isExpanded = expandedIds.has(req.id);
-              return (
-                <div key={req.id} className="bg-white rounded-xl border border-amber-200 p-5">
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                      <AlertCircle className="h-5 w-5 text-amber-600" />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <h3 className="font-semibold text-slate-900">
-                            {req.agency?.name ?? 'Unknown Agency'}
-                          </h3>
-                          <div className="flex items-center gap-3 mt-0.5 text-xs text-slate-500">
-                            <span>Submitted: {formatDate(req.created_at)}</span>
-                            {req.agency?.phone && (
-                              <span className="flex items-center gap-1">
-                                <Phone className="h-3 w-3" /> {req.agency.phone}
+            <>
+              <div className="hidden overflow-x-auto xl:block">
+                <table className="w-full min-w-[1280px] text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
+                      <th className="px-3 py-3">Agency</th>
+                      <th className="px-3 py-3">Status</th>
+                      <th className="px-3 py-3">Submitted</th>
+                      <th className="px-3 py-3">Contact</th>
+                      <th className="px-3 py-3">Location</th>
+                      <th className="px-3 py-3">Documents</th>
+                      <th className="px-3 py-3">Warnings</th>
+                      <th className="px-3 py-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredRequests.map((item) => {
+                      const request = item.request;
+                      const agency = request.agency;
+                      const owner = agency?.owner;
+                      const rowActionBusy = processingActionKey?.endsWith(request.id) ?? false;
+
+                      return (
+                        <tr
+                          key={request.id}
+                          className="cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50"
+                          onClick={() => openRequestDetail(item)}
+                        >
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-3">
+                              <AgencyAvatar
+                                name={agency?.name ?? 'Unknown'}
+                                logoUrl={agency?.logo_url}
+                              />
+                              <div className="min-w-0">
+                                <p className="truncate font-semibold text-slate-900">
+                                  {agency?.name ?? 'Unknown agency'}
+                                </p>
+                                <p className="truncate text-xs text-slate-500">
+                                  Manager: {owner?.full_name ?? 'Not provided'}
+                                </p>
+                                <p className="truncate text-xs text-slate-500">
+                                  {owner?.role ?? 'Role not provided'}
+                                </p>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className="px-3 py-3 align-top">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                openRequestDetail(item);
+                              }}
+                              className={cn(
+                                'inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium',
+                                statusTone(request.status)
+                              )}
+                            >
+                              {request.status === 'pending' ? (
+                                <Clock3 className="h-3 w-3" />
+                              ) : null}
+                              {request.status === 'approved' ? (
+                                <ShieldCheck className="h-3 w-3" />
+                              ) : null}
+                              {request.status === 'rejected' ? (
+                                <ShieldX className="h-3 w-3" />
+                              ) : null}
+                              {statusLabel(request.status)}
+                            </button>
+                          </td>
+
+                          <td className="px-3 py-3 align-top text-xs text-slate-600">
+                            <p>{formatDate(request.created_at)}</p>
+                            <p className="text-slate-500">{formatDateTime(request.created_at)}</p>
+                          </td>
+
+                          <td className="px-3 py-3 align-top">
+                            <div className="space-y-1 text-xs text-slate-600">
+                              <p className="flex items-center gap-1">
+                                <Phone className="h-3 w-3 text-slate-400" />
+                                {agency?.phone ?? owner?.phone ?? request.form_data?.work_phone ?? 'Not provided'}
+                              </p>
+                              <p className="flex items-center gap-1">
+                                <Mail className="h-3 w-3 text-slate-400" />
+                                {owner?.email ?? request.form_data?.work_email ?? 'Not provided'}
+                              </p>
+                            </div>
+                          </td>
+
+                          <td className="px-3 py-3 align-top">
+                            <p className="text-sm font-medium text-slate-800">
+                              {agency?.city
+                                ? `${agency.city}, ${agency.country ?? ''}`
+                                : agency?.country ?? 'Not provided'}
+                            </p>
+                          </td>
+
+                          <td className="px-3 py-3 align-top">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                openRequestDetail(item);
+                              }}
+                              className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100"
+                            >
+                              <FileText className="h-3 w-3" />
+                              {formatNumber(item.documents.length)}
+                            </button>
+                          </td>
+
+                          <td className="px-3 py-3 align-top">
+                            {item.warningCount > 0 ? (
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  openRequestDetail(item);
+                                }}
+                                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700 hover:bg-amber-100"
+                              >
+                                <AlertTriangle className="h-3 w-3" />
+                                {formatNumber(item.warningCount)} warnings
+                              </button>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Clear
                               </span>
                             )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          {req.certificate_url && (
-                            <a
-                              href={req.certificate_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center gap-1 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors"
+                          </td>
+
+                          <td className="px-3 py-3 align-top">
+                            <div
+                              className="flex items-center justify-end gap-1.5"
+                              onClick={(event) => event.stopPropagation()}
                             >
-                              Certificate <ExternalLink className="h-3 w-3" />
-                            </a>
-                          )}
-                          {fd && (
-                            <button
-                              onClick={() => toggleExpand(req.id)}
-                              className="flex items-center gap-1 px-3 py-1.5 bg-slate-100 text-slate-600 rounded-lg text-xs font-medium hover:bg-slate-200 transition-colors"
-                            >
-                              {isExpanded ? 'Yopish' : "Batafsil"}
-                              {isExpanded ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-                            </button>
-                          )}
+                              <Button size="sm" variant="outline" onClick={() => openRequestDetail(item)}>
+                                View
+                              </Button>
+                              <Button
+                                size="sm"
+                                disabled={request.status !== 'pending' || rowActionBusy}
+                                onClick={() => openApproveDialog(item)}
+                              >
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                disabled={request.status !== 'pending' || rowActionBusy}
+                                onClick={() => openRejectDialog(item)}
+                              >
+                                Reject
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() =>
+                                  void copyValue(
+                                    agency?.phone ??
+                                      owner?.email ??
+                                      request.form_data?.work_email,
+                                    'Contact'
+                                  )
+                                }
+                              >
+                                <Copy className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="space-y-3 xl:hidden">
+                {filteredRequests.map((item) => {
+                  const request = item.request;
+                  const agency = request.agency;
+                  const owner = agency?.owner;
+
+                  return (
+                    <div
+                      key={request.id}
+                      className="rounded-2xl border border-slate-200 bg-white p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-900">
+                            {agency?.name ?? 'Unknown agency'}
+                          </p>
+                          <p className="truncate text-xs text-slate-500">
+                            Manager: {owner?.full_name ?? 'Not provided'}
+                          </p>
                         </div>
+                        <Badge variant="outline" className={cn('border text-xs', statusTone(request.status))}>
+                          {statusLabel(request.status)}
+                        </Badge>
                       </div>
 
-                      {/* Expanded form data */}
-                      {fd && isExpanded && (
-                        <div className="mt-3 pt-3 border-t border-slate-100">
-                          <FormDataDetails formData={fd} />
-                        </div>
-                      )}
-
-                      <div className="mt-3">
-                        <input
-                          placeholder="Admin note (optional for rejection)..."
-                          value={rejectNotes[req.id] || ''}
-                          onChange={(e) =>
-                            setRejectNotes((prev) => ({ ...prev, [req.id]: e.target.value }))
-                          }
-                          className="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                        />
+                      <div className="mt-3 grid gap-1 text-xs text-slate-600">
+                        <p className="flex items-center gap-1">
+                          <Mail className="h-3 w-3 text-slate-400" />
+                          {owner?.email ?? request.form_data?.work_email ?? 'Not provided'}
+                        </p>
+                        <p className="flex items-center gap-1">
+                          <Phone className="h-3 w-3 text-slate-400" />
+                          {agency?.phone ?? owner?.phone ?? request.form_data?.work_phone ?? 'Not provided'}
+                        </p>
+                        <p className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 text-slate-400" />
+                          {agency?.city
+                            ? `${agency.city}, ${agency.country ?? ''}`
+                            : agency?.country ?? 'Not provided'}
+                        </p>
                       </div>
-                      <div className="flex gap-2 mt-3">
-                        <button
-                          disabled={processing === req.id}
-                          onClick={() => handleApprove(req.id, req.agency_id)}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge variant="outline">
+                          <FileText className="h-3 w-3" />
+                          {formatNumber(item.documents.length)} docs
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={cn(
+                            item.warningCount > 0
+                              ? 'border-amber-200 bg-amber-50 text-amber-700'
+                              : 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                          )}
                         >
-                          <Check className="h-3.5 w-3.5" /> Approve
-                        </button>
-                        <button
-                          disabled={processing === req.id}
-                          onClick={() => handleReject(req.id, req.agency_id)}
-                          className="flex items-center gap-1.5 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                          {item.warningCount > 0
+                            ? `${formatNumber(item.warningCount)} warnings`
+                            : 'No warnings'}
+                        </Badge>
+                      </div>
+
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button size="sm" variant="outline" onClick={() => openRequestDetail(item)}>
+                          View details
+                        </Button>
+                        <Button
+                          size="sm"
+                          disabled={request.status !== 'pending'}
+                          onClick={() => openApproveDialog(item)}
                         >
-                          <X className="h-3.5 w-3.5" /> Reject
-                        </button>
+                          Approve
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          disabled={request.status !== 'pending'}
+                          onClick={() => openRejectDialog(item)}
+                        >
+                          Reject
+                        </Button>
                       </div>
                     </div>
-                  </div>
-                </div>
-              );
-            })
+                  );
+                })}
+              </div>
+            </>
           )}
-        </div>
-      )}
+        </CardContent>
+      </Card>
 
-      {/* Processed History */}
-      {tab === 'processed' && (
-        <div className="space-y-3">
-          {processedRequests.length === 0 ? (
-            <div className="bg-white rounded-xl border border-slate-200 py-12 text-center">
-              <ShieldCheck className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm text-slate-400">No processed requests yet</p>
+      <VerificationDetailSheet
+        open={Boolean(selectedPreparedRequest)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) setSelectedRequestId(null);
+        }}
+        selected={selectedPreparedRequest}
+        detail={selectedDetail}
+        detailLoading={
+          selectedAgencyId !== null && detailLoadingAgencyId === selectedAgencyId
+        }
+        detailError={selectedDetailError}
+        onRetryDetail={() => {
+          if (selectedAgencyId) {
+            void loadAgencyDetail(selectedAgencyId);
+          }
+        }}
+        onCopy={(value, label) => {
+          void copyValue(value, label);
+        }}
+        onApprove={() => {
+          if (!selectedPreparedRequest) return;
+          openApproveDialog(selectedPreparedRequest);
+        }}
+        onReject={() => {
+          if (!selectedPreparedRequest) return;
+          openRejectDialog(selectedPreparedRequest);
+        }}
+        canApprove={selectedPreparedRequest?.request.status === 'pending'}
+        canReject={selectedPreparedRequest?.request.status === 'pending'}
+        busy={dialogBusy}
+      />
+
+      <Dialog
+        open={Boolean(actionIntent)}
+        onOpenChange={(nextOpen) => {
+          if (!nextOpen) {
+            setActionIntent(null);
+            setRejectReason('');
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {actionIntent?.action === 'approve'
+                ? 'Approve verification request?'
+                : 'Reject verification request?'}
+            </DialogTitle>
+            <DialogDescription>
+              {actionIntent?.action === 'approve'
+                ? 'This will set request status to approved and mark the agency as verified.'
+                : 'This will set request status to rejected and remove verified badge from agency.'}
+            </DialogDescription>
+          </DialogHeader>
+
+          {actionIntent?.action === 'reject' ? (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-slate-600">
+                Rejection reason (required)
+              </p>
+              <Textarea
+                value={rejectReason}
+                onChange={(event) => setRejectReason(event.target.value)}
+                placeholder="Provide clear rejection reason for verification audit trail"
+                className="min-h-24"
+              />
             </div>
-          ) : (
-            processedRequests.map((req) => {
-              const fd = req.form_data as VerificationFormData | null;
-              const isExpanded = expandedIds.has(req.id);
-              return (
-                <div key={req.id} className={`bg-white rounded-xl border p-4 ${req.status === 'approved' ? 'border-emerald-200' : 'border-red-200'}`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="font-medium text-slate-900 text-sm">{req.agency?.name ?? 'Unknown'}</span>
-                      {req.status === 'approved' ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-100 text-emerald-700 text-[10px] font-semibold rounded-full">
-                          <CheckCircle2 className="h-3 w-3" /> Approved
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-semibold rounded-full">
-                          <XCircle className="h-3 w-3" /> Rejected
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-slate-400">{formatDate(req.created_at)}</span>
-                      {req.certificate_url && (
-                        <a
-                          href={req.certificate_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:text-blue-700"
-                        >
-                          <ExternalLink className="h-3.5 w-3.5" />
-                        </a>
-                      )}
-                      {fd && (
-                        <button
-                          onClick={() => toggleExpand(req.id)}
-                          className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                        >
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  {fd && isExpanded && (
-                    <div className="mt-3 pt-3 border-t border-slate-100">
-                      <FormDataDetails formData={fd} />
-                    </div>
-                  )}
-                </div>
-              );
-            })
-          )}
-        </div>
+          ) : null}
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setActionIntent(null);
+                setRejectReason('');
+              }}
+              disabled={actionIsBusy}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant={actionIntent?.action === 'approve' ? 'default' : 'destructive'}
+              onClick={() => {
+                void executeAction();
+              }}
+              disabled={actionIsBusy}
+            >
+              {actionIsBusy ? <Loader2 className="animate-spin" /> : null}
+              Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </SectionShell>
+  );
+}
+
+function MetricCard({
+  title,
+  value,
+  tone,
+  onClick,
+}: {
+  title: string;
+  value: number;
+  tone?: 'default' | 'success' | 'warning' | 'danger';
+  onClick: () => void;
+}) {
+  const toneClasses: Record<NonNullable<typeof tone>, string> = {
+    default: 'border-slate-200',
+    success: 'border-emerald-200',
+    warning: 'border-amber-200',
+    danger: 'border-rose-200',
+  };
+
+  return (
+    <button type="button" onClick={onClick} className="text-left">
+      <Card className={cn('rounded-2xl border bg-white py-4', toneClasses[tone ?? 'default'])}>
+        <CardContent className="space-y-1 px-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{title}</p>
+          <p className="text-2xl font-semibold text-slate-900">{formatNumber(value)}</p>
+        </CardContent>
+      </Card>
+    </button>
+  );
+}
+
+function AgencyAvatar({
+  name,
+  logoUrl,
+}: {
+  name: string;
+  logoUrl: string | null | undefined;
+}) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-slate-100">
+      {logoUrl && !failed ? (
+        <img
+          src={logoUrl}
+          alt={`${name} logo`}
+          className="h-full w-full object-cover"
+          loading="lazy"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        <span className="text-sm font-semibold text-slate-500">
+          {name.slice(0, 1).toUpperCase()}
+        </span>
       )}
     </div>
   );

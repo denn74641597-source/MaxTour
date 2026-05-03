@@ -1,6 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/server';
 import { assertAdminAccess } from './guard';
 import type {
+  AdminLeadPanelItem,
+  AdminLeadStatus,
+  AdminLeadsPanelPayload,
   AdminAgenciesOverviewPayload,
   AdminAgencyDetailPayload,
   AdminAgencyLeadPreview,
@@ -16,6 +19,16 @@ import type {
   AdminAgencyVerificationItem,
   AdminAgencyVerificationSummary,
   AdminVerificationStatus,
+  AdminPromotionsMaxcoinPanelPayload,
+  AdminPromotionPanelRecord,
+  AdminPromotionRecordSource,
+  AdminPromotionComputedStatus,
+  AdminPromotionTourPreview,
+  AdminPromotionAgencyPreview,
+  AdminMaxcoinLedgerRecord,
+  AdminCoinRequestPanelRecord,
+  AdminAgencyBalancePanelRecord,
+  AdminPromotionTierPanelRecord,
 } from './types';
 
 interface AgencyOwnerRaw {
@@ -166,14 +179,37 @@ interface LeadTourRaw {
   cover_image_url: string | null;
   country: string | null;
   city: string | null;
+  region?: string | null;
+  district?: string | null;
+  status?: string | null;
   price: number | string | null;
   currency: string | null;
+}
+
+interface LeadAgencyRaw {
+  id: string;
+  name: string;
+  slug: string;
+  phone: string | null;
+  telegram_username: string | null;
+  is_verified: boolean | null;
+  is_approved: boolean | null;
+}
+
+interface LeadUserRaw {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  email: string | null;
+  telegram_username: string | null;
+  role: string | null;
 }
 
 interface LeadRowRaw {
   id: string;
   agency_id: string;
   tour_id: string | null;
+  user_id?: string | null;
   full_name: string;
   phone: string;
   telegram_username: string | null;
@@ -181,7 +217,10 @@ interface LeadRowRaw {
   people_count: number | string | null;
   comment: string | null;
   created_at: string;
+  updated_at?: string | null;
   tour?: LeadTourRaw | LeadTourRaw[] | null;
+  agency?: LeadAgencyRaw | LeadAgencyRaw[] | null;
+  user?: LeadUserRaw | LeadUserRaw[] | null;
 }
 
 interface VerificationRowRaw {
@@ -250,6 +289,108 @@ interface MaxcoinTransactionRaw {
   created_at: string;
 }
 
+interface PromotionPanelTourRaw {
+  id: string;
+  title: string;
+  slug: string;
+  cover_image_url: string | null;
+  status: string | null;
+  view_count?: number | string | null;
+  country?: string | null;
+  city?: string | null;
+  region?: string | null;
+  district?: string | null;
+}
+
+interface PromotionPanelAgencyRaw {
+  id: string;
+  name: string;
+  slug: string;
+  is_verified: boolean | null;
+  is_approved: boolean | null;
+  maxcoin_balance: number | string | null;
+  phone: string | null;
+  telegram_username: string | null;
+  responsible_person: string | null;
+}
+
+interface PromotionPanelTourPromotionRaw {
+  id: string;
+  agency_id: string | null;
+  tour_id: string | null;
+  placement: string | null;
+  cost_coins: number | string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  is_active: boolean | null;
+  created_at: string | null;
+  tour?: PromotionPanelTourRaw | PromotionPanelTourRaw[] | null;
+  agency?: PromotionPanelAgencyRaw | PromotionPanelAgencyRaw[] | null;
+}
+
+interface PromotionPanelFeaturedItemRaw {
+  id: string;
+  agency_id: string | null;
+  tour_id: string | null;
+  placement_type: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  created_at: string | null;
+  tour?: PromotionPanelTourRaw | PromotionPanelTourRaw[] | null;
+  agency?: PromotionPanelAgencyRaw | PromotionPanelAgencyRaw[] | null;
+}
+
+interface PromotionPanelTransactionRaw {
+  id: string;
+  agency_id: string | null;
+  amount: number | string | null;
+  type: string | null;
+  description: string | null;
+  tour_id: string | null;
+  created_at: string;
+  agency?: PromotionPanelAgencyRaw | PromotionPanelAgencyRaw[] | null;
+  tour?: PromotionPanelTourRaw | PromotionPanelTourRaw[] | null;
+}
+
+interface PromotionPanelCoinRequestRaw {
+  id: string;
+  agency_id: string | null;
+  coins: number | string | null;
+  price_uzs: number | string | null;
+  status: string | null;
+  admin_note: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  agency?: PromotionPanelAgencyRaw | PromotionPanelAgencyRaw[] | null;
+}
+
+interface PromotionPanelAgencyBalanceRaw {
+  id: string;
+  name: string;
+  slug: string;
+  maxcoin_balance: number | string | null;
+  is_verified: boolean | null;
+  is_approved: boolean | null;
+  phone: string | null;
+  telegram_username: string | null;
+  responsible_person: string | null;
+  updated_at: string;
+}
+
+interface PromotionPanelTierRaw {
+  id: string;
+  placement: string | null;
+  coins: number | string | null;
+  days: number | string | null;
+  sort_order: number | string | null;
+  created_at: string;
+}
+
+interface PromotionLeadMetricRaw {
+  tour_id: string | null;
+  created_at: string | null;
+}
+
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 const REQUIRED_AGENCY_PROFILE_FIELDS: Array<{ key: keyof AgencyRowRaw; label: string }> = [
@@ -269,6 +410,15 @@ function toNumber(value: number | string | null | undefined): number {
     if (Number.isFinite(parsed)) return parsed;
   }
   return 0;
+}
+
+function normalizeLeadStatus(status: string | null | undefined): AdminLeadStatus {
+  if (status === 'new') return 'new';
+  if (status === 'contacted') return 'contacted';
+  if (status === 'closed') return 'closed';
+  if (status === 'won') return 'won';
+  if (status === 'lost') return 'lost';
+  return 'new';
 }
 
 function firstOrNull<T>(value: T | T[] | null | undefined): T | null {
@@ -303,6 +453,66 @@ function latestIso(values: Array<string | null | undefined>): string | null {
   }
 
   return latestValue;
+}
+
+function isValidIso(value: string | null | undefined): value is string {
+  if (!value) return false;
+  return Number.isFinite(new Date(value).getTime());
+}
+
+function computePromotionStatus(params: {
+  startsAt: string | null | undefined;
+  endsAt: string | null | undefined;
+  isActive: boolean | null | undefined;
+  nowMs: number;
+}): AdminPromotionComputedStatus {
+  const { startsAt, endsAt, isActive, nowMs } = params;
+  const startMs = isValidIso(startsAt) ? new Date(startsAt).getTime() : null;
+  const endMs = isValidIso(endsAt) ? new Date(endsAt).getTime() : null;
+
+  if (endMs != null && endMs < nowMs) return 'expired';
+  if (startMs != null && startMs > nowMs) return 'scheduled';
+  if (isActive === true) return 'active';
+  return 'pending';
+}
+
+function buildPromotionTourPreview(
+  raw: PromotionPanelTourRaw | PromotionPanelTourRaw[] | null | undefined
+): AdminPromotionTourPreview | null {
+  const tour = firstOrNull(raw);
+  if (!tour) return null;
+
+  return {
+    id: tour.id,
+    title: tour.title,
+    slug: tour.slug,
+    cover_image_url: tour.cover_image_url,
+    status: tour.status,
+    view_count: tour.view_count == null ? null : toNumber(tour.view_count),
+    country: tour.country ?? null,
+    city: tour.city ?? null,
+    region: tour.region ?? null,
+    district: tour.district ?? null,
+  };
+}
+
+function buildPromotionAgencyPreview(
+  raw: PromotionPanelAgencyRaw | PromotionPanelAgencyRaw[] | null | undefined
+): AdminPromotionAgencyPreview | null {
+  const agency = firstOrNull(raw);
+  if (!agency) return null;
+
+  return {
+    id: agency.id,
+    name: agency.name,
+    slug: agency.slug,
+    is_verified: agency.is_verified,
+    is_approved: agency.is_approved,
+    maxcoin_balance: agency.maxcoin_balance == null ? null : toNumber(agency.maxcoin_balance),
+    phone: agency.phone,
+    telegram_username: agency.telegram_username,
+    responsible_person: agency.responsible_person,
+  };
 }
 
 function getMissingFields(agency: AgencyRowRaw): string[] {
@@ -1335,16 +1545,105 @@ export async function getCoinRequests(status?: string) {
   return data ?? [];
 }
 
-/** Admin: get all leads across all agencies with tour & agency info */
-export async function getAllLeads() {
+/** Admin: leads operations payload with safe relations and health metadata */
+export async function getAdminLeadsPanelData(): Promise<AdminLeadsPanelPayload> {
   await assertAdminAccess();
   const supabase = await createAdminClient();
-  const { data } = await supabase
+  const generatedAt = new Date().toISOString();
+
+  const leadsResult = await supabase
     .from('leads')
-    .select('*, tour:tours(id, title, slug, cover_image_url, country, city, price, currency), agency:agencies(id, name, slug, phone, telegram_username)')
+    .select(
+      'id, user_id, agency_id, tour_id, full_name, phone, telegram_username, status, people_count, comment, created_at, updated_at, tour:tours(id, title, slug, cover_image_url, country, city, region, district, status, price, currency), agency:agencies(id, name, slug, phone, telegram_username, is_verified, is_approved), user:profiles(id, full_name, phone, email, telegram_username, role)'
+    )
     .order('created_at', { ascending: false });
 
-  return data ?? [];
+  if (leadsResult.error) {
+    return {
+      generatedAt,
+      health: {
+        lastUpdated: generatedAt,
+        partialData: true,
+        errors: [leadsResult.error.message],
+      },
+      leads: [],
+    };
+  }
+
+  const rawLeads = (leadsResult.data ?? []) as LeadRowRaw[];
+
+  const leads: AdminLeadPanelItem[] = rawLeads.map((lead) => {
+    const leadTour = firstOrNull(lead.tour);
+    const leadAgency = firstOrNull(lead.agency);
+    const leadUser = firstOrNull(lead.user);
+
+    return {
+      id: lead.id,
+      user_id: lead.user_id ?? null,
+      agency_id: lead.agency_id,
+      tour_id: lead.tour_id,
+      full_name: lead.full_name,
+      phone: lead.phone,
+      telegram_username: lead.telegram_username,
+      status: normalizeLeadStatus(lead.status),
+      people_count: toNumber(lead.people_count),
+      comment: lead.comment,
+      created_at: lead.created_at,
+      updated_at: lead.updated_at ?? lead.created_at,
+      tour: leadTour
+        ? {
+            id: leadTour.id,
+            title: leadTour.title,
+            slug: leadTour.slug,
+            cover_image_url: leadTour.cover_image_url,
+            country: leadTour.country,
+            city: leadTour.city,
+            region: leadTour.region ?? null,
+            district: leadTour.district ?? null,
+            status: leadTour.status ?? null,
+            price: leadTour.price == null ? null : toNumber(leadTour.price),
+            currency: leadTour.currency,
+          }
+        : null,
+      agency: leadAgency
+        ? {
+            id: leadAgency.id,
+            name: leadAgency.name,
+            slug: leadAgency.slug,
+            phone: leadAgency.phone,
+            telegram_username: leadAgency.telegram_username,
+            is_verified: leadAgency.is_verified === true,
+            is_approved: leadAgency.is_approved === true,
+          }
+        : null,
+      user: leadUser
+        ? {
+            id: leadUser.id,
+            full_name: leadUser.full_name,
+            phone: leadUser.phone,
+            email: leadUser.email,
+            telegram_username: leadUser.telegram_username,
+            role: leadUser.role,
+          }
+        : null,
+    } satisfies AdminLeadPanelItem;
+  });
+
+  return {
+    generatedAt,
+    health: {
+      lastUpdated: generatedAt,
+      partialData: false,
+      errors: [],
+    },
+    leads,
+  };
+}
+
+/** Admin: compatibility query retained for existing callers */
+export async function getAllLeads() {
+  const payload = await getAdminLeadsPanelData();
+  return payload.leads;
 }
 
 /** Admin: users list (profiles) */
@@ -1631,5 +1930,268 @@ export async function getAdminAgencyDetailById(agencyId: string): Promise<AdminA
     subscriptions: subscriptionItems,
     maxcoinTransactions: maxcoinItems,
     promotions: promotionItems,
+  };
+}
+
+/** Admin: Promotions / MaxCoin operations payload */
+export async function getAdminPromotionsMaxcoinPanelData(): Promise<AdminPromotionsMaxcoinPanelPayload> {
+  await assertAdminAccess();
+  const supabase = await createAdminClient();
+  const generatedAt = new Date().toISOString();
+  const errors: string[] = [];
+
+  const [
+    tourPromotionsResult,
+    featuredItemsResult,
+    maxcoinTransactionsResult,
+    coinRequestsResult,
+    agencyBalancesResult,
+    promotionTiersResult,
+  ] = await Promise.all([
+    supabase
+      .from('tour_promotions')
+      .select(
+        'id, agency_id, tour_id, placement, cost_coins, starts_at, ends_at, is_active, created_at, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
+      )
+      .order('created_at', { ascending: false })
+      .limit(600),
+    supabase
+      .from('featured_items')
+      .select(
+        'id, agency_id, tour_id, placement_type, starts_at, ends_at, created_at, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
+      )
+      .order('starts_at', { ascending: false })
+      .limit(300),
+    supabase
+      .from('maxcoin_transactions')
+      .select(
+        'id, agency_id, amount, type, description, tour_id, created_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person), tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district)'
+      )
+      .order('created_at', { ascending: false })
+      .limit(600),
+    supabase
+      .from('coin_requests')
+      .select(
+        'id, agency_id, coins, price_uzs, status, admin_note, created_at, resolved_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
+      )
+      .order('created_at', { ascending: false })
+      .limit(400),
+    supabase
+      .from('agencies')
+      .select(
+        'id, name, slug, maxcoin_balance, is_verified, is_approved, phone, telegram_username, responsible_person, updated_at'
+      )
+      .order('updated_at', { ascending: false })
+      .limit(1200),
+    supabase
+      .from('promotion_tiers')
+      .select('id, placement, coins, days, sort_order, created_at')
+      .order('sort_order', { ascending: true }),
+  ]);
+
+  if (tourPromotionsResult.error) {
+    errors.push(`tour_promotions: ${tourPromotionsResult.error.message}`);
+  }
+  if (featuredItemsResult.error) {
+    errors.push(`featured_items: ${featuredItemsResult.error.message}`);
+  }
+  if (maxcoinTransactionsResult.error) {
+    errors.push(`maxcoin_transactions: ${maxcoinTransactionsResult.error.message}`);
+  }
+  if (coinRequestsResult.error) {
+    errors.push(`coin_requests: ${coinRequestsResult.error.message}`);
+  }
+  if (agencyBalancesResult.error) {
+    errors.push(`agencies: ${agencyBalancesResult.error.message}`);
+  }
+  if (promotionTiersResult.error) {
+    errors.push(`promotion_tiers: ${promotionTiersResult.error.message}`);
+  }
+
+  const tourPromotions = (tourPromotionsResult.data ?? []) as PromotionPanelTourPromotionRaw[];
+  const featuredItems = (featuredItemsResult.data ?? []) as PromotionPanelFeaturedItemRaw[];
+  const maxcoinTransactionsRaw = (maxcoinTransactionsResult.data ?? []) as PromotionPanelTransactionRaw[];
+  const coinRequestsRaw = (coinRequestsResult.data ?? []) as PromotionPanelCoinRequestRaw[];
+  const agencyBalancesRaw = (agencyBalancesResult.data ?? []) as PromotionPanelAgencyBalanceRaw[];
+  const promotionTiersRaw = (promotionTiersResult.data ?? []) as PromotionPanelTierRaw[];
+
+  const nowMs = Date.now();
+
+  const promotions: AdminPromotionPanelRecord[] = [
+    ...tourPromotions.map((item) => {
+      const source: AdminPromotionRecordSource = 'tour_promotion';
+      return {
+        id: `${source}:${item.id}`,
+        source,
+        sourceId: item.id,
+        agency_id: item.agency_id,
+        tour_id: item.tour_id,
+        placement: item.placement,
+        starts_at: item.starts_at,
+        ends_at: item.ends_at,
+        created_at: item.created_at,
+        is_active: item.is_active,
+        status: computePromotionStatus({
+          startsAt: item.starts_at,
+          endsAt: item.ends_at,
+          isActive: item.is_active,
+          nowMs,
+        }),
+        maxcoin_cost: item.cost_coins == null ? null : toNumber(item.cost_coins),
+        lead_count: 0,
+        latest_lead_at: null,
+        tour: buildPromotionTourPreview(item.tour),
+        agency: buildPromotionAgencyPreview(item.agency),
+      };
+    }),
+    ...featuredItems.map((item) => {
+      const source: AdminPromotionRecordSource = 'featured_item';
+      return {
+        id: `${source}:${item.id}`,
+        source,
+        sourceId: item.id,
+        agency_id: item.agency_id,
+        tour_id: item.tour_id,
+        placement: item.placement_type,
+        starts_at: item.starts_at,
+        ends_at: item.ends_at,
+        created_at: item.created_at,
+        is_active: null,
+        status: computePromotionStatus({
+          startsAt: item.starts_at,
+          endsAt: item.ends_at,
+          isActive: true,
+          nowMs,
+        }),
+        maxcoin_cost: null,
+        lead_count: 0,
+        latest_lead_at: null,
+        tour: buildPromotionTourPreview(item.tour),
+        agency: buildPromotionAgencyPreview(item.agency),
+      };
+    }),
+  ].sort((a, b) => {
+    const left = isValidIso(a.created_at)
+      ? new Date(a.created_at).getTime()
+      : isValidIso(a.starts_at)
+        ? new Date(a.starts_at).getTime()
+        : 0;
+    const right = isValidIso(b.created_at)
+      ? new Date(b.created_at).getTime()
+      : isValidIso(b.starts_at)
+        ? new Date(b.starts_at).getTime()
+        : 0;
+    return right - left;
+  });
+
+  const promotedTourIds = Array.from(
+    new Set(
+      promotions
+        .map((item) => item.tour_id)
+        .filter((tourId): tourId is string => Boolean(tourId))
+    )
+  );
+
+  const leadSummaryByTour = new Map<string, { count: number; latestLeadAt: string | null }>();
+  if (promotedTourIds.length > 0) {
+    const leadsResult = await supabase
+      .from('leads')
+      .select('tour_id, created_at')
+      .in('tour_id', promotedTourIds);
+
+    if (leadsResult.error) {
+      errors.push(`leads: ${leadsResult.error.message}`);
+    } else {
+      const leadRows = (leadsResult.data ?? []) as PromotionLeadMetricRaw[];
+      for (const row of leadRows) {
+        if (!row.tour_id) continue;
+        const previous = leadSummaryByTour.get(row.tour_id) ?? {
+          count: 0,
+          latestLeadAt: null,
+        };
+        leadSummaryByTour.set(row.tour_id, {
+          count: previous.count + 1,
+          latestLeadAt: latestIso([previous.latestLeadAt, row.created_at]),
+        });
+      }
+    }
+  }
+
+  const promotionsWithLeads: AdminPromotionPanelRecord[] = promotions.map((item) => {
+    const leadSummary = item.tour_id ? leadSummaryByTour.get(item.tour_id) : undefined;
+    return {
+      ...item,
+      lead_count: leadSummary?.count ?? 0,
+      latest_lead_at: leadSummary?.latestLeadAt ?? null,
+    };
+  });
+
+  const maxcoinTransactions: AdminMaxcoinLedgerRecord[] = maxcoinTransactionsRaw.map((item) => ({
+    id: item.id,
+    agency_id: item.agency_id,
+    amount: toNumber(item.amount),
+    type: item.type,
+    description: item.description,
+    tour_id: item.tour_id,
+    created_at: item.created_at,
+    agency: buildPromotionAgencyPreview(item.agency),
+    tour: buildPromotionTourPreview(item.tour),
+  }));
+
+  const coinRequests: AdminCoinRequestPanelRecord[] = coinRequestsRaw.map((item) => ({
+    id: item.id,
+    agency_id: item.agency_id,
+    coins: toNumber(item.coins),
+    price_uzs: toNumber(item.price_uzs),
+    status: item.status ?? 'pending',
+    admin_note: item.admin_note,
+    created_at: item.created_at,
+    resolved_at: item.resolved_at,
+    agency: buildPromotionAgencyPreview(item.agency),
+  }));
+
+  const agencyBalances: AdminAgencyBalancePanelRecord[] = agencyBalancesRaw.map((item) => ({
+    id: item.id,
+    name: item.name,
+    slug: item.slug,
+    maxcoin_balance: toNumber(item.maxcoin_balance),
+    is_verified: item.is_verified === true,
+    is_approved: item.is_approved === true,
+    phone: item.phone,
+    telegram_username: item.telegram_username,
+    responsible_person: item.responsible_person,
+    updated_at: item.updated_at,
+  }));
+
+  const seenTierKeys = new Set<string>();
+  const promotionTiers: AdminPromotionTierPanelRecord[] = promotionTiersRaw
+    .filter((item) => item.placement != null)
+    .filter((item) => {
+      const key = `${item.placement}_${toNumber(item.days)}`;
+      if (seenTierKeys.has(key)) return false;
+      seenTierKeys.add(key);
+      return true;
+    })
+    .map((item) => ({
+      id: item.id,
+      placement: item.placement ?? 'unknown',
+      coins: toNumber(item.coins),
+      days: toNumber(item.days),
+      sort_order: toNumber(item.sort_order),
+      created_at: item.created_at,
+    }));
+
+  return {
+    generatedAt,
+    health: {
+      lastUpdated: generatedAt,
+      partialData: errors.length > 0,
+      errors,
+    },
+    promotions: promotionsWithLeads,
+    maxcoinTransactions,
+    coinRequests,
+    agencyBalances,
+    promotionTiers,
   };
 }

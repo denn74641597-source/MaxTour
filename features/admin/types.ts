@@ -271,3 +271,318 @@ export interface AdminToursPanelPayload {
   health: AdminToursPanelHealth;
   tours: AdminTourPanelItem[];
 }
+
+export type AdminPromotionRecordSource = 'tour_promotion' | 'featured_item';
+
+export type AdminPromotionComputedStatus = 'active' | 'scheduled' | 'pending' | 'expired';
+
+export interface AdminPromotionTourPreview {
+  id: string;
+  title: string;
+  slug: string;
+  cover_image_url: string | null;
+  status: string | null;
+  view_count: number | null;
+  country: string | null;
+  city: string | null;
+  region: string | null;
+  district: string | null;
+}
+
+export interface AdminPromotionAgencyPreview {
+  id: string;
+  name: string;
+  slug: string;
+  is_verified: boolean | null;
+  is_approved: boolean | null;
+  maxcoin_balance: number | null;
+  phone: string | null;
+  telegram_username: string | null;
+  responsible_person: string | null;
+}
+
+export interface AdminPromotionPanelRecord {
+  id: string;
+  source: AdminPromotionRecordSource;
+  sourceId: string;
+  agency_id: string | null;
+  tour_id: string | null;
+  placement: string | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  created_at: string | null;
+  is_active: boolean | null;
+  status: AdminPromotionComputedStatus;
+  maxcoin_cost: number | null;
+  lead_count: number;
+  latest_lead_at: string | null;
+  tour: AdminPromotionTourPreview | null;
+  agency: AdminPromotionAgencyPreview | null;
+}
+
+export interface AdminMaxcoinLedgerRecord {
+  id: string;
+  agency_id: string | null;
+  amount: number;
+  type: string | null;
+  description: string | null;
+  tour_id: string | null;
+  created_at: string;
+  agency: AdminPromotionAgencyPreview | null;
+  tour: AdminPromotionTourPreview | null;
+}
+
+export interface AdminCoinRequestPanelRecord {
+  id: string;
+  agency_id: string | null;
+  coins: number;
+  price_uzs: number;
+  status: string;
+  admin_note: string | null;
+  created_at: string;
+  resolved_at: string | null;
+  agency: AdminPromotionAgencyPreview | null;
+}
+
+export interface AdminAgencyBalancePanelRecord {
+  id: string;
+  name: string;
+  slug: string;
+  maxcoin_balance: number;
+  is_verified: boolean;
+  is_approved: boolean;
+  phone: string | null;
+  telegram_username: string | null;
+  responsible_person: string | null;
+  updated_at: string;
+}
+
+export interface AdminPromotionTierPanelRecord {
+  id: string;
+  placement: string;
+  coins: number;
+  days: number;
+  sort_order: number;
+  created_at: string;
+}
+
+export interface AdminPromotionsPanelHealth {
+  lastUpdated: string;
+  partialData: boolean;
+  errors: string[];
+}
+
+export interface AdminPromotionsMaxcoinPanelPayload {
+  generatedAt: string;
+  health: AdminPromotionsPanelHealth;
+  promotions: AdminPromotionPanelRecord[];
+  maxcoinTransactions: AdminMaxcoinLedgerRecord[];
+  coinRequests: AdminCoinRequestPanelRecord[];
+  agencyBalances: AdminAgencyBalancePanelRecord[];
+  promotionTiers: AdminPromotionTierPanelRecord[];
+}
+
+export type AdminLeadStatus = 'new' | 'contacted' | 'closed' | 'won' | 'lost';
+
+export interface AdminLeadUserSnapshot {
+  id: string;
+  full_name: string | null;
+  phone: string | null;
+  email: string | null;
+  telegram_username: string | null;
+  role: string | null;
+}
+
+export interface AdminLeadTourSnapshot {
+  id: string;
+  title: string;
+  slug: string;
+  cover_image_url: string | null;
+  country: string | null;
+  city: string | null;
+  region: string | null;
+  district: string | null;
+  status: string | null;
+  price: number | null;
+  currency: string | null;
+}
+
+export interface AdminLeadAgencySnapshot {
+  id: string;
+  name: string;
+  slug: string;
+  phone: string | null;
+  telegram_username: string | null;
+  is_verified: boolean;
+  is_approved: boolean;
+}
+
+export interface AdminLeadPanelItem {
+  id: string;
+  user_id: string | null;
+  agency_id: string;
+  tour_id: string | null;
+  full_name: string;
+  phone: string;
+  telegram_username: string | null;
+  status: AdminLeadStatus;
+  people_count: number;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+  user: AdminLeadUserSnapshot | null;
+  tour: AdminLeadTourSnapshot | null;
+  agency: AdminLeadAgencySnapshot | null;
+}
+
+export interface AdminLeadsPanelHealth {
+  lastUpdated: string;
+  partialData: boolean;
+  errors: string[];
+}
+
+export interface AdminLeadsPanelPayload {
+  generatedAt: string;
+  health: AdminLeadsPanelHealth;
+  leads: AdminLeadPanelItem[];
+}
+
+export type AdminUserRole = 'user' | 'agency_manager' | 'admin';
+
+export type AdminUserActivityStatus = 'active_30d' | 'quiet_90d' | 'dormant_90d';
+export type AdminUserAccountState = 'active' | 'deletion_requested';
+
+export interface AdminUserAgencySummary {
+  id: string;
+  name: string;
+  slug: string;
+  city: string | null;
+  country: string;
+  is_verified: boolean;
+  is_approved: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminUserFavoritePreview {
+  id: string;
+  tour_id: string;
+  created_at: string;
+  tour: {
+    id: string;
+    title: string;
+    slug: string;
+    cover_image_url: string | null;
+    status: string;
+    country: string | null;
+    city: string | null;
+  } | null;
+}
+
+export interface AdminUserLeadPreview {
+  id: string;
+  tour_id: string | null;
+  agency_id: string;
+  status: string;
+  created_at: string;
+  full_name: string;
+  phone: string;
+  tour: {
+    id: string;
+    title: string;
+    slug: string;
+    cover_image_url: string | null;
+    status: string;
+  } | null;
+  agency: {
+    id: string;
+    name: string;
+    slug: string;
+    is_verified: boolean;
+    is_approved: boolean;
+  } | null;
+}
+
+export interface AdminUserReviewPreview {
+  id: string;
+  agency_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  agency: {
+    id: string;
+    name: string;
+    slug: string;
+    is_verified: boolean;
+    is_approved: boolean;
+  } | null;
+}
+
+export interface AdminUserManagedTourPreview {
+  id: string;
+  agency_id: string;
+  title: string;
+  slug: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  cover_image_url: string | null;
+  view_count: number;
+  country: string | null;
+  city: string | null;
+}
+
+export interface AdminUserQuality {
+  completenessPercent: number;
+  missingFields: string[];
+  hasDuplicateEmail: boolean;
+  hasDuplicatePhone: boolean;
+  noActivityAfterRegistration: boolean;
+  missingAgencyForManager: boolean;
+  warnings: string[];
+}
+
+export interface AdminUserStats {
+  favoritesCount: number;
+  leadsCount: number;
+  reviewsCount: number;
+  managedAgencyCount: number;
+  toursCreatedCount: number;
+  totalTourViews: number;
+  lastActivityAt: string | null;
+  activityStatus: AdminUserActivityStatus;
+}
+
+export interface AdminUserPanelRow {
+  id: string;
+  full_name: string | null;
+  email: string | null;
+  phone: string | null;
+  telegram_username: string | null;
+  avatar_url: string | null;
+  role: AdminUserRole;
+  created_at: string;
+  updated_at: string;
+  deletion_requested_at: string | null;
+  accountState: AdminUserAccountState;
+  linkedAgencies: AdminUserAgencySummary[];
+  locationLabel: string | null;
+  stats: AdminUserStats;
+  quality: AdminUserQuality;
+  favoritesPreview: AdminUserFavoritePreview[];
+  leadsPreview: AdminUserLeadPreview[];
+  reviewsPreview: AdminUserReviewPreview[];
+  managedToursPreview: AdminUserManagedTourPreview[];
+}
+
+export interface AdminUsersPanelHealth {
+  partialData: boolean;
+  errors: string[];
+  unavailableMetrics: string[];
+}
+
+export interface AdminUsersPanelPayload {
+  generatedAt: string;
+  health: AdminUsersPanelHealth;
+  users: AdminUserPanelRow[];
+}

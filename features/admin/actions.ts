@@ -107,6 +107,31 @@ export async function rejectCoinRequest(requestId: string) {
   return { success: true };
 }
 
+export async function updateLeadStatusAction(leadId: string, status: string) {
+  await assertAdminAccess();
+  const validStatuses = ['new', 'contacted', 'closed', 'won', 'lost'];
+  if (!validStatuses.includes(status)) {
+    return { error: 'Invalid status' };
+  }
+
+  const supabase = await createAdminClient();
+  const { error } = await supabase
+    .from('leads')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', leadId);
+
+  if (error) {
+    await notifySystemError({
+      source: 'Action: updateLeadStatusAction',
+      message: error.message,
+      extra: `Lead: ${leadId}, Status: ${status}`,
+    });
+    return { error: error.message };
+  }
+
+  return { success: true };
+}
+
 /** Admin: fetch one agency drill-down payload for agencies panel */
 export async function getAdminAgencyDetailAction(agencyId: string) {
   await assertAdminAccess();
