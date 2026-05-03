@@ -3,7 +3,7 @@
 import {
   Building2, MapPin, Users, CreditCard, ShieldCheck, Coins,
   TrendingUp, AlertTriangle, Clock, CheckCircle2, ArrowUpRight,
-  ArrowDownRight,
+  ArrowDownRight, User,
 } from 'lucide-react';
 
 interface AdminDashboardContentProps {
@@ -11,6 +11,7 @@ interface AdminDashboardContentProps {
     totalAgencies: number;
     totalTours: number;
     totalLeads: number;
+    totalUsers: number;
     activeSubscriptions: number;
     pendingCoinRequests: number;
   };
@@ -84,6 +85,7 @@ export function AdminDashboardContent({ stats }: AdminDashboardContentProps) {
         <StatCard title="Total Agencies" value={stats.totalAgencies} icon={Building2} color="blue" trend="up" trendValue="+12% this month" />
         <StatCard title="Total Tours" value={stats.totalTours} icon={MapPin} color="emerald" trend="up" trendValue="+8% this month" />
         <StatCard title="Total Leads" value={stats.totalLeads} icon={Users} color="violet" trend="up" trendValue="+15% this month" />
+        <StatCard title="Total Users" value={stats.totalUsers} icon={User} color="cyan" />
         <StatCard title="Active Subscriptions" value={stats.activeSubscriptions} icon={CreditCard} color="amber" />
         <StatCard title="Pending Verification" value={pendingVerifications} icon={ShieldCheck} color="rose" />
         <StatCard title="Coin Requests" value={stats.pendingCoinRequests} icon={Coins} color="cyan" />

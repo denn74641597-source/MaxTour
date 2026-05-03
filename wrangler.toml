@@ -7,6 +7,19 @@ compatibility_flags = ["nodejs_compat"]
 directory = ".open-next/assets"
 binding = "ASSETS"
 
+# Production custom domains (Worker is origin on these hostnames)
+[[routes]]
+pattern = "mxtr.uz"
+custom_domain = true
+
+[[routes]]
+pattern = "www.mxtr.uz"
+custom_domain = true
+
+[[routes]]
+pattern = "remote.mxtr.uz"
+custom_domain = true
+
 [vars]
 # Ommaviy (public) o'zgaruvchilar — brauzerda ko'rinadi, maxfiy emas
 NEXT_PUBLIC_APP_NAME = "MaxTour"

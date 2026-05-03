@@ -4,42 +4,33 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, Building2, MapPin, Users, CreditCard,
-  Menu, MessageSquareText, UserCheck, BarChart3, Home, ShieldCheck, Megaphone, Coins, LogOut
+  LayoutDashboard,
+  Building2,
+  MapPin,
+  Users,
+  CreditCard,
+  Menu,
+  UserCheck,
+  BarChart3,
+  Home,
+  ShieldCheck,
+  Megaphone,
+  Coins,
+  LogOut,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageSwitcher } from './language-switcher';
-import {
-  Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose,
-} from '@/components/ui/sheet';
+import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetClose } from '@/components/ui/sheet';
 import { createClient } from '@/lib/supabase/client';
 
-export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
+type NavType = 'agency' | 'admin';
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push('/');
-  };
-
-  const agencyMobileNav = [
+function useNavItems(type: NavType, t: ReturnType<typeof useTranslation>['t']) {
+  const agencyItems = [
     { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
     { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
-    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
-    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
-    { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
-    { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
-  ];
-
-  const agencyNavFull = [
-    { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
-    { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
+    { href: '/agency/leads', label: t.leadsPage.title, icon: Users },
     { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
     { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
     { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
@@ -57,36 +48,50 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
     { href: '/admin/subscriptions', label: t.nav.subscriptions, icon: Users },
   ];
 
-  const sidebarItems = type === 'admin' ? adminItems : agencyNavFull;
-  const mobileItems = type === 'admin' ? adminItems : agencyMobileNav;
+  return type === 'admin' ? adminItems : agencyItems;
+}
 
-  const isItemActive = (href: string) =>
-    href === pathname || (href !== '/agency' && href !== '/admin' && pathname.startsWith(href));
+function isItemActive(pathname: string, href: string) {
+  return href === pathname || (href !== '/agency' && href !== '/admin' && pathname.startsWith(href));
+}
+
+export function DashboardNav({ type = 'agency' }: { type?: NavType }) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const { t } = useTranslation();
+  const items = useNavItems(type, t);
+
+  const handleLogout = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/');
+  };
 
   return (
-    <>
-      {/* Desktop sidebar */}
-      <aside className="hidden md:block md:border-r md:w-56 md:min-h-screen bg-muted/30">
-        <div className="p-4 flex items-center gap-2">
-          <Link href="/" className="text-sm font-medium text-muted-foreground hover:text-foreground flex items-center gap-1.5">
-            <Home className="h-4 w-4" />
-            {t.nav.home}
-          </Link>
-          <div className="flex-1" />
+    <aside className="hidden md:flex md:min-h-screen md:w-72 md:flex-col md:border-r md:border-slate-200/60 md:bg-white/70 md:p-5 md:backdrop-blur-sm">
+      <div className="mb-5 flex items-center gap-2">
+        <Link href="/" className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition-colors hover:bg-slate-50">
+          <Home className="h-3.5 w-3.5" />
+          {t.nav.home}
+        </Link>
+        <div className="ml-auto">
           <LanguageSwitcher variant="dropdown" />
         </div>
-        <nav className="flex flex-col gap-1 px-2 pb-4">
-          {sidebarItems.map(({ href, label, icon: Icon }) => {
-            const isActive = isItemActive(href);
+      </div>
+
+      <div className="market-subtle-border rounded-2xl bg-white/85 p-2">
+        <nav className="flex flex-col gap-1">
+          {items.map(({ href, label, icon: Icon }) => {
+            const active = isItemActive(pathname, href);
             return (
               <Link
                 key={href}
                 href={href}
                 className={cn(
-                  'flex items-center gap-2 px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors',
-                  isActive
-                    ? 'bg-primary text-primary-foreground font-medium'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  'inline-flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-semibold transition-colors',
+                  active
+                    ? 'bg-[linear-gradient(120deg,#0f648f,#0e7ca4)] text-white shadow-[0_16px_30px_-22px_rgba(14,88,128,0.85)]'
+                    : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900',
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -97,29 +102,28 @@ export function DashboardNav({ type = 'agency' }: { type?: 'agency' | 'admin' })
           {type === 'agency' && (
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 rounded-md text-sm whitespace-nowrap transition-colors text-red-500 hover:bg-red-50 hover:text-red-600 mt-2"
+              className="mt-2 inline-flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-50"
             >
               <LogOut className="h-4 w-4 shrink-0" />
               <span>{t.auth.logout}</span>
             </button>
           )}
         </nav>
-      </aside>
-
-      {/* Mobile hamburger menu — rendered via AgencyHeader, not standalone */}
-    </>
+      </div>
+    </aside>
   );
 }
 
-export function DashboardMenuTrigger({ type = 'agency' }: { type?: 'agency' | 'admin' }) {
+export function DashboardMenuTrigger({ type = 'agency' }: { type?: NavType }) {
   return <DashboardMenuTriggerInner type={type} />;
 }
 
-function DashboardMenuTriggerInner({ type }: { type: 'agency' | 'admin' }) {
+function DashboardMenuTriggerInner({ type }: { type: NavType }) {
   const pathname = usePathname();
   const router = useRouter();
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const items = useNavItems(type, t);
 
   const handleLogout = async () => {
     const supabase = createClient();
@@ -127,73 +131,51 @@ function DashboardMenuTriggerInner({ type }: { type: 'agency' | 'admin' }) {
     router.push('/');
   };
 
-  const agencyMobileNav = [
-    { href: '/agency', label: t.nav.dashboard, icon: LayoutDashboard },
-    { href: '/agency/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/agency/advertising', label: t.nav.advertising, icon: Megaphone },
-    { href: '/agency/interests', label: t.nav.interested, icon: UserCheck },
-    { href: '/agency/analytics', label: t.analytics.title, icon: BarChart3 },
-    { href: '/agency/verification', label: t.nav.verification, icon: ShieldCheck },
-    { href: '/agency/profile', label: t.nav.profile, icon: Building2 },
-  ];
-
-  const adminItems = [
-    { href: '/admin', label: t.nav.overview, icon: LayoutDashboard },
-    { href: '/admin/agencies', label: t.nav.agencies, icon: Building2 },
-    { href: '/admin/tours', label: t.nav.tours, icon: MapPin },
-    { href: '/admin/verification', label: t.nav.verification, icon: ShieldCheck },
-    { href: '/admin/coin-requests', label: t.nav.coinRequests, icon: Coins },
-    { href: '/admin/featured', label: t.nav.featured, icon: CreditCard },
-    { href: '/admin/subscriptions', label: t.nav.subscriptions, icon: Users },
-  ];
-
-  const mobileItems = type === 'admin' ? adminItems : agencyMobileNav;
-
-  const isItemActive = (href: string) =>
-    href === pathname || (href !== '/agency' && href !== '/admin' && pathname.startsWith(href));
-
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger className="p-2 rounded-xl hover:bg-muted transition-colors">
-        <Menu className="h-5 w-5 text-foreground" />
+      <SheetTrigger className="rounded-xl border border-slate-200 bg-white/85 p-2 shadow-sm transition-colors hover:bg-white">
+        <Menu className="h-5 w-5 text-slate-700" />
       </SheetTrigger>
-      <SheetContent side="right" className="w-72 p-0" style={{ paddingTop: 'calc(var(--tg-safe-top, env(safe-area-inset-top, 0px)) + 8px)' }}>
-        <SheetHeader className="px-4 py-4">
+      <SheetContent side="right" className="w-72 p-0">
+        <SheetHeader className="border-b border-slate-200 px-4 py-4">
           <SheetTitle className="text-base font-semibold">
             {type === 'admin' ? t.nav.adminPanel : t.nav.agencyPanel}
           </SheetTitle>
         </SheetHeader>
         <nav className="flex flex-col gap-1 p-3">
-          {mobileItems.map(({ href, label, icon: Icon }) => {
-            const isActive = isItemActive(href);
+          {items.map(({ href, label, icon: Icon }) => {
+            const active = isItemActive(pathname, href);
             return (
               <SheetClose key={href} render={<span />}>
                 <Link
                   href={href}
                   onClick={() => setOpen(false)}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors',
-                    isActive
-                      ? 'bg-primary/10 text-primary font-medium'
-                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                    'inline-flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-colors',
+                    active
+                      ? 'bg-[linear-gradient(120deg,#0f648f,#0e7ca4)] text-white'
+                      : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900',
                   )}
                 >
-                  <Icon className={cn('h-5 w-5 shrink-0', isActive ? 'text-primary' : 'text-muted-foreground')} />
+                  <Icon className="h-4 w-4 shrink-0" />
                   <span>{label}</span>
                 </Link>
               </SheetClose>
             );
           })}
         </nav>
-        <div className="mt-auto p-4 space-y-3">
+        <div className="mt-auto border-t border-slate-200 p-4">
           <LanguageSwitcher variant="dropdown" />
           {type === 'agency' && (
             <button
-              onClick={() => { setOpen(false); handleLogout(); }}
-              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-xl text-sm text-red-500 hover:bg-red-50 transition-colors"
+              onClick={() => {
+                setOpen(false);
+                handleLogout();
+              }}
+              className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-rose-50 px-3 py-2.5 text-sm font-semibold text-rose-600"
             >
-              <LogOut className="h-5 w-5 shrink-0" />
-              <span>{t.auth.logout}</span>
+              <LogOut className="h-4 w-4" />
+              {t.auth.logout}
             </button>
           )}
         </div>

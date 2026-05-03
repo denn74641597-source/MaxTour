@@ -100,9 +100,9 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
   const formattedDate = new Date(profile.created_at).toLocaleDateString();
 
   return (
-    <div className="px-4 py-6 space-y-5 lg:max-w-3xl lg:mx-auto">
+    <div className="mx-auto max-w-4xl space-y-5 px-4 py-6">
       {/* Profile Header */}
-      <div className="flex items-center gap-4">
+      <div className="market-section flex items-center gap-4 p-5 md:p-6">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <User className="h-8 w-8 text-primary" />
         </div>
@@ -119,7 +119,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
       <Separator />
 
       {/* Profile Info / Edit Form */}
-      <Card>
+      <Card className="market-subtle-border rounded-2xl border-none shadow-[0_24px_42px_-32px_rgba(15,23,42,0.55)]">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-base">{t.auth.personalInfo}</CardTitle>
@@ -231,7 +231,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
       {/* Role-specific actions */}
       {profile.role === 'agency_manager' && (
         <Link href="/agency">
-          <Card className="cursor-pointer hover:bg-muted transition-colors">
+          <Card className="market-subtle-border cursor-pointer rounded-2xl border-none transition-colors hover:bg-slate-50">
             <CardContent className="flex items-center gap-4 p-4">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100">
                 <Building2 className="h-5 w-5 text-emerald-600" />
@@ -252,7 +252,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
 
       {/* Notification settings */}
       <Link href="/profile/notifications">
-        <Card className="cursor-pointer hover:bg-muted transition-colors">
+        <Card className="market-subtle-border cursor-pointer rounded-2xl border-none transition-colors hover:bg-slate-50">
           <CardContent className="flex items-center gap-4 p-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100">
               <Bell className="h-5 w-5 text-blue-600" />

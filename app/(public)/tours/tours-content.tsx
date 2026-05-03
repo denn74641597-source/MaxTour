@@ -19,54 +19,59 @@ export function ToursContent({ tours, promotions = { featured: [], hotDeals: [],
   const { t } = useTranslation();
 
   return (
-    <div>
-      {/* Sticky search + filters header area */}
-      <div className="sticky top-[56px] z-40 glass-nav">
-        <div className="px-6 py-3">
+    <div className="space-y-5">
+      <section className="market-section p-4 md:p-6">
+        <div className="mb-3 flex items-end justify-between gap-3">
+          <div>
+            <p className="market-kicker">{t.nav.tours}</p>
+            <h1 className="text-2xl font-bold text-foreground md:text-3xl">{t.tours.allDestinations}</h1>
+          </div>
+          <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            {tours.length}
+          </span>
+        </div>
+        <div className="mb-4">
           <Suspense>
-            <SearchBar
-              placeholder={t.search.placeholder}
-              variant="compact"
-            />
+            <SearchBar placeholder={t.search.placeholder} variant="compact" />
           </Suspense>
         </div>
-        <div className="px-4 pb-4">
+        <div className="space-y-3">
           <Suspense>
             <ToursFilterBar />
           </Suspense>
+          <Suspense>
+            <ToursSortBar />
+          </Suspense>
         </div>
-      </div>
+      </section>
 
-      {/* Advanced Filter + Sort */}
-      <div className="px-4 pt-3">
-        <Suspense>
-          <AdvancedTourFilter />
-        </Suspense>
-        <Suspense>
-          <ToursSortBar />
-        </Suspense>
-      </div>
+      <div className="grid items-start gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
+        <aside className="market-section p-4 md:p-5">
+          <p className="market-kicker mb-2">{t.tours.priceRange}</p>
+          <Suspense>
+            <AdvancedTourFilter />
+          </Suspense>
+        </aside>
 
-      {/* Tour list */}
-      <div className="p-4 space-y-6 md:grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 md:gap-6 md:space-y-0 lg:max-w-7xl lg:mx-auto">
-        {tours.length > 0 ? (
-          tours.map((tour) => (
-            <TourCardCatalog
-              key={tour.id}
-              tour={tour}
-              isPromoted={promotions.featured.includes(tour.id)}
-              isHotDeal={promotions.hotDeals.includes(tour.id)}
-              isHotTour={promotions.hotTours.includes(tour.id)}
-            />
-          ))
-        ) : (
-          <div className="md:col-span-2 lg:col-span-2 xl:col-span-3 2xl:col-span-4">
-            <EmptyState
-              title={t.tours.noToursFound}
-              description={t.tours.noToursHint}
-            />
-          </div>
-        )}
+        <section className="space-y-5">
+          {tours.length > 0 ? (
+            <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+              {tours.map((tour) => (
+                <TourCardCatalog
+                  key={tour.id}
+                  tour={tour}
+                  isPromoted={promotions.featured.includes(tour.id)}
+                  isHotDeal={promotions.hotDeals.includes(tour.id)}
+                  isHotTour={promotions.hotTours.includes(tour.id)}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="market-section p-6 md:p-8">
+              <EmptyState title={t.tours.noToursFound} description={t.tours.noToursHint} />
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

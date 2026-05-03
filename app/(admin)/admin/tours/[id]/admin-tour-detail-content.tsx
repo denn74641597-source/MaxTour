@@ -74,7 +74,7 @@ export function AdminTourDetailContent({ tour }: Props) {
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       {/* Back + Header */}
       <div className="flex items-center gap-4">
-        <button onClick={() => router.push('/admin/tours?mode=admin')} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
+        <button onClick={() => router.push('/admin/tours')} className="p-2 rounded-lg hover:bg-slate-100 transition-colors">
           <ArrowLeft className="h-5 w-5 text-slate-600" />
         </button>
         <div className="flex-1 min-w-0">

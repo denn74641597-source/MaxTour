@@ -85,9 +85,9 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
   }
 
   return (
-    <div className="bg-background min-h-screen pb-4 lg:max-w-5xl xl:max-w-6xl lg:mx-auto">
+    <div className="mx-auto min-h-screen max-w-6xl space-y-4 pb-6">
       {/* Top App Bar */}
-      <div className="flex items-center justify-between px-4 py-3 sticky top-0 bg-background/95 backdrop-blur z-10">
+      <div className="market-section market-glass sticky top-[var(--public-header-height)] z-30 flex items-center justify-between px-4 py-3 md:px-5">
         <button onClick={() => router.back()} className="p-1">
           <ArrowLeft className="h-5 w-5" />
         </button>
@@ -98,7 +98,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       </div>
 
       {/* Hero Image */}
-      <div className="relative min-h-[260px] md:min-h-[400px] lg:min-h-[450px] w-full overflow-hidden bg-muted">
+      <div className="relative min-h-[260px] w-full overflow-hidden rounded-[1.8rem] bg-muted md:min-h-[420px] lg:min-h-[470px]">
         <Image
           src={allImages[0]}
           alt={title}
@@ -127,7 +127,7 @@ export function TourDetailContent({ tour, similarTours = [] }: TourDetailContent
       </div>
 
       {/* Header Info: Title + Price */}
-      <div className="px-6 pt-3 pb-1 bg-surface">
+      <div className="market-section px-6 pb-3 pt-4">
         <div className="flex justify-between items-start">
           <div className="flex-1 mr-3">
             <h1 className="text-xl font-bold leading-tight tracking-tight text-foreground">

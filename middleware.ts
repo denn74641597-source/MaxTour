@@ -1,54 +1,70 @@
 import { type NextRequest, NextResponse } from 'next/server';
+import { evaluateDomainAccess, getHostContextFromRequest, isStaticOrInternalPath } from '@/lib/routing/guards';
 import { updateSession } from '@/lib/supabase/middleware';
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const mode = request.nextUrl.searchParams.get('mode');
-
-  // Any URL with ?mode=admin that is NOT an admin route → redirect to admin panel
-  if (mode === 'admin' && !pathname.startsWith('/admin')) {
-    const adminAuth = request.cookies.get('admin_authenticated')?.value;
-    if (adminAuth === 'true') {
-      const dashUrl = new URL('/admin', request.nextUrl);
-      dashUrl.searchParams.set('mode', 'admin');
-      return NextResponse.redirect(dashUrl);
-    } else {
-      const loginUrl = new URL('/admin/login', request.nextUrl);
-      loginUrl.searchParams.set('mode', 'admin');
-      return NextResponse.redirect(loginUrl);
-    }
-  }
-
-  // Admin panel: only accessible via ?mode=admin query parameter
-  if (pathname.startsWith('/admin')) {
-    // Admin login page — always accessible if ?mode=admin
-    if (pathname === '/admin/login' && mode === 'admin') {
-      return NextResponse.next();
-    }
-
-    // Block all admin routes that don't have ?mode=admin
-    if (mode !== 'admin') {
-      return NextResponse.redirect(new URL('/', request.nextUrl));
-    }
-
-    // Check admin session cookie
-    const adminAuth = request.cookies.get('admin_authenticated')?.value;
-    if (adminAuth !== 'true' && pathname !== '/admin/login') {
-      const loginUrl = new URL('/admin/login', request.nextUrl);
-      loginUrl.searchParams.set('mode', 'admin');
-      return NextResponse.redirect(loginUrl);
-    }
-
+  if (isStaticOrInternalPath(pathname)) {
     return NextResponse.next();
   }
 
-  // Refresh Supabase session for ALL non-admin routes (keeps tokens alive)
+  const hostContext = getHostContextFromRequest(request);
+  const domainAccess = evaluateDomainAccess(pathname, hostContext.domainTarget);
+  if (!domainAccess.allow && domainAccess.redirectPath) {
+    if (hostContext.domainTarget === 'mxtr' && pathname.startsWith('/admin')) {
+      const remoteAdminUrl = new URL(request.url);
+      remoteAdminUrl.protocol = 'https:';
+      remoteAdminUrl.host = 'remote.mxtr.uz';
+      return NextResponse.redirect(remoteAdminUrl);
+    }
+
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = domainAccess.redirectPath;
+    redirectUrl.search = '';
+    return NextResponse.redirect(redirectUrl);
+  }
+
+  const isAdminRoute = pathname.startsWith('/admin');
+  if (isAdminRoute) {
+    const { supabaseResponse, user, supabase } = await updateSession(request);
+    let isAdmin = false;
+
+    if (user && supabase) {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+      isAdmin = !error && profile?.role === 'admin';
+    }
+
+    if (pathname === '/admin/login') {
+      if (isAdmin) {
+        const dashboardUrl = request.nextUrl.clone();
+        dashboardUrl.pathname = '/admin';
+        dashboardUrl.search = '';
+        return NextResponse.redirect(dashboardUrl);
+      }
+      return supabaseResponse;
+    }
+
+    if (!isAdmin) {
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/admin/login';
+      loginUrl.search = '';
+      return NextResponse.redirect(loginUrl);
+    }
+
+    return supabaseResponse;
+  }
+
   const { supabaseResponse, user } = await updateSession(request);
 
-  // Agency routes — require Supabase auth (role checked in layout)
   if (pathname.startsWith('/agency')) {
     if (!user) {
-      const loginUrl = new URL('/profile', request.nextUrl);
+      const loginUrl = request.nextUrl.clone();
+      loginUrl.pathname = '/profile';
+      loginUrl.search = '';
       return NextResponse.redirect(loginUrl);
     }
   }

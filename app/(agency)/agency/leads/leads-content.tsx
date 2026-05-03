@@ -22,6 +22,13 @@ interface AgencyLeadsContentProps {
   initialLeads: Lead[];
 }
 
+type LeadWithTour = Lead & {
+  tour?: {
+    title?: string | null;
+    cover_image_url?: string | null;
+  } | null;
+};
+
 export function AgencyLeadsContent({ initialLeads }: AgencyLeadsContentProps) {
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
   const { t } = useTranslation();
@@ -40,18 +47,18 @@ export function AgencyLeadsContent({ initialLeads }: AgencyLeadsContentProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-5">
+      <div className="market-section p-4 md:p-5">
         <h1 className="text-xl font-bold">{t.leadsPage.title}</h1>
         <p className="text-sm text-muted-foreground">{leads.length} {t.leadsPage.totalRequests}</p>
       </div>
 
       {leads.length > 0 ? (
-        <div className="space-y-3 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {leads.map((lead) => {
-            const tour = (lead as any).tour;
+            const tour = (lead as LeadWithTour).tour;
             return (
-            <Card key={lead.id} className="overflow-hidden">
+            <Card key={lead.id} className="market-subtle-border overflow-hidden rounded-2xl border-none bg-white/90 shadow-[0_24px_42px_-32px_rgba(15,23,42,0.58)]">
               <CardContent className="p-0">
                 <div className="flex gap-0">
                   {/* Tour thumbnail */}
@@ -138,11 +145,13 @@ export function AgencyLeadsContent({ initialLeads }: AgencyLeadsContentProps) {
           })}
         </div>
       ) : (
-        <EmptyState
-          icon={<Users className="h-12 w-12 text-muted-foreground/50 mb-4" />}
-          title={t.leadsPage.noLeads}
-          description={t.leadsPage.noLeadsHint}
-        />
+        <div className="market-section p-6 md:p-8">
+          <EmptyState
+            icon={<Users className="mb-4 h-12 w-12 text-muted-foreground/50" />}
+            title={t.leadsPage.noLeads}
+            description={t.leadsPage.noLeadsHint}
+          />
+        </div>
       )}
     </div>
   );

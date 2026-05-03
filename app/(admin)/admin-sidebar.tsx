@@ -6,42 +6,45 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard, Building2, MapPin, ShieldCheck, Coins,
   Star, Users, FileText, Settings, LogOut, Menu, X,
-  ChevronRight, MessageSquareText, Globe, Trash2,
+  ChevronRight, MessageSquareText, Globe, Trash2, UserCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '@/lib/i18n';
 import { LANGUAGE_LABELS, LANGUAGE_FLAGS, LANGUAGES } from '@/lib/i18n/config';
-import type { Language } from '@/lib/i18n/config';
+import { createClient } from '@/lib/supabase/client';
 
 const navItems = [
-  { href: '/admin?mode=admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/agencies?mode=admin', label: 'Agencies', icon: Building2 },
-  { href: '/admin/tours?mode=admin', label: 'Tours', icon: MapPin },
-  { href: '/admin/leads?mode=admin', label: 'Tour Requests', icon: MessageSquareText },
-  { href: '/admin/verification?mode=admin', label: 'Verification', icon: ShieldCheck },
-  { href: '/admin/account-deletions?mode=admin', label: 'Hisob o\'chirish', icon: Trash2 },
-  { href: '/admin/coin-requests?mode=admin', label: 'Coins', icon: Coins },
-  { href: '/admin/featured?mode=admin', label: 'Promotions', icon: Star },
-  { href: '/admin/subscriptions?mode=admin', label: 'Subscriptions', icon: Users },
-  { href: '/admin/audit-log?mode=admin', label: 'Audit Log', icon: FileText },
-  { href: '/admin/settings?mode=admin', label: 'Settings', icon: Settings },
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/agencies', label: 'Agencies', icon: Building2 },
+  { href: '/admin/tours', label: 'Tours', icon: MapPin },
+  { href: '/admin/leads', label: 'Tour Requests', icon: MessageSquareText },
+  { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
+  { href: '/admin/account-deletions', label: 'Hisob o\'chirish', icon: Trash2 },
+  { href: '/admin/users', label: 'Users', icon: UserCog },
+  { href: '/admin/coin-requests', label: 'Coins', icon: Coins },
+  { href: '/admin/featured', label: 'Promotions', icon: Star },
+  { href: '/admin/subscriptions', label: 'Subscriptions', icon: Users },
+  { href: '/admin/audit-log', label: 'Audit Log', icon: FileText },
+  { href: '/admin/settings', label: 'Settings', icon: Settings },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
+  const supabase = createClient();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { language, setLanguage } = useTranslation();
 
   const isItemActive = (href: string) => {
-    const path = href.split('?')[0];
-    if (path === '/admin') return pathname === '/admin';
-    return pathname.startsWith(path);
+    if (href === '/admin') return pathname === '/admin';
+    return pathname.startsWith(href);
   };
 
   const handleLogout = async () => {
-    await fetch('/api/admin-auth', { method: 'DELETE' });
-    router.push('/');
+    await supabase.auth.signOut({ scope: 'local' }).catch(async () => {
+      await supabase.auth.signOut();
+    });
+    router.push('/admin/login');
   };
 
   const sidebar = (

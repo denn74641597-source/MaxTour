@@ -9,7 +9,6 @@ import {
   User,
   BellRing,
   Building2,
-  ShieldCheck,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { useProfile } from '@/hooks';
@@ -37,9 +36,6 @@ export function PublicDesktopSidebar() {
         { href: '/profile/notifications', label: t.notifications.title, icon: BellRing },
         ...(profile.role === 'agency_manager'
           ? [{ href: '/agency', label: t.nav.agencyPanel, icon: Building2 }]
-          : []),
-        ...(profile.role === 'admin'
-          ? [{ href: '/admin', label: t.nav.adminPanel, icon: ShieldCheck }]
           : []),
       ]
     : [];

@@ -24,7 +24,20 @@ import { deleteTourAction } from '@/features/tours/actions';
 import { toast } from 'sonner';
 
 interface AgencyToursContentProps {
-  tours: any[];
+  tours: {
+    id: string;
+    title: string;
+    status: string;
+    cover_image_url: string | null;
+    is_featured?: boolean | null;
+    country?: string | null;
+    region?: string | null;
+    city?: string | null;
+    departure_date?: string | null;
+    seats_left?: number | null;
+    price: number;
+    currency?: string | null;
+  }[];
 }
 
 export function AgencyToursContent({ tours }: AgencyToursContentProps) {
@@ -48,8 +61,8 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
+    <div className="space-y-5">
+      <div className="market-section flex items-center justify-between p-4 md:p-5">
         <div>
           <h1 className="text-xl font-bold">{t.agencyTours.title}</h1>
           <p className="text-sm text-muted-foreground">{tours.length} ta tur</p>
@@ -62,9 +75,9 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
       </div>
 
       {tours.length > 0 ? (
-        <div className="space-y-3 md:grid md:grid-cols-2 xl:grid-cols-3 md:gap-3 md:space-y-0">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {tours.map((tour) => (
-            <Card key={tour.id} className="overflow-hidden">
+            <Card key={tour.id} className="market-subtle-border overflow-hidden rounded-2xl border-none bg-white/90 shadow-[0_24px_42px_-32px_rgba(15,23,42,0.58)]">
               <CardContent className="p-0">
                 <div className="flex gap-0">
                   {/* Tour Image */}
@@ -134,17 +147,19 @@ export function AgencyToursContent({ tours }: AgencyToursContentProps) {
           ))}
         </div>
       ) : (
-        <EmptyState
-          title={t.agencyTours.noTours}
-          description={t.agencyTours.noToursHint}
-          action={
-            <Link href="/agency/tours/new">
-              <Button size="sm">
-                <Plus className="h-4 w-4 mr-1" /> {t.agencyTours.createTour}
-              </Button>
-            </Link>
-          }
-        />
+        <div className="market-section p-6 md:p-8">
+          <EmptyState
+            title={t.agencyTours.noTours}
+            description={t.agencyTours.noToursHint}
+            action={
+              <Link href="/agency/tours/new">
+                <Button size="sm">
+                  <Plus className="h-4 w-4 mr-1" /> {t.agencyTours.createTour}
+                </Button>
+              </Link>
+            }
+          />
+        </div>
       )}
 
       <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>

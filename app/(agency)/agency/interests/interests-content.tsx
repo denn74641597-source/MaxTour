@@ -31,6 +31,12 @@ interface InterestsContentProps {
   leads: Lead[];
 }
 
+type LeadWithTour = Lead & {
+  tour?: {
+    title?: string | null;
+  } | null;
+};
+
 export function InterestsContent({ interests, leads: initialLeads }: InterestsContentProps) {
   const { t } = useTranslation();
   const [tab, setTab] = useState<'interests' | 'leads'>('interests');
@@ -49,14 +55,14 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
   }
 
   return (
-    <div className="space-y-4">
-      <div>
+    <div className="space-y-5">
+      <div className="market-section p-4 md:p-5">
         <h1 className="text-xl font-bold">{t.interestsPage.title}</h1>
         <p className="text-sm text-muted-foreground">{t.interestsPage.subtitle}</p>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
+      <div className="market-section flex gap-1 p-1.5">
         <button
           onClick={() => setTab('interests')}
           className={`flex-1 py-2 text-sm font-medium rounded-lg transition-all ${
@@ -94,7 +100,7 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
                 const telegram = profile?.telegram_username;
 
                 return (
-                  <Card key={fav.id}>
+                  <Card key={fav.id} className="market-subtle-border rounded-2xl border-none bg-white/90 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.55)]">
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
@@ -151,11 +157,13 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
               })}
             </div>
           ) : (
-            <EmptyState
-              icon={<UserCheck className="h-12 w-12 text-muted-foreground/50 mb-4" />}
-              title={t.interestsPage.noInterests}
-              description={t.interestsPage.noInterestsHint}
-            />
+            <div className="market-section p-6 md:p-8">
+              <EmptyState
+                icon={<UserCheck className="mb-4 h-12 w-12 text-muted-foreground/50" />}
+                title={t.interestsPage.noInterests}
+                description={t.interestsPage.noInterestsHint}
+              />
+            </div>
           )}
         </>
       )}
@@ -166,13 +174,13 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
           {leads.length > 0 ? (
             <div className="space-y-3">
               {leads.map((lead) => (
-                <Card key={lead.id}>
+                <Card key={lead.id} className="market-subtle-border rounded-2xl border-none bg-white/90 shadow-[0_20px_40px_-32px_rgba(15,23,42,0.55)]">
                   <CardContent className="p-4 space-y-2.5">
                     <div className="flex items-start justify-between">
                       <div>
                         <h3 className="font-semibold text-sm">{lead.full_name}</h3>
                         <p className="text-xs text-muted-foreground">
-                          {(lead as any).tour?.title ?? 'Tour'} · {formatDate(lead.created_at)}
+                          {(lead as LeadWithTour).tour?.title ?? 'Tour'} · {formatDate(lead.created_at)}
                         </p>
                         {lead.people_count > 1 && (
                           <p className="text-xs text-primary font-medium mt-0.5 flex items-center gap-1">
@@ -235,11 +243,13 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
               ))}
             </div>
           ) : (
-            <EmptyState
-              icon={<Users className="h-12 w-12 text-muted-foreground/50 mb-4" />}
-              title={t.leadsPage.noLeads}
-              description={t.leadsPage.noLeadsHint}
-            />
+            <div className="market-section p-6 md:p-8">
+              <EmptyState
+                icon={<Users className="mb-4 h-12 w-12 text-muted-foreground/50" />}
+                title={t.leadsPage.noLeads}
+                description={t.leadsPage.noLeadsHint}
+              />
+            </div>
           )}
         </>
       )}

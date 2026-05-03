@@ -9,22 +9,13 @@ import { useTranslation } from '@/lib/i18n';
 import { pickTourTitle } from '@/lib/i18n/tour-i18n';
 import { useFavorites } from '@/hooks/use-favorites';
 import { useFollows } from '@/hooks/use-follows';
-import type { Tour, TourHotel } from '@/types';
+import type { Tour } from '@/types';
 
 interface TourCardCatalogProps {
   tour: Tour;
   isPromoted?: boolean;
   isHotDeal?: boolean;
   isHotTour?: boolean;
-}
-
-function getMaxHotelStars(tour: Tour): number | null {
-  const hotels = (tour.hotels as TourHotel[]) ?? [];
-  if (hotels.length > 0) {
-    const maxStars = Math.max(...hotels.filter(h => h.stars).map(h => h.stars!));
-    return maxStars > 0 ? maxStars : null;
-  }
-  return tour.hotel_stars ?? null;
 }
 
 export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: TourCardCatalogProps) {
@@ -34,7 +25,6 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
   const { isFollowing, toggleFollow } = useFollows();
   const agencyName = tour.agency?.name ?? 'Agency';
   const isVerified = tour.agency?.is_verified ?? false;
-  const isApproved = tour.agency?.is_approved ?? false;
   const agencySlug = tour.agency?.slug;
   const agencyLogo = tour.agency?.logo_url;
   const agencyId = tour.agency?.id;
@@ -49,13 +39,12 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
     const unique = [...new Set(parts.map(p => p.includes(' - ') ? p.split(' - ')[1] || p : p))];
     return unique.length > 0 ? unique.join(', ') : (tour.country || '');
   })();
-  const maxStars = getMaxHotelStars(tour);
   const liked = isFavorite(tour.id);
 
   return (
-    <div className="group relative bg-surface rounded-[1.5rem] overflow-hidden shadow-ambient">
+    <div className="group relative overflow-hidden rounded-[1.6rem] bg-white/92 shadow-[0_28px_48px_-32px_rgba(15,23,42,0.62)] market-subtle-border transition-transform duration-300 hover:-translate-y-0.5">
       {/* Agency Header */}
-      <div className="flex items-center gap-2.5 px-4 py-2.5">
+      <div className="flex items-center gap-2.5 px-4 py-3.5">
         <Link
           href={agencySlug ? `/agencies/${agencySlug}` : '#'}
           className="flex items-center gap-2.5 flex-1 min-w-0"
@@ -83,7 +72,7 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFollow(agencyId); }}
             className={`text-xs font-bold px-3 py-1.5 rounded-lg transition-colors ${
               isFollowing(agencyId)
-                ? 'text-muted-foreground bg-muted'
+                ? 'text-slate-500 bg-slate-100'
                 : 'text-primary bg-primary/10'
             }`}
           >
@@ -93,7 +82,7 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
       </div>
 
       {/* Image */}
-      <div className="relative aspect-square md:aspect-[4/3] w-full overflow-hidden">
+      <div className="relative aspect-[5/4] md:aspect-[4/3] w-full overflow-hidden">
         <Image
           src={tour.cover_image_url || placeholderImage(800, 1000, title)}
           alt={title}
@@ -129,7 +118,7 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
       </div>
 
       {/* Content */}
-      <Link href={`/tours/${tour.slug}`} className="block p-4">
+      <Link href={`/tours/${tour.slug}`} className="block p-4 md:p-5">
         {/* Title + Favorites */}
         <div className="flex items-start justify-between gap-2 mb-1">
           <h3 className="text-lg font-bold text-foreground leading-tight line-clamp-2">
@@ -144,14 +133,14 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
         </div>
 
         {/* Location + Duration */}
-        <div className="flex items-center gap-1 text-muted-foreground text-sm mb-3">
+        <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
           <MapPin className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{location}</span>
           {nightsText ? <span className="shrink-0"> • {nightsText}</span> : null}
         </div>
 
         {/* Price + CTA */}
-        <div className="flex items-center justify-between pt-3">
+        <div className="flex items-center justify-between border-t border-slate-200/70 pt-3">
           <div>
             {tour.old_price && tour.old_price > tour.price && (
               <span className="text-xs text-muted-foreground line-through block mb-0.5">
@@ -161,9 +150,9 @@ export function TourCardCatalog({ tour, isPromoted, isHotDeal, isHotTour }: Tour
             <span className="text-xl font-bold text-primary">
               {formatPrice(tour.price, tour.currency)}
             </span>
-            <span className="text-xs text-muted-foreground ml-1">{t.common.from}</span>
+            <span className="ml-1 text-xs text-muted-foreground">{t.common.from}</span>
           </div>
-          <span className="bg-primary hover:bg-primary/90 text-white px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
+          <span className="rounded-lg bg-[linear-gradient(120deg,#0f648f,#0e7ca4)] px-4 py-2 text-sm font-semibold text-white transition-colors">
             {t.common.viewDetails}
           </span>
         </div>

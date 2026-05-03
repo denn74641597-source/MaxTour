@@ -2,7 +2,7 @@
 
 import { createAdminClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
-import { cookies } from 'next/headers';
+import { assertAdminAccess } from '@/features/admin/guard';
 
 /**
  * Account deletion requests — admin actions.
@@ -38,11 +38,6 @@ export interface AccountDeletionRequest {
   agency_name: string | null;
 }
 
-async function isAdminPanelAuthenticated() {
-  const cookieStore = await cookies();
-  return cookieStore.get('admin_authenticated')?.value === 'true';
-}
-
 function publicUrlToPath(url: string | null | undefined): string | null {
   if (!url || typeof url !== 'string') return null;
   const marker = '/storage/v1/object/public/images/';
@@ -55,6 +50,7 @@ function publicUrlToPath(url: string | null | undefined): string | null {
 }
 
 export async function getAllAccountDeletionRequests(): Promise<AccountDeletionRequest[]> {
+  await assertAdminAccess();
   const admin = await createAdminClient();
 
   // RLS bypass qilamiz (service role) chunki status='approved'/'rejected' bo'lsa
@@ -106,11 +102,7 @@ export async function getAllAccountDeletionRequests(): Promise<AccountDeletionRe
 }
 
 export async function approveDeletionRequestAction(requestId: string, adminNotes?: string) {
-  // Web admin panel Supabase auth bilan emas, `admin_authenticated` cookie
-  // orqali ishlaydi. Shu sabab server action ham shu cookieni tekshiradi.
-  if (!(await isAdminPanelAuthenticated())) {
-    return { error: 'Not authenticated' };
-  }
+  await assertAdminAccess();
 
   const admin = await createAdminClient();
 
@@ -322,9 +314,7 @@ export async function approveDeletionRequestAction(requestId: string, adminNotes
 }
 
 export async function rejectDeletionRequestAction(requestId: string, adminNotes?: string) {
-  if (!(await isAdminPanelAuthenticated())) {
-    return { error: 'Not authenticated' };
-  }
+  await assertAdminAccess();
 
   const admin = await createAdminClient();
 

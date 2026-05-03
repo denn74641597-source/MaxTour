@@ -34,12 +34,14 @@ export function SearchBar({
 
   return (
     <form onSubmit={handleSubmit} className={className} role="search" aria-label="Tour qidirish">
-      <div className={cn(
-        'relative group flex items-center transition-all',
-        variant === 'hero'
-          ? 'bg-surface rounded-[1.5rem] shadow-ambient ghost-border focus-within:ghost-border-focus'
-          : 'bg-surface-container-low rounded-lg'
-      )}>
+      <div
+        className={cn(
+          'group relative flex items-center transition-all',
+          variant === 'hero'
+            ? 'market-subtle-border market-glass rounded-2xl bg-white/82 shadow-[0_24px_42px_-30px_rgba(15,23,42,0.55)] focus-within:ring-2 focus-within:ring-primary/20'
+            : 'market-subtle-border rounded-xl bg-white/90 shadow-[0_18px_34px_-28px_rgba(15,23,42,0.45)]',
+        )}
+      >
         <div className={cn(
           'absolute inset-y-0 left-3 flex items-center pointer-events-none',
           variant === 'hero' && 'left-5'
@@ -56,8 +58,8 @@ export function SearchBar({
           className={cn(
             'w-full border-none bg-transparent focus:ring-0 placeholder:text-muted-foreground text-foreground transition-all outline-none',
             variant === 'hero'
-              ? 'h-14 pl-13 pr-14 text-[15px]'
-              : 'py-2.5 pl-10 pr-4 text-sm'
+              ? 'h-14 pl-13 pr-14 text-[15px] font-medium'
+              : 'h-11 py-2.5 pl-10 pr-4 text-sm font-medium'
           )}
           type="text"
           aria-label={displayPlaceholder}

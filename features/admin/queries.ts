@@ -1,7 +1,9 @@
 import { createAdminClient } from '@/lib/supabase/server';
+import { assertAdminAccess } from './guard';
 
 /** Admin: get all agencies with approval status */
 export async function getAllAgencies() {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { data } = await supabase
     .from('agencies')
@@ -13,6 +15,7 @@ export async function getAllAgencies() {
 
 /** Admin: get all tours for moderation */
 export async function getAllTours() {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { data } = await supabase
     .from('tours')
@@ -24,6 +27,7 @@ export async function getAllTours() {
 
 /** Admin: get a single tour by ID with full details */
 export async function getAdminTourById(id: string) {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { data } = await supabase
     .from('tours')
@@ -36,6 +40,7 @@ export async function getAdminTourById(id: string) {
 
 /** Admin: approve or reject an agency */
 export async function setAgencyApproval(agencyId: string, approved: boolean) {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { error } = await supabase
     .from('agencies')
@@ -47,6 +52,7 @@ export async function setAgencyApproval(agencyId: string, approved: boolean) {
 
 /** Admin: update tour status (publish/reject) */
 export async function setTourStatus(tourId: string, status: string) {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { error } = await supabase
     .from('tours')
@@ -58,6 +64,7 @@ export async function setTourStatus(tourId: string, status: string) {
 
 /** Admin: get subscription overview */
 export async function getSubscriptionOverview() {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { data: plans } = await supabase
     .from('subscription_plans')
@@ -74,6 +81,7 @@ export async function getSubscriptionOverview() {
 
 /** Admin: get featured items */
 export async function getFeaturedItems() {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { data } = await supabase
     .from('featured_items')
@@ -85,12 +93,14 @@ export async function getFeaturedItems() {
 
 /** Admin: dashboard stats */
 export async function getAdminStats() {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
 
-  const [agencies, tours, leads, subscriptions, pendingCoinRequests] = await Promise.all([
+  const [agencies, tours, leads, users, subscriptions, pendingCoinRequests] = await Promise.all([
     supabase.from('agencies').select('id', { count: 'exact', head: true }),
     supabase.from('tours').select('id', { count: 'exact', head: true }),
     supabase.from('leads').select('id', { count: 'exact', head: true }),
+    supabase.from('profiles').select('id', { count: 'exact', head: true }),
     supabase
       .from('agency_subscriptions')
       .select('id', { count: 'exact', head: true })
@@ -105,6 +115,7 @@ export async function getAdminStats() {
     totalAgencies: agencies.count ?? 0,
     totalTours: tours.count ?? 0,
     totalLeads: leads.count ?? 0,
+    totalUsers: users.count ?? 0,
     activeSubscriptions: subscriptions.count ?? 0,
     pendingCoinRequests: pendingCoinRequests.count ?? 0,
   };
@@ -112,6 +123,7 @@ export async function getAdminStats() {
 
 /** Admin: get coin purchase requests */
 export async function getCoinRequests(status?: string) {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   let query = supabase
     .from('coin_requests')
@@ -128,11 +140,25 @@ export async function getCoinRequests(status?: string) {
 
 /** Admin: get all leads across all agencies with tour & agency info */
 export async function getAllLeads() {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { data } = await supabase
     .from('leads')
     .select('*, tour:tours(id, title, slug, cover_image_url, country, city, price, currency), agency:agencies(id, name, slug, phone, telegram_username)')
     .order('created_at', { ascending: false });
+
+  return data ?? [];
+}
+
+/** Admin: users list (profiles) */
+export async function getAllUsers() {
+  await assertAdminAccess();
+  const supabase = await createAdminClient();
+  const { data } = await supabase
+    .from('profiles')
+    .select('id, full_name, email, phone, role, created_at, updated_at')
+    .order('created_at', { ascending: false })
+    .limit(500);
 
   return data ?? [];
 }

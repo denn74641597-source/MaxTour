@@ -2,8 +2,10 @@
 
 import { createAdminClient } from '@/lib/supabase/server';
 import { notifySystemError } from '@/lib/telegram/admin-bot';
+import { assertAdminAccess } from './guard';
 
 export async function updateTourStatusAction(tourId: string, status: string) {
+  await assertAdminAccess();
   const validStatuses = ['draft', 'pending', 'published', 'archived'];
   if (!validStatuses.includes(status)) {
     return { error: 'Invalid status' };
@@ -24,6 +26,7 @@ export async function updateTourStatusAction(tourId: string, status: string) {
 }
 
 export async function updateAgencyApprovalAction(agencyId: string, approved: boolean) {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
   const { error } = await supabase
     .from('agencies')
@@ -40,6 +43,7 @@ export async function updateAgencyApprovalAction(agencyId: string, approved: boo
 
 /** Admin: approve coin purchase request — credits coins to agency */
 export async function approveCoinRequest(requestId: string) {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
 
   const { data: req } = await supabase
@@ -87,6 +91,7 @@ export async function approveCoinRequest(requestId: string) {
 
 /** Admin: reject coin purchase request */
 export async function rejectCoinRequest(requestId: string) {
+  await assertAdminAccess();
   const supabase = await createAdminClient();
 
   const { error } = await supabase

@@ -5,10 +5,10 @@ import { useRouter } from 'next/navigation';
 import { Coins, Star, Flame, TrendingUp, Eye, Zap, ShoppingCart, Shield, CheckCircle2 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { purchaseMaxCoins, promoteTour } from '@/features/maxcoin/actions';
-
-const COIN_PRICE_UZS = 15000;
 import { toast } from 'sonner';
 import type { Tour, PromotionTier, TourPromotion, MaxCoinTransaction, PromotionPlacement } from '@/types';
+
+const COIN_PRICE_UZS = 15000;
 
 interface AdvertisingContentProps {
   agencyId: string;
@@ -82,10 +82,18 @@ export function AdvertisingContent({
     hot_tours: t.maxcoin.placementHotTours,
   };
 
+  const getPromoTourTitle = (promo: TourPromotion): string => {
+    const candidate = promo.tour as { title?: unknown } | null;
+    if (candidate && typeof candidate.title === 'string' && candidate.title.trim()) {
+      return candidate.title;
+    }
+    return 'Tour';
+  };
+
   return (
-    <div className="max-w-lg mx-auto pb-8">
+    <div className="mx-auto max-w-4xl space-y-5 pb-8">
       {/* Header */}
-      <div className="bg-gradient-to-br from-primary via-primary to-primary-container text-white rounded-b-[2rem] px-6 pt-6 pb-8">
+      <div className="rounded-[1.8rem] bg-[linear-gradient(130deg,#0d5f8d,#0f7fa7,#127097)] px-6 pb-8 pt-6 text-white shadow-[0_28px_52px_-30px_rgba(15,23,42,0.75)]">
         <h1 className="text-2xl font-bold">{t.maxcoin.title}</h1>
         <p className="text-white/80 text-sm mt-1 leading-snug">{t.maxcoin.subtitle}</p>
 
@@ -113,9 +121,9 @@ export function AdvertisingContent({
 
       {/* Main Tab */}
       {activeTab === 'main' && (
-        <div className="px-6 mt-6 space-y-6">
+        <div className="grid items-start gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           {/* Where to use */}
-          <section>
+          <section className="market-section p-5">
             <h3 className="text-base font-bold text-foreground mb-3">{t.maxcoin.whereToUse}</h3>
             <div className="grid grid-cols-3 gap-3">
               {[
@@ -132,9 +140,9 @@ export function AdvertisingContent({
           </section>
 
           {/* Promote Tour */}
-          <section>
+          <section className="market-section p-5">
             <h3 className="text-base font-bold text-foreground mb-3">{t.maxcoin.promoteTour}</h3>
-            <div className="bg-surface rounded-2xl p-4 shadow-ambient space-y-4">
+            <div className="space-y-4">
               {/* Tour selection */}
               <div>
                 <label className="text-xs text-muted-foreground font-medium">{t.maxcoin.selectTour}</label>
@@ -217,7 +225,7 @@ export function AdvertisingContent({
 
           {/* Active Promotions */}
           {initialPromos.length > 0 && (
-            <section>
+            <section className="market-section p-5 lg:col-span-2">
               <h3 className="text-base font-bold text-foreground mb-3">{t.maxcoin.activePromotions}</h3>
               <div className="space-y-2">
                 {initialPromos.map((promo) => {
@@ -229,7 +237,7 @@ export function AdvertisingContent({
                     <div key={promo.id} className="bg-surface rounded-xl p-3 shadow-ambient flex items-center gap-3">
                       <div className="bg-primary/10 rounded-full p-2">{placementIcons[promo.placement]}</div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold truncate">{(promo.tour as any)?.title ?? 'Tour'}</p>
+                        <p className="text-sm font-semibold truncate">{getPromoTourTitle(promo)}</p>
                         <p className="text-xs text-muted-foreground">{placementLabels[promo.placement]}</p>
                       </div>
                       <div className="text-right shrink-0">
@@ -244,8 +252,8 @@ export function AdvertisingContent({
           )}
 
           {/* Why MaxCoin */}
-          <section>
-            <div className="bg-surface rounded-2xl p-5 shadow-ambient">
+          <section className="market-section p-5">
+            <div>
               <h3 className="text-base font-bold text-foreground text-center mb-4">{t.maxcoin.whyMaxCoin}</h3>
               <div className="space-y-3">
                 {[
@@ -275,12 +283,12 @@ export function AdvertisingContent({
 
       {/* Buy Tab */}
       {activeTab === 'buy' && (
-        <div className="px-6 mt-6 space-y-6">
+        <div className="space-y-5">
           <button onClick={() => setActiveTab('main')} className="text-sm text-primary font-medium">
             ← {t.maxcoin.title}
           </button>
 
-          <div className="bg-surface rounded-2xl p-6 shadow-ambient text-center">
+          <div className="market-section p-6 text-center">
             <h2 className="text-xl font-bold text-foreground">{t.maxcoin.purchaseTitle}</h2>
             <p className="text-muted-foreground text-sm mt-1">{t.maxcoin.purchaseSubtitle}</p>
 
@@ -342,7 +350,7 @@ export function AdvertisingContent({
 
       {/* History Tab */}
       {activeTab === 'history' && (
-        <div className="px-6 mt-6 space-y-4">
+        <div className="space-y-4">
           <button onClick={() => setActiveTab('main')} className="text-sm text-primary font-medium">
             ← {t.maxcoin.title}
           </button>

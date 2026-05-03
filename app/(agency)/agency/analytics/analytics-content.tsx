@@ -29,8 +29,8 @@ export function AnalyticsContent({ analytics, totalRequests }: AnalyticsContentP
   );
 
   return (
-    <div className="space-y-6">
-      <div>
+    <div className="space-y-5">
+      <div className="market-section p-4 md:p-5">
         <h1 className="text-xl font-bold">{t.analytics.title}</h1>
         <p className="text-sm text-muted-foreground">{t.analytics.subtitle}</p>
       </div>
@@ -38,23 +38,23 @@ export function AnalyticsContent({ analytics, totalRequests }: AnalyticsContentP
       {analytics.length > 0 ? (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div className="bg-sky-50 rounded-2xl p-4 text-center border border-sky-100">
+          <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <div className="market-section border border-sky-100 bg-sky-50 p-4 text-center">
               <Users className="h-5 w-5 text-sky-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-sky-600">{totalRequests}</p>
               <p className="text-[10px] text-sky-400 font-medium uppercase tracking-wider">{t.leadsPage.title}</p>
             </div>
-            <div className="bg-pink-50 rounded-2xl p-4 text-center border border-pink-100">
+            <div className="market-section border border-pink-100 bg-pink-50 p-4 text-center">
               <Heart className="h-5 w-5 text-pink-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-pink-600">{totals.interests}</p>
               <p className="text-[10px] text-pink-400 font-medium uppercase tracking-wider">{t.analytics.interests}</p>
             </div>
-            <div className="bg-emerald-50 rounded-2xl p-4 text-center border border-emerald-100">
+            <div className="market-section border border-emerald-100 bg-emerald-50 p-4 text-center">
               <Phone className="h-5 w-5 text-emerald-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-emerald-600">{totals.calls}</p>
               <p className="text-[10px] text-emerald-400 font-medium uppercase tracking-wider">{t.analytics.calls}</p>
             </div>
-            <div className="bg-blue-50 rounded-2xl p-4 text-center border border-blue-100">
+            <div className="market-section border border-blue-100 bg-blue-50 p-4 text-center">
               <Send className="h-5 w-5 text-blue-500 mx-auto mb-1" />
               <p className="text-2xl font-bold text-blue-600">{totals.telegram}</p>
               <p className="text-[10px] text-blue-400 font-medium uppercase tracking-wider">{t.analytics.telegram}</p>
@@ -62,7 +62,7 @@ export function AnalyticsContent({ analytics, totalRequests }: AnalyticsContentP
           </div>
 
           {/* Per-tour table */}
-          <div className="bg-surface rounded-[1.5rem] shadow-ambient overflow-hidden">
+          <div className="market-section overflow-hidden">
             <div className="grid grid-cols-[1fr_auto_auto_auto] gap-x-3 px-4 py-3 bg-surface-container-low text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
               <span>{t.analytics.tourName}</span>
               <span className="text-center w-12"><Heart className="h-3.5 w-3.5 text-pink-400 mx-auto" /></span>
@@ -86,11 +86,13 @@ export function AnalyticsContent({ analytics, totalRequests }: AnalyticsContentP
           </div>
         </>
       ) : (
-        <EmptyState
-          icon={<BarChart3 className="h-12 w-12 text-muted-foreground/50 mb-4" />}
-          title={t.analytics.noData}
-          description={t.analytics.noDataHint}
-        />
+        <div className="market-section p-6 md:p-8">
+          <EmptyState
+            icon={<BarChart3 className="mb-4 h-12 w-12 text-muted-foreground/50" />}
+            title={t.analytics.noData}
+            description={t.analytics.noDataHint}
+          />
+        </div>
       )}
     </div>
   );

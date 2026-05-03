@@ -70,8 +70,8 @@ export default function FavoritesPage() {
 
   if (loading) {
     return (
-      <div>
-        <div className="sticky top-[56px] z-40 glass-nav">
+      <div className="space-y-4">
+        <div className="sticky top-[var(--public-header-height)] z-30 market-glass rounded-2xl">
           <div className="flex px-6">
             {tabs.map((tab) => (
               <button
@@ -83,7 +83,7 @@ export default function FavoritesPage() {
             ))}
           </div>
         </div>
-        <div className="px-4 py-4">
+        <div className="market-section p-4 md:p-6">
           <TourListSkeleton count={4} />
         </div>
       </div>
@@ -91,9 +91,9 @@ export default function FavoritesPage() {
   }
 
   return (
-    <div className="lg:max-w-6xl xl:max-w-7xl lg:mx-auto">
+    <div className="space-y-4">
       {/* Sticky Tabs */}
-      <div className="sticky top-[56px] z-40 glass-nav">
+      <div className="sticky top-[var(--public-header-height)] z-30 market-glass rounded-2xl">
         <div className="flex px-6">
           {tabs.map((tab) => (
             <button
@@ -115,7 +115,7 @@ export default function FavoritesPage() {
       </div>
 
       {/* Tab Content */}
-      <div className="px-4 py-4">
+      <div className="market-section p-4 md:p-6">
         {/* Subscriptions Tab — list of followed agencies */}
         {activeTab === 'subscriptions' && (
           <div className="space-y-4">
@@ -236,7 +236,7 @@ export default function FavoritesPage() {
         {activeTab === 'favorites' && (
           <div>
             {favorites.length > 0 ? (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {favorites.map((fav) =>
                   fav.tour ? <TourCard key={fav.id} tour={fav.tour} /> : null
                 )}

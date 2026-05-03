@@ -94,7 +94,7 @@ export function AuthScreen() {
     try {
       // Determine if input is email or phone
       const isEmail = identifier.includes('@');
-      let authEmail = isEmail ? identifier.toLowerCase() : phoneToAuthEmail(normalizePhone(identifier));
+      const authEmail = isEmail ? identifier.toLowerCase() : phoneToAuthEmail(normalizePhone(identifier));
 
       let { error: signInError } = await supabase.auth.signInWithPassword({
         email: authEmail,
@@ -450,10 +450,10 @@ export function AuthScreen() {
   const isAgencyFormValid = agencyFullName.trim() && agencyEmail.trim() && agencyPhone.trim() && agencyPassword.trim();
 
   return (
-    <div className="px-4 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-6">
       {/* ══════════════ LOGIN SCREEN ══════════════ */}
       {step === 'login' && (
-        <div className="space-y-6">
+        <div className="market-section space-y-6 p-5 md:p-8">
           <div className="text-center space-y-2">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mx-auto">
               <LogIn className="h-8 w-8 text-primary" />
@@ -527,7 +527,7 @@ export function AuthScreen() {
                 <div className="w-full border-t border-muted" />
               </div>
               <div className="relative flex justify-center">
-                <span className="bg-background px-3 text-xs text-muted-foreground">{t.auth.noAccount}</span>
+                <span className="bg-white px-3 text-xs text-muted-foreground">{t.auth.noAccount}</span>
               </div>
             </div>
 
@@ -544,7 +544,7 @@ export function AuthScreen() {
 
       {/* ══════════════ REGISTER SCREEN WITH TABS ══════════════ */}
       {step === 'register' && (
-        <div className="space-y-6">
+        <div className="market-section space-y-6 p-5 md:p-8">
           <div className="text-center space-y-2">
             <h1 className="text-xl font-bold text-foreground">
               {t.auth.register}
@@ -764,7 +764,7 @@ export function AuthScreen() {
 
       {/* ══════════════ OTP VERIFICATION (Agency) ══════════════ */}
       {step === 'otp-verify' && (
-        <div className="space-y-6">
+        <div className="market-section space-y-6 p-5 md:p-8">
           <div className="text-center space-y-2">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mx-auto">
               <Mail className="h-8 w-8 text-primary" />

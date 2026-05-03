@@ -343,3 +343,51 @@ html, body {
     transform: none;
   }
 }
+
+:root {
+  --public-header-height: 84px;
+}
+
+.public-page-shell {
+  width: 100%;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+.market-section {
+  border-radius: 1.5rem;
+  background: color-mix(in oklab, var(--color-surface) 86%, white 14%);
+  box-shadow:
+    0 28px 48px -34px rgba(15, 23, 42, 0.45),
+    0 8px 18px -14px rgba(15, 23, 42, 0.3);
+}
+
+.market-glass {
+  background: color-mix(in oklab, var(--color-surface) 68%, transparent 32%);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.market-subtle-border {
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.08);
+}
+
+.market-kicker {
+  font-size: 0.69rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+  font-weight: 700;
+  color: color-mix(in oklab, var(--color-muted-foreground) 82%, var(--color-primary) 18%);
+}
+
+.agency-shell {
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --public-header-height: 72px;
+  }
+}

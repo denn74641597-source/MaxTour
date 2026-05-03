@@ -42,7 +42,7 @@ export function ToursFilterBar() {
   const isVerifiedActive = searchParams.get('verified') === 'true';
 
   return (
-    <div ref={scrollRef} className="flex gap-2 overflow-x-auto no-scrollbar py-1 cursor-grab active:cursor-grabbing">
+    <div ref={scrollRef} className="flex cursor-grab gap-2 overflow-x-auto py-1 no-scrollbar active:cursor-grabbing">
       {FILTER_CHIPS.map((chip) => {
         const isActive =
           chip.key === 'all'
@@ -56,10 +56,10 @@ export function ToursFilterBar() {
             key={chip.key}
             onClick={() => handleFilter(chip.key)}
             className={cn(
-              'flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors shrink-0',
+              'shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-xs font-semibold transition-colors flex items-center gap-1.5',
               isActive
-                ? 'bg-primary text-white font-semibold'
-                : 'bg-secondary text-muted-foreground hover:bg-muted'
+                ? 'bg-[linear-gradient(120deg,#0f648f,#0e7ca4)] text-white shadow-[0_12px_24px_-20px_rgba(15,23,42,0.75)]'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             )}
           >
             {chip.label}
