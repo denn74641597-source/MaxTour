@@ -20,6 +20,10 @@ zone_name = "mxtr.uz"
 pattern = "remote.mxtr.uz/*"
 zone_name = "mxtr.uz"
 
+[[routes]]
+pattern = "agency.mxtr.uz/*"
+zone_name = "mxtr.uz"
+
 [vars]
 # Ommaviy (public) o'zgaruvchilar — brauzerda ko'rinadi, maxfiy emas
 NEXT_PUBLIC_APP_NAME = "MaxTour"

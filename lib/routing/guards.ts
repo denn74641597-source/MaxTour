@@ -30,7 +30,15 @@ export function evaluateDomainAccess(
     return { allow: true };
   }
 
-  if (domainTarget === 'mxtr' && pathname.startsWith('/admin')) {
+  if (domainTarget === 'agency') {
+    if (pathname === '/') return { allow: false, redirectPath: '/agency' };
+    if (!pathname.startsWith('/agency')) {
+      return { allow: false, redirectPath: '/agency' };
+    }
+    return { allow: true };
+  }
+
+  if (domainTarget === 'mxtr' && (pathname.startsWith('/admin') || pathname.startsWith('/agency'))) {
     return { allow: false, redirectPath: '/' };
   }
 

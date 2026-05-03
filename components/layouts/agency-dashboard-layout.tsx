@@ -1,6 +1,6 @@
 import { Suspense } from 'react';
 import { Loader2 } from 'lucide-react';
-import { DashboardNav, DashboardMenuTrigger } from '@/components/shared/dashboard-nav';
+import { AgencyWorkspaceTopbar, DashboardNav, DashboardMenuTrigger } from '@/components/shared/dashboard-nav';
 import { AppHeader } from '@/components/shared/app-header';
 
 function AgencyLoadingFallback() {
@@ -23,9 +23,12 @@ export function AgencyDashboardLayout({
       </div>
       <div className="agency-shell flex flex-1 flex-col md:flex-row">
         <DashboardNav type="agency" />
-        <main className="flex-1 px-4 pb-8 pt-4 md:px-6 md:pt-8 lg:px-8 xl:px-10">
+        <main className="flex-1 px-4 pb-8 pt-4 md:px-6 md:pt-5 lg:px-8 xl:px-10">
+          <AgencyWorkspaceTopbar />
           <Suspense fallback={<AgencyLoadingFallback />}>
-            {children}
+            <div className="mt-4 md:mt-5">
+              {children}
+            </div>
           </Suspense>
         </main>
       </div>

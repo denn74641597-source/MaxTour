@@ -1,4 +1,4 @@
-export type DomainTarget = 'mxtr' | 'remote' | 'unknown';
+export type DomainTarget = 'mxtr' | 'agency' | 'remote' | 'unknown';
 
 export type RouteArea = 'public' | 'agency' | 'admin';
 

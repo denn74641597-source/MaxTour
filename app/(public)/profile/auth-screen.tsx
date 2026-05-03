@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { slugify } from '@/lib/utils';
+import { getAgencyPortalHref } from '@/lib/routing/domains';
 
 type AuthStep = 'login' | 'register' | 'otp-verify';
 type RegisterTab = 'user' | 'agency';
@@ -76,6 +77,15 @@ export function AuthScreen() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [legalAccepted, setLegalAccepted] = useState(false);
+
+  const goToAgencyPortal = useCallback(() => {
+    const href = getAgencyPortalHref('/agency');
+    if (href.startsWith('http')) {
+      window.location.assign(href);
+      return;
+    }
+    router.push(href);
+  }, [router]);
 
   const pendingAgencyRef = useRef<{
     fullName: string;
@@ -215,7 +225,7 @@ export function AuthScreen() {
         .maybeSingle();
 
       if (profile?.role === 'agency_manager') {
-        router.push('/agency');
+        goToAgencyPortal();
         return;
       }
 
@@ -457,7 +467,7 @@ export function AuthScreen() {
         return;
       }
 
-      router.push('/agency');
+      goToAgencyPortal();
     } catch (err) {
       console.error('Verify OTP error:', err);
       setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');

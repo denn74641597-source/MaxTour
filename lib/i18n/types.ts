@@ -333,6 +333,18 @@ export interface Translations {
     promoteTourHint: string;
     promoteTour: string;
     noActiveToursToPush: string;
+    overviewSubtitle: string;
+    requestsLast48h: string;
+    verificationStatusLabel: string;
+    verificationLastRequestLabel: string;
+    verificationNotSubmitted: string;
+    trackedToursLabel: string;
+    planUsageLabel: string;
+    planRemainingLabel: string;
+    recentLeadsSubtitle: string;
+    dashboardErrorTitle: string;
+    dashboardErrorHint: string;
+    loadErrorAction: string;
   };
   verification: {
     title: string;
@@ -385,12 +397,32 @@ export interface Translations {
     verifiedBadge: string;
     verifiedBadgeYes: string;
     verifiedBadgeNo: string;
+    latestRequestTitle: string;
+    submittedAt: string;
+    updatedAt: string;
+    noRequestYetTitle: string;
+    historyTitle: string;
+    historyEmptyTitle: string;
+    historyEmptyHint: string;
+    formLockedTitle: string;
+    formLockedHint: string;
+    requiredFieldsHint: string;
   };
   agencyTours: {
     title: string;
     newTour: string;
+    listSubtitle: string;
+    searchPlaceholder: string;
+    statsTotal: string;
+    statsPending: string;
+    statsPublished: string;
+    statsDraft: string;
+    statsArchived: string;
     noTours: string;
     noToursHint: string;
+    noFilteredTours: string;
+    noFilteredToursHint: string;
+    resetFilters: string;
     createTour: string;
     editTour: string;
     createNewTour: string;
@@ -567,6 +599,16 @@ export interface Translations {
     statusWon: string;
     statusLost: string;
   };
+  requestsPage: {
+    subtitle: string;
+    searchRequestsPlaceholder: string;
+    searchInterestsPlaceholder: string;
+    requestDetail: string;
+    interestedDetail: string;
+    contactCopied: string;
+    contactCopyError: string;
+    statusUpdateError: string;
+  };
   statusLabels: {
     new: string;
     contacted: string;
@@ -619,13 +661,18 @@ export interface Translations {
     responsiblePersonPlaceholder: string;
     uploadGuvohnoma: string;
     uploadLitsenziya: string;
+    companyNameRequired: string;
   };
   agencyView: {
     approved: string;
     pendingApproval: string;
     verified: string;
     aboutUs: string;
+    noDescription: string;
     noContactInfo: string;
+    ownerManager: string;
+    followers: string;
+    planNotAvailable: string;
     memberSince: string;
     editProfile: string;
     editSubtitle: string;
@@ -732,6 +779,28 @@ export interface Translations {
   analytics: {
     title: string;
     subtitle: string;
+    dateRange: string;
+    range7d: string;
+    range30d: string;
+    range90d: string;
+    rangeAll: string;
+    interestedUsers: string;
+    tourPerformance: string;
+    profilePerformance: string;
+    profileViews: string;
+    followers: string;
+    averageRating: string;
+    reviewCount: string;
+    profileViewLeadRate: string;
+    leadToInterestRate: string;
+    leadToInterestShort: string;
+    promotionPerformance: string;
+    activePromotions: string;
+    promotionLaunches: string;
+    promotionSpendCoins: string;
+    noPromotionData: string;
+    topTours: string;
+    loadErrorTitle: string;
     interests: string;
     calls: string;
     telegram: string;

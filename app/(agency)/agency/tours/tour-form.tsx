@@ -6,13 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { ImageUploader } from '@/components/shared/image-uploader';
 import { MultiImageUploader } from '@/components/shared/multi-image-uploader';
 import { tourSchema, type TourFormData } from '@/lib/validators';
@@ -27,9 +20,11 @@ import { uploadImageAction } from '@/features/upload/actions';
 import { notifyTourSubmitted } from '@/features/tours/actions';
 import { compressImage, validateImageFile } from '@/lib/image-utils';
 import { createClient } from '@/lib/supabase/client';
-import { COUNTRIES, CITIES_BY_COUNTRY, AIRLINES, UZ_REGIONS, UZ_DISTRICTS } from '@/lib/tour-data';
+import { COUNTRIES, CITIES_BY_COUNTRY, UZ_REGIONS, UZ_DISTRICTS } from '@/lib/tour-data';
 import { TOUR_CATEGORIES } from '@/types';
 import type { TourHotel, TourType, DomesticTourCategory, TourCategoryTag, ComboHotelVariant } from '@/types';
+
+const MEAL_OPTIONS = ['none', 'breakfast', 'half_board', 'full_board', 'all_inclusive'] as const;
 
 interface TourFormProps {
   initialData?: Partial<TourFormData> & {
@@ -149,13 +144,8 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
   const [newIncluded, setNewIncluded] = useState('');
   const [countrySearch, setCountrySearch] = useState('');
   const [citySearch, setCitySearch] = useState('');
-  const [airlineSearch, setAirlineSearch] = useState('');
 
   // New fields state
-  const [destinations, setDestinations] = useState<string[]>(
-    initialData?.destinations ?? []
-  );
-  const [newDestination, setNewDestination] = useState('');
   const [hotels, setHotels] = useState<TourHotel[]>(
     initialData?.hotels ?? []
   );
@@ -275,16 +265,6 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     }
   }
 
-  function addDestination() {
-    if (!newDestination.trim() || destinations.length >= 10) return;
-    setDestinations((prev) => [...prev, newDestination.trim()]);
-    setNewDestination('');
-  }
-
-  function removeDestination(index: number) {
-    setDestinations((prev) => prev.filter((_, i) => i !== index));
-  }
-
   function addMandatoryCharge() {
     if (!newMandatoryName.trim() || !newMandatoryAmount) return;
     setMandatoryCharges((prev) => [
@@ -353,10 +333,54 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
     setIncludedServices((prev) => prev.filter((_, i) => i !== index));
   }
 
-  async function onSubmit(data: TourFormData) {
-    // Combo tours must have at least 2 destinations
+  function hasPriceValue(value: unknown): boolean {
+    if (value === null || value === undefined) return false;
+    return String(value).trim().length > 0;
+  }
+
+  function passesMobileRequiredChecks(data?: TourFormData): boolean {
+    const titleValue = String((data?.title ?? watch('title') ?? '')).trim();
+    const countryValue = String((data?.country ?? watch('country') ?? '')).trim();
+    const regionValue = String((data?.region ?? watch('region') ?? '')).trim();
+    const districtValue = String((data?.district ?? watch('district') ?? '')).trim();
+    const domesticCategoryValue = data?.domestic_category ?? watch('domestic_category');
+    const meetingPointValue = String((data?.meeting_point ?? watch('meeting_point') ?? '')).trim();
+    const guideNameValue = String((data?.guide_name ?? watch('guide_name') ?? '')).trim();
+    const guidePhoneValue = String((data?.guide_phone ?? watch('guide_phone') ?? '')).trim();
+    const priceValue = data?.price ?? watch('price');
+
+    if (!titleValue || !hasPriceValue(priceValue)) {
+      toast.error(t.agencyTours.fixErrors);
+      return false;
+    }
+
+    if (!isDomestic && !countryValue) {
+      toast.error(t.agencyTours.fixErrors);
+      return false;
+    }
+
     if (isCombo && comboDestinations.length < 2) {
       toast.error(t.agencyTours.comboMinCountries);
+      return false;
+    }
+
+    if (isDomestic) {
+      if (!regionValue || !districtValue || !domesticCategoryValue) {
+        toast.error(t.agencyTours.fixErrors);
+        return false;
+      }
+
+      if (!meetingPointValue || !guideNameValue || !guidePhoneValue) {
+        toast.error(t.agencyTours.fixErrors);
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  async function onSubmit(data: TourFormData) {
+    if (!passesMobileRequiredChecks(data)) {
       return;
     }
 
@@ -406,7 +430,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
       combo_hotels: isCombo ? comboHotels : [],
       destinations: isCombo
         ? comboDestinations.filter(d => d.city).map(d => d.city)
-        : destinations,
+        : [],
       airline: tourType === 'international' ? (data.airline || null) : null,
       extra_charges: [
         ...mandatoryCharges.map(c => ({ ...c, required: true })),
@@ -417,7 +441,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
         ...optionalVarCharges.map(c => ({ ...c, required: false })),
       ],
       meal_type: data.meal_type || 'none',
-      transport_type: data.transport_type || (tourType === 'domestic' ? 'bus' : 'flight'),
+      transport_type: tourType === 'domestic' ? 'bus' : (data.transport_type || 'flight'),
       visa_required: tourType === 'domestic' ? false : (data.visa_required || false),
       included_services: includedServices,
       excluded_services: [],
@@ -572,6 +596,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               setTourType('international');
               setValue('tour_type', 'international');
               setValue('currency', 'USD');
+              setValue('meal_type', 'none');
               setValue('transport_type', 'flight');
               setTourTypeSelected(true);
             }}
@@ -592,6 +617,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               setTourType('domestic');
               setValue('tour_type', 'domestic');
               setValue('currency', 'UZS');
+              setValue('meal_type', 'none');
               setValue('transport_type', 'bus');
               setValue('visa_required', false);
               setTourTypeSelected(true);
@@ -660,7 +686,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
             {/* Tour Category Selection */}
             <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.tourCategory} <span className="text-destructive">*</span></Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.tourCategory}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.tourCategoryHint}</p>
               <div className="mt-2 max-h-48 overflow-y-auto rounded-xl border border-muted bg-surface-container-low">
                 {TOUR_CATEGORIES.map((cat) => {
@@ -699,7 +725,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
             {/* Full Description - moved here from included services */}
             <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.fullDescription} <span className="text-destructive">*</span></Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.fullDescription}</Label>
               <Textarea placeholder={t.agencyTours.fullDescriptionPlaceholder} rows={4} {...register('full_description')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low" />
             </div>
 
@@ -738,7 +764,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                   </div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.city} <span className="text-destructive">*</span></Label>
+                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.city}</Label>
                   <div className="relative mt-1.5">
                     {watch('city') ? (
                       <div className="flex items-center h-11 rounded-xl border border-muted bg-surface-container-low px-3">
@@ -918,11 +944,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             {/* Row 1: Departure date & Return date */}
             <div className={`grid grid-cols-2 gap-3 transition-opacity duration-200 ${departureMonth ? 'opacity-40 pointer-events-none' : ''}`}>
               <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureDate} <span className="text-destructive">*</span></Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureDate}</Label>
                 <Input type="date" {...register('departure_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
               <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate} <span className="text-destructive">*</span></Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.returnDate}</Label>
                 <Input type="date" {...register('return_date')} placeholder={t.dateFormat.placeholder} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
             </div>
@@ -931,7 +957,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             <div className="grid grid-cols-2 gap-3">
               <div className={`transition-opacity duration-200 ${(watch('departure_date') || watch('return_date')) ? 'opacity-40 pointer-events-none' : ''}`}>
                 <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureMonth} <span className="text-destructive">*</span></Label>
+                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.departureMonth}</Label>
                   {departureMonth && (
                     <button type="button" onClick={() => setDepartureMonth('')} className="text-muted-foreground hover:text-foreground p-0.5">
                       <X className="h-3.5 w-3.5" />
@@ -982,7 +1008,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
                 })()}
               </div>
               <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationLabel} <span className="text-destructive">*</span></Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.durationLabel}</Label>
                 <div className="flex gap-2 mt-1.5">
                   <div className="relative flex-1">
                     <Input type="number" min={1} placeholder="7" {...register('duration_days')} className="rounded-xl border-muted bg-surface-container-low h-11 pr-14" />
@@ -1025,11 +1051,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.totalSeats} <span className="text-destructive">*</span></Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.totalSeats}</Label>
                 <Input type="number" min={1} {...register('seats_total')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
               <div>
-                <Label className="text-sm font-medium text-foreground">{t.agencyTours.seatsLeft} <span className="text-destructive">*</span></Label>
+                <Label className="text-sm font-medium text-foreground">{t.agencyTours.seatsLeft}</Label>
                 <Input type="number" min={0} {...register('seats_left')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low h-11" />
               </div>
             </div>
@@ -1045,7 +1071,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
           <div className="space-y-4">
             {/* Included Services */}
             <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.includedServices} <span className="text-destructive">*</span></Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.includedServices}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.includedServicesHint}</p>
               {includedServices.length > 0 && (
                 <div className="space-y-1 mt-2">
@@ -1201,7 +1227,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
             {/* Operator Info */}
             <div>
-              <Label className="text-sm font-medium text-foreground">{t.agencyTours.operatorTelegram} <span className="text-destructive">*</span></Label>
+              <Label className="text-sm font-medium text-foreground">{t.agencyTours.operatorTelegram}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{t.agencyTours.operatorTelegramHint}</p>
               <div className="space-y-2 mt-1.5">
                 <Input placeholder={t.agencyTours.operatorTelegramPlaceholder} {...register('operator_telegram_username')} className="rounded-xl border-muted bg-surface-container-low h-11" />
@@ -1461,6 +1487,29 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
               <SectionHeader icon={<MapPin className="h-4 w-4" />} label={t.domesticTour.guideInfo} color="text-emerald-600" />
               <div className="space-y-4">
                 <div>
+                  <Label className="text-sm font-medium text-foreground">{t.agencyTours.mealType}</Label>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {MEAL_OPTIONS.map((meal) => {
+                      const isActive = (watch('meal_type') || 'none') === meal;
+                      return (
+                        <button
+                          key={meal}
+                          type="button"
+                          onClick={() => setValue('meal_type', meal)}
+                          className={`rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                            isActive
+                              ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                              : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+                          }`}
+                        >
+                          {t.mealTypes[meal]}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
                   <Label className="text-sm font-medium text-foreground">{t.domesticTour.meetingPoint} <span className="text-destructive">*</span></Label>
                   <p className="text-xs text-muted-foreground mt-0.5">{t.domesticTour.meetingPointHint}</p>
                   <Textarea placeholder={t.domesticTour.meetingPointPlaceholder} rows={2} {...register('meeting_point')} className="mt-1.5 rounded-xl border-muted bg-surface-container-low" />
@@ -1479,7 +1528,7 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
 
                 {/* What to Bring */}
                 <div>
-                  <Label className="text-sm font-medium text-foreground">{t.domesticTour.whatToBring} <span className="text-destructive">*</span></Label>
+                  <Label className="text-sm font-medium text-foreground">{t.domesticTour.whatToBring}</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">{t.domesticTour.whatToBringHint}</p>
                   {whatToBring.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -1531,12 +1580,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             disabled={isSubmitting}
             onClick={() => {
               ensureSlug();
-              if (isCombo && comboDestinations.length < 2) {
-                toast.error(t.agencyTours.comboMinCountries);
-                return;
-              }
               setPendingStatus('pending');
-              handleSubmit(() => setShowPreview(true), onValidationError)();
+              handleSubmit((formData) => {
+                if (!passesMobileRequiredChecks(formData)) return;
+                setShowPreview(true);
+              }, onValidationError)();
             }}
           >
             <Eye className="h-4 w-4 mr-2" />
@@ -1549,12 +1597,11 @@ export function TourForm({ initialData, tourId }: TourFormProps) {
             disabled={isSubmitting}
             onClick={() => {
               ensureSlug();
-              if (isCombo && comboDestinations.length < 2) {
-                toast.error(t.agencyTours.comboMinCountries);
-                return;
-              }
               setPendingStatus('draft');
-              handleSubmit(() => setShowPreview(true), onValidationError)();
+              handleSubmit((formData) => {
+                if (!passesMobileRequiredChecks(formData)) return;
+                setShowPreview(true);
+              }, onValidationError)();
             }}
           >
             {t.agencyTours.saveAsDraft}

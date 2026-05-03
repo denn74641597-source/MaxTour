@@ -14,6 +14,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useProfile } from '@/hooks';
 import { LanguageSwitcher } from './language-switcher';
 import { cn } from '@/lib/utils';
+import { getAgencyPortalHref } from '@/lib/routing/domains';
 
 /**
  * Public-facing left sidebar for desktop (>= lg).
@@ -23,6 +24,7 @@ export function PublicDesktopSidebar() {
   const pathname = usePathname();
   const { t } = useTranslation();
   const { profile } = useProfile();
+  const agencyPanelHref = getAgencyPortalHref('/agency');
 
   const PRIMARY_ITEMS = [
     { href: '/', label: t.nav.explore, icon: Compass },
@@ -35,7 +37,7 @@ export function PublicDesktopSidebar() {
     ? [
         { href: '/profile/notifications', label: t.notifications.title, icon: BellRing },
         ...(profile.role === 'agency_manager'
-          ? [{ href: '/agency', label: t.nav.agencyPanel, icon: Building2 }]
+          ? [{ href: agencyPanelHref, label: t.nav.agencyPanel, icon: Building2 }]
           : []),
       ]
     : [];

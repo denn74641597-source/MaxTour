@@ -10,25 +10,28 @@ export function NewTourContent() {
   const router = useRouter();
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          type="button"
-          onClick={() => router.back()}
-          className="p-2 -ml-2 rounded-xl hover:bg-muted transition-colors"
-        >
-          <ArrowLeft className="h-5 w-5 text-muted-foreground" />
-        </button>
-        <div>
-          <h1 className="text-lg font-bold text-foreground">{t.agencyTours.createNewTour}</h1>
-          <p className="text-xs text-muted-foreground">
-            {t.agencyTours.createNewTourHint}
-          </p>
+    <div className="space-y-5">
+      <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white via-slate-50 to-slate-100/60 p-4 shadow-[0_22px_42px_-34px_rgba(15,23,42,0.45)] md:p-5">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="rounded-xl border border-slate-200 bg-white p-2 text-slate-600 transition-colors hover:bg-slate-50"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-slate-900">{t.agencyTours.createNewTour}</h1>
+            <p className="mt-1 text-sm text-slate-600">
+              {t.agencyTours.createNewTourHint}
+            </p>
+          </div>
         </div>
       </div>
 
-      <TourForm />
+      <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm md:p-6">
+        <TourForm />
+      </div>
     </div>
   );
 }

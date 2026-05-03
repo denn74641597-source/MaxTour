@@ -6,7 +6,7 @@ export async function getLeadsByAgency(agencyId: string): Promise<Lead[]> {
   const supabase = await createServerSupabaseClient();
   const { data } = await supabase
     .from('leads')
-    .select('*, tour:tours(id, title, slug, cover_image_url)')
+    .select('*, tour:tours(id, title, slug, cover_image_url, country, city)')
     .eq('agency_id', agencyId)
     .order('created_at', { ascending: false });
 

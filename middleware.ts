@@ -2,6 +2,38 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { evaluateDomainAccess, getHostContextFromRequest, isStaticOrInternalPath } from '@/lib/routing/guards';
 import { updateSession } from '@/lib/supabase/middleware';
 
+function redirectToHost(request: NextRequest, host: string, pathname: string, search: string = '') {
+  const url = new URL(request.url);
+  url.protocol = 'https:';
+  url.host = host;
+  url.pathname = pathname;
+  url.search = search;
+  return NextResponse.redirect(url);
+}
+
+function redirectToProfile(request: NextRequest, forceMxtrHost: boolean) {
+  if (forceMxtrHost) {
+    const loginUrl = new URL(request.url);
+    const nextUrl = new URL(request.url);
+
+    loginUrl.protocol = 'https:';
+    loginUrl.host = 'mxtr.uz';
+    loginUrl.pathname = '/profile';
+    loginUrl.search = '';
+
+    nextUrl.protocol = 'https:';
+    nextUrl.host = 'agency.mxtr.uz';
+    loginUrl.searchParams.set('next', `${nextUrl.pathname}${nextUrl.search}`);
+
+    return NextResponse.redirect(loginUrl);
+  }
+
+  const loginUrl = request.nextUrl.clone();
+  loginUrl.pathname = '/profile';
+  loginUrl.search = '';
+  return NextResponse.redirect(loginUrl);
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (isStaticOrInternalPath(pathname)) {
@@ -9,19 +41,23 @@ export async function middleware(request: NextRequest) {
   }
 
   const hostContext = getHostContextFromRequest(request);
-  const domainAccess = evaluateDomainAccess(pathname, hostContext.domainTarget);
-  if (!domainAccess.allow && domainAccess.redirectPath) {
-    if (hostContext.domainTarget === 'mxtr' && pathname.startsWith('/admin')) {
-      const remoteAdminUrl = new URL(request.url);
-      remoteAdminUrl.protocol = 'https:';
-      remoteAdminUrl.host = 'remote.mxtr.uz';
-      return NextResponse.redirect(remoteAdminUrl);
-    }
+  const shouldEnforceDomainSplit = !hostContext.isDevelopmentHost && hostContext.domainTarget !== 'unknown';
+  if (shouldEnforceDomainSplit) {
+    const domainAccess = evaluateDomainAccess(pathname, hostContext.domainTarget);
+    if (!domainAccess.allow && domainAccess.redirectPath) {
+      if (hostContext.domainTarget === 'mxtr' && pathname.startsWith('/admin')) {
+        return redirectToHost(request, 'remote.mxtr.uz', pathname, request.nextUrl.search);
+      }
 
-    const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = domainAccess.redirectPath;
-    redirectUrl.search = '';
-    return NextResponse.redirect(redirectUrl);
+      if (hostContext.domainTarget === 'mxtr' && pathname.startsWith('/agency')) {
+        return redirectToHost(request, 'agency.mxtr.uz', pathname, request.nextUrl.search);
+      }
+
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = domainAccess.redirectPath;
+      redirectUrl.search = '';
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   const isAdminRoute = pathname.startsWith('/admin');
@@ -58,14 +94,33 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const { supabaseResponse, user } = await updateSession(request);
+  const { supabaseResponse, user, supabase } = await updateSession(request);
 
   if (pathname.startsWith('/agency')) {
     if (!user) {
-      const loginUrl = request.nextUrl.clone();
-      loginUrl.pathname = '/profile';
-      loginUrl.search = '';
-      return NextResponse.redirect(loginUrl);
+      const forceMxtrHost = hostContext.domainTarget === 'agency' && !hostContext.isDevelopmentHost;
+      return redirectToProfile(request, forceMxtrHost);
+    }
+
+    let role: string | null = null;
+    if (supabase) {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+      if (!error) {
+        role = profile?.role ?? null;
+      }
+    }
+
+    if (role !== 'agency_manager') {
+      if (role === 'admin' && hostContext.domainTarget === 'agency' && !hostContext.isDevelopmentHost) {
+        return redirectToHost(request, 'remote.mxtr.uz', '/admin');
+      }
+
+      const forceMxtrHost = hostContext.domainTarget === 'agency' && !hostContext.isDevelopmentHost;
+      return redirectToProfile(request, forceMxtrHost);
     }
   }
 

@@ -27,37 +27,34 @@ export const agencyProfileSchema = z.object({
 export type AgencyProfileData = z.infer<typeof agencyProfileSchema>;
 
 export const tourHotelSchema = z.object({
-  name: z.string().min(1, 'Hotel name is required'),
+  name: z.string().optional().or(z.literal('')).transform((v) => v || ''),
   stars: z.coerce.number().int().min(1).max(5).nullable().default(null),
-  price: z.coerce.number().positive('Price must be greater than 0'),
-  description: z.string().max(1000).nullable().default(null),
-  booking_url: z.string().url().optional().or(z.literal('')).transform(v => v || null),
+  price: z.coerce.number().optional().default(0),
+  description: z.string().nullable().default(null),
+  booking_url: z.string().optional().or(z.literal('')).transform(v => v || null),
   images: z.array(z.string()).default([]),
 });
 
 export type TourHotelFormData = z.infer<typeof tourHotelSchema>;
 
 export const comboHotelEntrySchema = z.object({
-  city: z.string().min(1, 'City is required'),
-  name: z.string().min(1, 'Hotel name is required'),
-  booking_url: z.string().url().optional().or(z.literal('')).transform(v => v || null),
+  city: z.string().optional().or(z.literal('')).transform((v) => v || ''),
+  name: z.string().optional().or(z.literal('')).transform((v) => v || ''),
+  booking_url: z.string().optional().or(z.literal('')).transform(v => v || null),
   image_url: z.string().optional().or(z.literal('')).transform(v => v || null),
 });
 
 export const comboHotelVariantSchema = z.object({
-  price: z.coerce.number().positive('Price must be greater than 0'),
-  hotels: z.array(comboHotelEntrySchema).min(1),
+  price: z.coerce.number().optional().default(0),
+  hotels: z.array(comboHotelEntrySchema).default([]),
 });
 
 export type ComboHotelVariantFormData = z.infer<typeof comboHotelVariantSchema>;
 
 export const tourSchema = z.object({
-  title: z.string().min(3, 'Title must be at least 3 characters').max(60, 'Title must be at most 60 characters'),
-  slug: z
-    .string()
-    .min(2)
-    .regex(/^[a-z0-9-]+$/, 'Slug must be lowercase letters, numbers, and hyphens'),
-  full_description: z.string().max(5000).optional(),
+  title: z.string().min(1, 'Title is required'),
+  slug: z.string().optional().or(z.literal('')).default(''),
+  full_description: z.string().optional().or(z.literal('')),
   tour_type: z.enum(['international', 'domestic']).default('international'),
   // International fields
   country: z.string().optional(),
@@ -65,16 +62,16 @@ export const tourSchema = z.object({
   departure_date: z.string().optional(),
   departure_month: z.string().optional(),
   return_date: z.string().optional(),
-  duration_days: z.coerce.number().int().positive().optional(),
+  duration_days: z.coerce.number().int().min(0).optional(),
   duration_nights: z.coerce.number().int().min(0).optional(),
-  price: z.coerce.number().positive('Price must be greater than 0'),
-  old_price: z.coerce.number().positive().optional(),
+  price: z.coerce.number().optional().default(0),
+  old_price: z.coerce.number().min(0).optional(),
   currency: z.enum(['USD', 'UZS', 'EUR']).default('USD'),
-  seats_total: z.coerce.number().int().positive().optional(),
+  seats_total: z.coerce.number().int().min(0).optional(),
   seats_left: z.coerce.number().int().min(0).optional(),
-  hotel_name: z.string().optional(),
+  hotel_name: z.string().optional().or(z.literal('')),
   hotel_stars: z.coerce.number().int().min(1).max(5).optional(),
-  hotel_booking_url: z.string().url().optional().or(z.literal('')),
+  hotel_booking_url: z.string().optional().or(z.literal('')),
   hotel_images: z.array(z.string()).default([]),
   hotels: z.array(tourHotelSchema).default([]),
   combo_hotels: z.array(comboHotelVariantSchema).default([]),
@@ -91,7 +88,7 @@ export const tourSchema = z.object({
   operator_telegram_username: z.string().optional().or(z.literal('')),
   operator_phone: z.string().optional().or(z.literal('')),
   category: z.string().optional().or(z.literal('')),
-  additional_info: z.string().max(2000).optional().or(z.literal('')),
+  additional_info: z.string().optional().or(z.literal('')),
   // Domestic fields
   domestic_category: z.enum(['excursion', 'nature', 'historical', 'pilgrimage', 'recreation', 'adventure']).optional(),
   region: z.string().optional(),

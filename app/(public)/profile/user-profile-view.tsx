@@ -10,7 +10,6 @@ import {
   Calendar,
   ChevronRight,
   CircleHelp,
-  Clock3,
   Loader2,
   LogOut,
   Mail,
@@ -22,7 +21,6 @@ import {
   Star,
   Ticket,
   User,
-  Wallet,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
@@ -44,6 +42,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { updatePasswordAction } from '@/features/auth/security-actions';
+import { getAgencyPortalHref } from '@/lib/routing/domains';
 import type { Profile } from '@/types';
 
 type ProfileTab = 'overview' | 'personal' | 'saved' | 'inquiries' | 'agency' | 'settings';
@@ -77,34 +76,13 @@ interface InquiryActivity {
   } | null;
 }
 
-interface AgencySummary {
-  id: string;
-  name: string;
-  slug: string;
-  is_verified: boolean;
-  is_approved: boolean;
-  city: string | null;
-  country: string | null;
-  description: string | null;
-  phone: string | null;
-  inn: string | null;
-  responsible_person: string | null;
-  maxcoin_balance: number | null;
-}
-
-interface AgencyMetrics {
-  toursCount: number;
-  leadsCount: number;
-  activePlanName: string | null;
-  activePlanEndsAt: string | null;
-}
-
 const UZ_PHONE_STRICT_REGEX = /^\+\d{12}$/;
 const TELEGRAM_REGEX = /^[A-Za-z0-9_]{5,32}$/;
 
 export function UserProfileView({ profile }: UserProfileViewProps) {
   const { t } = useTranslation();
   const supabase = useMemo(() => createClient(), []);
+  const agencyPortalHref = useMemo(() => getAgencyPortalHref('/agency'), []);
 
   const [currentProfile, setCurrentProfile] = useState(profile);
   const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
@@ -123,11 +101,6 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
   const [inquiries, setInquiries] = useState<InquiryActivity[]>([]);
   const [activityLoading, setActivityLoading] = useState(true);
   const [activityError, setActivityError] = useState<string | null>(null);
-
-  const [agencySummary, setAgencySummary] = useState<AgencySummary | null>(null);
-  const [agencyMetrics, setAgencyMetrics] = useState<AgencyMetrics | null>(null);
-  const [agencyLoading, setAgencyLoading] = useState(false);
-  const [agencyError, setAgencyError] = useState<string | null>(null);
 
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
@@ -189,75 +162,6 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
     loadActivity();
   }, [currentProfile.id, supabase]);
 
-  useEffect(() => {
-    async function loadAgencySummary() {
-      if (currentProfile.role !== 'agency_manager') {
-        setAgencySummary(null);
-        setAgencyMetrics(null);
-        setAgencyError(null);
-        return;
-      }
-
-      setAgencyLoading(true);
-      setAgencyError(null);
-
-      try {
-        const { data: agency, error } = await supabase
-          .from('agencies')
-          .select(
-            'id, name, slug, is_verified, is_approved, city, country, description, phone, inn, responsible_person, maxcoin_balance'
-          )
-          .eq('owner_id', currentProfile.id)
-          .maybeSingle();
-
-        if (error) throw error;
-        if (!agency) {
-          setAgencySummary(null);
-          setAgencyMetrics(null);
-          return;
-        }
-
-        const [tourCountRes, leadCountRes, planRes] = await Promise.all([
-          supabase
-            .from('tours')
-            .select('id', { count: 'exact', head: true })
-            .eq('agency_id', agency.id),
-          supabase
-            .from('leads')
-            .select('id', { count: 'exact', head: true })
-            .eq('agency_id', agency.id),
-          supabase
-            .from('agency_subscriptions')
-            .select('ends_at, plan:subscription_plans(name)')
-            .eq('agency_id', agency.id)
-            .eq('status', 'active')
-            .limit(1)
-            .maybeSingle(),
-        ]);
-
-        if (tourCountRes.error) throw tourCountRes.error;
-        if (leadCountRes.error) throw leadCountRes.error;
-
-        setAgencySummary(agency as AgencySummary);
-        setAgencyMetrics({
-          toursCount: tourCountRes.count ?? 0,
-          leadsCount: leadCountRes.count ?? 0,
-          activePlanName:
-            ((planRes.data?.plan as { name?: string } | null)?.name as string | undefined) ??
-            null,
-          activePlanEndsAt: planRes.data?.ends_at ?? null,
-        });
-      } catch (error) {
-        console.error('agency summary load error:', error);
-        setAgencyError('Agency details are not available for this account yet.');
-      } finally {
-        setAgencyLoading(false);
-      }
-    }
-
-    loadAgencySummary();
-  }, [currentProfile.id, currentProfile.role, supabase]);
-
   const roleBadge = useMemo(() => {
     if (currentProfile.role === 'agency_manager') {
       return (
@@ -298,19 +202,6 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
     currentProfile.phone,
     currentProfile.telegram_username,
   ]);
-
-  const agencyCompleteness = useMemo(() => {
-    if (!agencySummary) return null;
-    const checks = [
-      Boolean(agencySummary.description?.trim()),
-      Boolean(agencySummary.phone?.trim()),
-      Boolean(agencySummary.city?.trim()),
-      Boolean(agencySummary.inn?.trim()),
-      Boolean(agencySummary.responsible_person?.trim()),
-    ];
-    const filled = checks.filter(Boolean).length;
-    return Math.round((filled / checks.length) * 100);
-  }, [agencySummary]);
 
   const isAgencyManager = currentProfile.role === 'agency_manager';
   const isAdmin = currentProfile.role === 'admin';
@@ -544,7 +435,7 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
                 </Button>
               </Link>
               {isAgencyManager && (
-                <Link href="/agency">
+                <Link href={agencyPortalHref}>
                   <Button className="w-full justify-between gap-2">
                     <span className="inline-flex items-center gap-2">
                       <Building2 className="h-4 w-4" />
@@ -795,96 +686,16 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
                 <CardTitle>{t.nav.agencyPanel}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {agencyLoading ? (
-                  <div className="space-y-2">
-                    <Skeleton className="h-14 w-full rounded-xl" />
-                    <Skeleton className="h-14 w-full rounded-xl" />
-                  </div>
-                ) : agencyError ? (
-                  <p className="text-sm text-destructive">{agencyError}</p>
-                ) : agencySummary ? (
-                  <>
-                    <div className="rounded-2xl bg-muted/60 p-4">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg font-semibold">{agencySummary.name}</h3>
-                        {agencySummary.is_verified ? (
-                          <Badge className="bg-emerald-600 text-white">Verified</Badge>
-                        ) : (
-                          <Badge variant="secondary">Not verified</Badge>
-                        )}
-                        {agencySummary.is_approved ? (
-                          <Badge className="bg-sky-600 text-white">Approved</Badge>
-                        ) : (
-                          <Badge variant="secondary">Pending approval</Badge>
-                        )}
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {[agencySummary.city, agencySummary.country].filter(Boolean).join(', ') || 'Location not provided'}
-                      </p>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                      <StatCard
-                        title="Tours"
-                        value={agencyMetrics?.toursCount ?? 0}
-                        icon={<Ticket className="h-4 w-4 text-primary" />}
-                      />
-                      <StatCard
-                        title="Leads"
-                        value={agencyMetrics?.leadsCount ?? 0}
-                        icon={<Mail className="h-4 w-4 text-primary" />}
-                      />
-                      <StatCard
-                        title="MaxCoin"
-                        value={agencySummary.maxcoin_balance ?? 0}
-                        icon={<Wallet className="h-4 w-4 text-primary" />}
-                      />
-                      <StatCard
-                        title="Plan"
-                        value={agencyMetrics?.activePlanName ?? 'Not active'}
-                        icon={<Clock3 className="h-4 w-4 text-primary" />}
-                      />
-                    </div>
-
-                    {typeof agencyCompleteness === 'number' && (
-                      <div className="space-y-1">
-                        <p className="text-xs text-muted-foreground">
-                          Agency profile completeness: {agencyCompleteness}%
-                        </p>
-                        <div className="h-2 w-full rounded-full bg-muted">
-                          <div
-                            className="h-2 rounded-full bg-primary"
-                            style={{ width: `${agencyCompleteness}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {!agencySummary.is_verified && (
-                      <div className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
-                        Agency verification is not completed yet. Add full legal
-                        details in agency panel and submit verification.
-                      </div>
-                    )}
-
-                    <div className="flex flex-wrap gap-2">
-                      <Link href="/agency">
-                        <Button>
-                          Open agency dashboard
-                        </Button>
-                      </Link>
-                      {agencySummary.slug && (
-                        <Link href={`/agencies/${agencySummary.slug}`}>
-                          <Button variant="outline">View public agency page</Button>
-                        </Link>
-                      )}
-                    </div>
-                  </>
-                ) : (
-                  <div className="rounded-xl border border-muted-foreground/20 p-4 text-sm text-muted-foreground">
-                    No linked agency found for this account yet.
-                  </div>
-                )}
+                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-700">
+                  Agency workspace is now hosted on `agency.mxtr.uz`. Open the dedicated portal to manage tours, leads, ads, statistics, verification, and profile tools.
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Link href={agencyPortalHref}>
+                    <Button>
+                      Open agency portal
+                    </Button>
+                  </Link>
+                </div>
               </CardContent>
             </Card>
           )}

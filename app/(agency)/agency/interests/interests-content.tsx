@@ -29,6 +29,8 @@ interface FavoriteEntry {
 interface InterestsContentProps {
   interests: FavoriteEntry[];
   leads: Lead[];
+  initialTab?: 'interests' | 'leads';
+  mode?: 'requests' | 'interests';
 }
 
 type LeadWithTour = Lead & {
@@ -37,10 +39,21 @@ type LeadWithTour = Lead & {
   } | null;
 };
 
-export function InterestsContent({ interests, leads: initialLeads }: InterestsContentProps) {
+export function InterestsContent({
+  interests,
+  leads: initialLeads,
+  initialTab = 'interests',
+  mode = 'interests',
+}: InterestsContentProps) {
   const { t } = useTranslation();
-  const [tab, setTab] = useState<'interests' | 'leads'>('interests');
+  const [tab, setTab] = useState<'interests' | 'leads'>(initialTab);
   const [leads, setLeads] = useState<Lead[]>(initialLeads);
+
+  const pageTitle = mode === 'requests' ? t.nav.requests : t.interestsPage.title;
+  const pageSubtitle =
+    mode === 'requests'
+      ? `${leads.length} ${t.leadsPage.totalRequests}`
+      : t.interestsPage.subtitle;
 
   async function updateStatus(leadId: string, newStatus: string | null) {
     if (!newStatus) return;
@@ -57,8 +70,8 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
   return (
     <div className="space-y-5">
       <div className="market-section p-4 md:p-5">
-        <h1 className="text-xl font-bold">{t.interestsPage.title}</h1>
-        <p className="text-sm text-muted-foreground">{t.interestsPage.subtitle}</p>
+        <h1 className="text-xl font-bold">{pageTitle}</h1>
+        <p className="text-sm text-muted-foreground">{pageSubtitle}</p>
       </div>
 
       {/* Tabs */}
@@ -72,7 +85,7 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
           }`}
         >
           <Heart className="h-3.5 w-3.5 inline mr-1.5" />
-          {t.interestsPage.sourceFavorite} ({interests.length})
+          {t.nav.interested} ({interests.length})
         </button>
         <button
           onClick={() => setTab('leads')}
@@ -106,7 +119,7 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
                         <div>
                           <h3 className="font-semibold text-sm">{name}</h3>
                           <p className="text-xs text-muted-foreground">
-                            {t.interestsPage.interestedIn}: <span className="font-medium text-primary">{tour?.title ?? 'Tour'}</span>
+                            {t.interestsPage.interestedIn}: <span className="font-medium text-primary">{tour?.title ?? t.tours.title}</span>
                           </p>
                           {tour?.country && (
                             <p className="text-xs text-muted-foreground mt-0.5">
@@ -141,14 +154,14 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
                             className="flex-1 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl py-2.5 text-sm font-medium transition-colors"
                           >
                             <MessageCircle className="h-4 w-4" />
-                            Telegram
+                            {t.tours.contactTelegram}
                           </a>
                         )}
                       </div>
 
                       {!phone && !telegram && (
                         <p className="text-xs text-muted-foreground italic">
-                          Kontakt ma&apos;lumotlari mavjud emas
+                          {t.favorites.notProvided}
                         </p>
                       )}
                     </CardContent>
@@ -180,7 +193,7 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
                       <div>
                         <h3 className="font-semibold text-sm">{lead.full_name}</h3>
                         <p className="text-xs text-muted-foreground">
-                          {(lead as LeadWithTour).tour?.title ?? 'Tour'} · {formatDate(lead.created_at)}
+                          {(lead as LeadWithTour).tour?.title ?? t.tours.title} · {formatDate(lead.created_at)}
                         </p>
                         {lead.people_count > 1 && (
                           <p className="text-xs text-primary font-medium mt-0.5 flex items-center gap-1">
@@ -208,7 +221,7 @@ export function InterestsContent({ interests, leads: initialLeads }: InterestsCo
                           className="flex-1 flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-xl py-2 text-xs font-medium transition-colors"
                         >
                           <MessageCircle className="h-3.5 w-3.5" />
-                          Telegram
+                          {t.tours.contactTelegram}
                         </a>
                       )}
                     </div>
