@@ -7,15 +7,28 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /** Format price with currency (uses space as thousand separator) */
-export function formatPrice(price: number, currency: string = 'USD'): string {
-  if (currency === 'UZS') {
+export function formatPrice(price: number, currency?: string | null): string {
+  const normalizedCurrency = typeof currency === 'string' && currency.trim().length > 0
+    ? currency.trim().toUpperCase()
+    : 'USD';
+
+  if (normalizedCurrency === 'UZS') {
     return `${price.toLocaleString('en-US').replace(/,/g, ' ')} UZS`;
   }
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency,
-    minimumFractionDigits: 0,
-  }).format(price).replace(/,/g, ' ');
+
+  try {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: normalizedCurrency,
+      minimumFractionDigits: 0,
+    }).format(price).replace(/,/g, ' ');
+  } catch {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+    }).format(price).replace(/,/g, ' ');
+  }
 }
 
 /** Format a number with space as thousand separator (no currency symbol) */
