@@ -37,6 +37,7 @@ export interface Profile {
   email: string | null;
   avatar_url: string | null;
   push_token: string | null;
+  deletion_requested_at: string | null;
   created_at: string;
   updated_at: string;
 }
