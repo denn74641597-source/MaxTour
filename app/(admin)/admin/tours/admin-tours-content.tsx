@@ -1,11 +1,14 @@
 'use client';
 
-import { useMemo, useState, useTransition, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, useTransition, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Copy,
   Eye,
@@ -40,6 +43,7 @@ import { toast } from 'sonner';
 import { cn, formatDate, formatNumber, formatPrice, placeholderImage } from '@/lib/utils';
 import { updateTourStatusAction } from '@/features/admin/actions';
 import type { AdminTourPanelItem, AdminToursPanelPayload } from '@/features/admin/types';
+import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import {
   buildTourQualityWarnings,
   collectTourImageUrls,
@@ -47,7 +51,13 @@ import {
   TourStatusKey,
 } from './tour-admin-utils';
 import { TourStatusBadge } from './tour-status-badge';
-import { TourDetailSheet } from './tour-detail-sheet';
+
+const TourDetailSheet = dynamic(
+  () => import('./tour-detail-sheet').then((module) => module.TourDetailSheet),
+  { ssr: false }
+);
+
+const TOURS_PAGE_SIZE = 80;
 
 interface AdminToursContentProps {
   payload: AdminToursPanelPayload;
@@ -147,10 +157,12 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
   const [createdFrom, setCreatedFrom] = useState('');
   const [createdTo, setCreatedTo] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('newest');
+  const [page, setPage] = useState(1);
   const [selectedTourId, setSelectedTourId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [pendingStatusChange, setPendingStatusChange] = useState<PendingStatusChange | null>(null);
   const [statusBusyId, setStatusBusyId] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   const preparedTours = useMemo<PreparedTour[]>(
     () =>
@@ -200,7 +212,7 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
   }, [preparedTours]);
 
   const filteredTours = useMemo(() => {
-    const searchValue = normalizeText(search);
+    const searchValue = normalizeText(debouncedSearch);
     const minPrice = priceMin.trim().length > 0 ? Number(priceMin) : null;
     const maxPrice = priceMax.trim().length > 0 ? Number(priceMax) : null;
 
@@ -277,7 +289,7 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
       });
   }, [
     preparedTours,
-    search,
+    debouncedSearch,
     statusFilter,
     visibilityFilter,
     agencyFilter,
@@ -295,6 +307,42 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
     createdTo,
     sortBy,
   ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    agencyFilter,
+    categoryFilter,
+    countryFilter,
+    createdFrom,
+    createdTo,
+    debouncedSearch,
+    departureFrom,
+    departureTo,
+    featuredFilter,
+    hasImageFilter,
+    hasSeatsFilter,
+    priceMax,
+    priceMin,
+    sortBy,
+    statusFilter,
+    tourTypeFilter,
+    visibilityFilter,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTours.length / TOURS_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visibleTours = useMemo(() => {
+    const startIndex = (safePage - 1) * TOURS_PAGE_SIZE;
+    return filteredTours.slice(startIndex, startIndex + TOURS_PAGE_SIZE);
+  }, [filteredTours, safePage]);
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -677,6 +725,34 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
           </div>
         ) : (
           <>
+            <div className="flex items-center justify-end gap-2 px-3 pt-3">
+              <span className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-600">
+                {visibleTours.length}/{filteredTours.length}
+              </span>
+              <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7"
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  disabled={safePage <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <span className="min-w-12 text-center text-xs font-medium text-slate-700">
+                  {safePage}/{totalPages}
+                </span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-7 w-7"
+                  onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                  disabled={safePage >= totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
             <div className="hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[1300px] text-sm">
                 <thead>
@@ -694,7 +770,7 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTours.map((tour) => (
+                  {visibleTours.map((tour) => (
                     <tr
                       key={tour.id}
                       className="cursor-pointer border-b border-slate-100 transition hover:bg-slate-50"
@@ -822,7 +898,7 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
             </div>
 
             <div className="space-y-3 p-3 lg:hidden">
-              {filteredTours.map((tour) => (
+              {visibleTours.map((tour) => (
                 <article
                   key={tour.id}
                   className="rounded-2xl border border-slate-200 p-3"
@@ -869,13 +945,20 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
         )}
       </section>
 
-      <TourDetailSheet
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        tour={selectedTour}
-        onRequestStatusChange={requestStatusChange}
-        statusBusy={statusBusyId != null}
-      />
+      {selectedTour ? (
+        <TourDetailSheet
+          open={detailOpen}
+          onOpenChange={(open) => {
+            setDetailOpen(open);
+            if (!open) {
+              setSelectedTourId(null);
+            }
+          }}
+          tour={selectedTour}
+          onRequestStatusChange={requestStatusChange}
+          statusBusy={statusBusyId != null}
+        />
+      ) : null}
 
       <Dialog
         open={Boolean(pendingStatusChange)}

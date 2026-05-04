@@ -1,5 +1,3 @@
-'use client';
-
 import { AdminDashboardLayout } from '@/components/layouts';
 
 export default function AdminLayout({

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   Building2,
+  ChevronLeft,
   ChevronRight,
   Clock3,
   Copy,
@@ -58,7 +59,10 @@ import type {
   AdminLeadStatus,
   AdminLeadsPanelPayload,
 } from '@/features/admin/types';
+import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import { cn, formatNumber, formatPrice } from '@/lib/utils';
+
+const LEADS_PAGE_SIZE = 80;
 
 interface AdminLeadsContentProps {
   payload: AdminLeadsPanelPayload;
@@ -304,11 +308,13 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
   const [createdFrom, setCreatedFrom] = useState('');
   const [createdTo, setCreatedTo] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [page, setPage] = useState(1);
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedLeadId, setSelectedLeadId] = useState<string | null>(null);
   const [pendingStatusIntent, setPendingStatusIntent] = useState<PendingStatusIntent | null>(null);
   const [statusBusyLeadId, setStatusBusyLeadId] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   useEffect(() => {
     setLeads(payload.leads);
@@ -378,7 +384,7 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
   }, [leads]);
 
   const filteredLeads = useMemo(() => {
-    const query = normalizeText(search);
+    const query = normalizeText(debouncedSearch);
 
     const rows = leads.filter((lead) => {
       const quality = leadQualityMap.get(lead.id);
@@ -447,7 +453,7 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
   }, [
     leads,
     leadQualityMap,
-    search,
+    debouncedSearch,
     statusFilter,
     agencyFilter,
     tourFilter,
@@ -460,6 +466,37 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
     staleOnly,
     sortBy,
   ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    agencyFilter,
+    contactFilter,
+    createdFrom,
+    createdTo,
+    debouncedSearch,
+    destinationFilter,
+    outcomeFilter,
+    quickWindow,
+    sortBy,
+    staleOnly,
+    statusFilter,
+    tourFilter,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredLeads.length / LEADS_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visibleLeads = useMemo(() => {
+    const startIndex = (safePage - 1) * LEADS_PAGE_SIZE;
+    return filteredLeads.slice(startIndex, startIndex + LEADS_PAGE_SIZE);
+  }, [filteredLeads, safePage]);
 
   const stats = useMemo(() => {
     const now = Date.now();
@@ -849,6 +886,29 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
               <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
                 Filtered: {formatNumber(filteredLeads.length)}
               </Badge>
+              <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1">
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  onClick={() => setPage((current) => Math.max(1, current - 1))}
+                  disabled={safePage <= 1}
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                </Button>
+                <span className="min-w-12 text-center text-[11px] font-medium text-slate-700">
+                  {safePage}/{totalPages}
+                </span>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  className="h-6 w-6"
+                  onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                  disabled={safePage >= totalPages}
+                >
+                  <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
               <Badge variant="outline" className="border-slate-200 bg-slate-50 text-slate-700">
                 Source/channel filter: not available in current schema
               </Badge>
@@ -889,7 +949,7 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredLeads.map((lead) => {
+                  {visibleLeads.map((lead) => {
                     const quality = leadQualityMap.get(lead.id);
                     const destination = resolveDestination(lead);
                     const contactLine = lead.user?.email ?? lead.phone;
@@ -1001,7 +1061,7 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
             </div>
 
             <div className="space-y-3 p-3 xl:hidden">
-              {filteredLeads.map((lead) => {
+              {visibleLeads.map((lead) => {
                 const quality = leadQualityMap.get(lead.id);
                 return (
                   <article key={lead.id} className="rounded-2xl border border-slate-200 p-3">
@@ -1048,7 +1108,16 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
         )}
       </Card>
 
-      <Sheet open={detailOpen} onOpenChange={setDetailOpen}>
+      {selectedLead ? (
+        <Sheet
+          open={detailOpen}
+          onOpenChange={(open) => {
+            setDetailOpen(open);
+            if (!open) {
+              setSelectedLeadId(null);
+            }
+          }}
+        >
         <SheetContent className="w-full overflow-y-auto p-0 sm:max-w-2xl">
           {selectedLead ? (
             <div className="space-y-5 p-5">
@@ -1305,7 +1374,8 @@ export function AdminLeadsContent({ payload }: AdminLeadsContentProps) {
             <div className="p-6 text-sm text-slate-500">Lead details unavailable.</div>
           )}
         </SheetContent>
-      </Sheet>
+        </Sheet>
+      ) : null}
 
       <Dialog open={Boolean(pendingStatusIntent)} onOpenChange={(open) => !open && setPendingStatusIntent(null)}>
         <DialogContent>

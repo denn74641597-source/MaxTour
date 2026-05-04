@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import {
   AlertCircle,
   AlertTriangle,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Clock3,
   Filter,
   RefreshCcw,
@@ -24,8 +27,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { cn, formatNumber } from '@/lib/utils';
+import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import type { AdminAuditEvent, AdminAuditPayload } from '@/features/admin/audit-log';
-import { AuditLogDetailSheet } from './audit-log-detail-sheet';
+
+const AuditLogDetailSheet = dynamic(
+  () => import('./audit-log-detail-sheet').then((module) => module.AuditLogDetailSheet),
+  { ssr: false }
+);
+
+const EVENTS_PAGE_SIZE = 80;
 
 type SortValue = 'newest' | 'oldest' | 'severity' | 'actor' | 'entity' | 'action';
 type SeverityValue = NonNullable<AdminAuditEvent['severity']>;
@@ -104,8 +114,10 @@ export function AuditLogContent({ initialPayload, loadError }: AuditLogContentPr
   const [failedOnly, setFailedOnly] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<AdminAuditEvent | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
+  const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(initialPayload?.generatedAt ?? '');
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   useEffect(() => {
     if (initialPayload) {
@@ -168,7 +180,7 @@ export function AuditLogContent({ initialPayload, loadError }: AuditLogContentPr
   );
 
   const filteredEvents = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    const normalizedSearch = debouncedSearch.trim().toLowerCase();
     const fromMs = dateFrom ? new Date(`${dateFrom}T00:00:00`).getTime() : null;
     const toMs = dateTo ? new Date(`${dateTo}T23:59:59.999`).getTime() : null;
 
@@ -245,12 +257,43 @@ export function AuditLogContent({ initialPayload, loadError }: AuditLogContentPr
     entityFilter,
     failedOnly,
     highRiskOnly,
-    search,
+    debouncedSearch,
     severityFilter,
     sortBy,
     sourceFilter,
     statusFilter,
   ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    actionFilter,
+    actorFilter,
+    dateFrom,
+    dateTo,
+    debouncedSearch,
+    entityFilter,
+    failedOnly,
+    highRiskOnly,
+    severityFilter,
+    sortBy,
+    sourceFilter,
+    statusFilter,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredEvents.length / EVENTS_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visibleEvents = useMemo(() => {
+    const startIndex = (safePage - 1) * EVENTS_PAGE_SIZE;
+    return filteredEvents.slice(startIndex, startIndex + EVENTS_PAGE_SIZE);
+  }, [filteredEvents, safePage]);
 
   const metrics = useMemo(() => {
     const now = Date.now();
@@ -616,10 +659,35 @@ export function AuditLogContent({ initialPayload, loadError }: AuditLogContentPr
       <div className="rounded-2xl border border-slate-200 bg-white p-4">
         <div className="mb-3 flex items-center justify-between">
           <p className="text-sm font-semibold text-slate-900">Audit event timeline</p>
-          <p className="inline-flex items-center gap-1 text-xs text-slate-500">
-            <Clock3 className="h-3.5 w-3.5" />
-            Sorted by {sortBy}
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="inline-flex items-center gap-1 text-xs text-slate-500">
+              <Clock3 className="h-3.5 w-3.5" />
+              Sorted by {sortBy}
+            </p>
+            <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={safePage <= 1}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
+              <span className="min-w-12 text-center text-[11px] font-medium text-slate-600">
+                {safePage}/{totalPages}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={safePage >= totalPages}
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
         </div>
 
         {filteredEvents.length === 0 ? (
@@ -648,7 +716,7 @@ export function AuditLogContent({ initialPayload, loadError }: AuditLogContentPr
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredEvents.map((event) => (
+                  {visibleEvents.map((event) => (
                     <tr
                       key={event.id}
                       className="cursor-pointer border-b border-slate-100 transition-colors hover:bg-slate-50"
@@ -722,7 +790,7 @@ export function AuditLogContent({ initialPayload, loadError }: AuditLogContentPr
             </div>
 
             <div className="space-y-3 lg:hidden">
-              {filteredEvents.map((event) => (
+              {visibleEvents.map((event) => (
                 <button
                   key={event.id}
                   type="button"
@@ -812,7 +880,18 @@ export function AuditLogContent({ initialPayload, loadError }: AuditLogContentPr
         ) : null}
       </div>
 
-      <AuditLogDetailSheet event={selectedEvent} open={detailOpen} onOpenChange={setDetailOpen} />
+      {selectedEvent ? (
+        <AuditLogDetailSheet
+          event={selectedEvent}
+          open={detailOpen}
+          onOpenChange={(open) => {
+            setDetailOpen(open);
+            if (!open) {
+              setSelectedEvent(null);
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }

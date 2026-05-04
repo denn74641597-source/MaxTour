@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   ArrowUpDown,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   CircleSlash,
   Clock3,
   Copy,
@@ -44,13 +47,13 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { getAdminAgencyDetailAction } from '@/features/admin/actions';
 import type { AdminAgencyDetailPayload } from '@/features/admin/types';
+import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import {
   approveVerificationAction,
   rejectVerificationAction,
 } from '@/features/verification/actions';
 import type { AdminVerificationRequest } from '@/features/verification/types';
 import { cn, formatDate, formatNumber } from '@/lib/utils';
-import { VerificationDetailSheet } from './verification-detail-sheet';
 import {
   buildVerificationWarnings,
   extractVerificationDocuments,
@@ -59,6 +62,16 @@ import {
   type VerificationDocumentItem,
   type VerificationWarningItem,
 } from './verification-utils';
+
+const VerificationDetailSheet = dynamic(
+  () =>
+    import('./verification-detail-sheet').then(
+      (module) => module.VerificationDetailSheet
+    ),
+  { ssr: false }
+);
+
+const REQUESTS_PAGE_SIZE = 60;
 
 interface AdminVerificationContentProps {
   requests: AdminVerificationRequest[];
@@ -152,6 +165,7 @@ export function AdminVerificationContent({
   const [createdFrom, setCreatedFrom] = useState('');
   const [createdTo, setCreatedTo] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('pending_first');
+  const [page, setPage] = useState(1);
 
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [detailCache, setDetailCache] = useState<Record<string, AdminAgencyDetailPayload>>({});
@@ -165,6 +179,7 @@ export function AdminVerificationContent({
   } | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [processingActionKey, setProcessingActionKey] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   useEffect(() => {
     setLastUpdatedAt(generatedAt);
@@ -234,7 +249,7 @@ export function AdminVerificationContent({
   }, [duplicateContactCountBySignature, requests]);
 
   const filteredRequests = useMemo(() => {
-    const query = normalizeText(search);
+    const query = normalizeText(debouncedSearch);
     const list = preparedRequests.filter((item) => {
       const { request } = item;
 
@@ -288,7 +303,7 @@ export function AdminVerificationContent({
     });
   }, [
     preparedRequests,
-    search,
+    debouncedSearch,
     statusFilter,
     roleFilter,
     cityFilter,
@@ -298,6 +313,34 @@ export function AdminVerificationContent({
     createdTo,
     sortBy,
   ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    cityFilter,
+    createdFrom,
+    createdTo,
+    debouncedSearch,
+    documentFilter,
+    legalFilter,
+    roleFilter,
+    sortBy,
+    statusFilter,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRequests.length / REQUESTS_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visibleRequests = useMemo(() => {
+    const startIndex = (safePage - 1) * REQUESTS_PAGE_SIZE;
+    return filteredRequests.slice(startIndex, startIndex + REQUESTS_PAGE_SIZE);
+  }, [filteredRequests, safePage]);
 
   const selectedPreparedRequest = useMemo(
     () => preparedRequests.find((item) => item.request.id === selectedRequestId) ?? null,
@@ -624,12 +667,35 @@ export function AdminVerificationContent({
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
               Showing{' '}
               <span className="font-semibold text-slate-900">
-                {formatNumber(filteredRequests.length)}
+                {formatNumber(visibleRequests.length)}
               </span>{' '}
               of{' '}
               <span className="font-semibold text-slate-900">
                 {formatNumber(preparedRequests.length)}
               </span>
+            </div>
+            <div className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={safePage <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="min-w-12 text-center text-xs font-medium text-slate-700">
+                {safePage}/{totalPages}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={safePage >= totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
             <Button variant="outline" size="sm" onClick={resetFilters}>
               Reset filters
@@ -684,7 +750,7 @@ export function AdminVerificationContent({
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredRequests.map((item) => {
+                    {visibleRequests.map((item) => {
                       const request = item.request;
                       const agency = request.agency;
                       const owner = agency?.owner;
@@ -849,7 +915,7 @@ export function AdminVerificationContent({
               </div>
 
               <div className="space-y-3 xl:hidden">
-                {filteredRequests.map((item) => {
+                {visibleRequests.map((item) => {
                   const request = item.request;
                   const agency = request.agency;
                   const owner = agency?.owner;
@@ -938,37 +1004,39 @@ export function AdminVerificationContent({
         </CardContent>
       </Card>
 
-      <VerificationDetailSheet
-        open={Boolean(selectedPreparedRequest)}
-        onOpenChange={(nextOpen) => {
-          if (!nextOpen) setSelectedRequestId(null);
-        }}
-        selected={selectedPreparedRequest}
-        detail={selectedDetail}
-        detailLoading={
-          selectedAgencyId !== null && detailLoadingAgencyId === selectedAgencyId
-        }
-        detailError={selectedDetailError}
-        onRetryDetail={() => {
-          if (selectedAgencyId) {
-            void loadAgencyDetail(selectedAgencyId);
+      {selectedPreparedRequest ? (
+        <VerificationDetailSheet
+          open={Boolean(selectedPreparedRequest)}
+          onOpenChange={(nextOpen) => {
+            if (!nextOpen) setSelectedRequestId(null);
+          }}
+          selected={selectedPreparedRequest}
+          detail={selectedDetail}
+          detailLoading={
+            selectedAgencyId !== null && detailLoadingAgencyId === selectedAgencyId
           }
-        }}
-        onCopy={(value, label) => {
-          void copyValue(value, label);
-        }}
-        onApprove={() => {
-          if (!selectedPreparedRequest) return;
-          openApproveDialog(selectedPreparedRequest);
-        }}
-        onReject={() => {
-          if (!selectedPreparedRequest) return;
-          openRejectDialog(selectedPreparedRequest);
-        }}
-        canApprove={selectedPreparedRequest?.request.status === 'pending'}
-        canReject={selectedPreparedRequest?.request.status === 'pending'}
-        busy={dialogBusy}
-      />
+          detailError={selectedDetailError}
+          onRetryDetail={() => {
+            if (selectedAgencyId) {
+              void loadAgencyDetail(selectedAgencyId);
+            }
+          }}
+          onCopy={(value, label) => {
+            void copyValue(value, label);
+          }}
+          onApprove={() => {
+            if (!selectedPreparedRequest) return;
+            openApproveDialog(selectedPreparedRequest);
+          }}
+          onReject={() => {
+            if (!selectedPreparedRequest) return;
+            openRejectDialog(selectedPreparedRequest);
+          }}
+          canApprove={selectedPreparedRequest.request.status === 'pending'}
+          canReject={selectedPreparedRequest.request.status === 'pending'}
+          busy={dialogBusy}
+        />
+      ) : null}
 
       <Dialog
         open={Boolean(actionIntent)}

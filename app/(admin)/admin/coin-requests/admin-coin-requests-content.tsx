@@ -9,6 +9,8 @@ import {
   ArrowUpRight,
   Building2,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
   Copy,
   ExternalLink,
@@ -57,9 +59,11 @@ import type {
   AdminPromotionPanelRecord,
   AdminPromotionsMaxcoinPanelPayload,
 } from '@/features/admin/types';
+import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import { cn, formatNumber, placeholderImage } from '@/lib/utils';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const PROMOTIONS_PAGE_SIZE = 80;
 
 type SortKey =
   | 'newest'
@@ -208,6 +212,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>('newest');
+  const [page, setPage] = useState(1);
   const [balanceMin, setBalanceMin] = useState('');
   const [balanceMax, setBalanceMax] = useState('');
 
@@ -215,6 +220,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
   const [selectedAgencyId, setSelectedAgencyId] = useState<string | null>(null);
   const [pendingCoinAction, setPendingCoinAction] = useState<CoinActionState | null>(null);
   const [processingCoinRequestId, setProcessingCoinRequestId] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   useEffect(() => {
     const placement = searchParams.get('placement');
@@ -316,7 +322,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
   }, [payload]);
 
   const filteredPromotions = useMemo(() => {
-    const query = normalizeText(search);
+    const query = normalizeText(debouncedSearch);
     return preparedPromotions
       .filter((promotion) => {
         if (query) {
@@ -371,7 +377,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
       });
   }, [
     preparedPromotions,
-    search,
+    debouncedSearch,
     placementFilter,
     statusFilter,
     agencyFilter,
@@ -382,9 +388,36 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
     agencySpendMap,
   ]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [
+    agencyFilter,
+    dateFrom,
+    dateTo,
+    debouncedSearch,
+    placementFilter,
+    sortBy,
+    statusFilter,
+    tourFilter,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPromotions.length / PROMOTIONS_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visiblePromotions = useMemo(() => {
+    const startIndex = (safePage - 1) * PROMOTIONS_PAGE_SIZE;
+    return filteredPromotions.slice(startIndex, startIndex + PROMOTIONS_PAGE_SIZE);
+  }, [filteredPromotions, safePage]);
+
   const filteredTransactions = useMemo(() => {
     if (!payload) return [];
-    const query = normalizeText(search);
+    const query = normalizeText(debouncedSearch);
     const minBalance = balanceMin.trim().length > 0 ? Number(balanceMin) : null;
     const maxBalance = balanceMax.trim().length > 0 ? Number(balanceMax) : null;
 
@@ -423,7 +456,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
     });
   }, [
     payload,
-    search,
+    debouncedSearch,
     agencyFilter,
     tourFilter,
     transactionTypeFilter,
@@ -435,7 +468,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
   const filteredAgencyBalances = useMemo(() => {
     if (!payload) return [];
-    const query = normalizeText(search);
+    const query = normalizeText(debouncedSearch);
     const minBalance = balanceMin.trim().length > 0 ? Number(balanceMin) : null;
     const maxBalance = balanceMax.trim().length > 0 ? Number(balanceMax) : null;
 
@@ -460,7 +493,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
         return true;
       })
       .sort((a, b) => a.maxcoin_balance - b.maxcoin_balance);
-  }, [payload, search, agencyFilter, balanceMin, balanceMax]);
+  }, [payload, debouncedSearch, agencyFilter, balanceMin, balanceMax]);
 
   const promotionStats = useMemo(() => {
     const nowMs = Date.now();
@@ -944,7 +977,34 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
       <SectionShell>
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-slate-900">Promotion Operations</h2>
-          <p className="text-xs text-slate-500">{filteredPromotions.length} records</p>
+          <div className="flex items-center gap-2">
+            <p className="text-xs text-slate-500">
+              {visiblePromotions.length}/{filteredPromotions.length} records
+            </p>
+            <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={safePage <= 1}
+              >
+                <ChevronLeft className="h-3.5 w-3.5" />
+              </Button>
+              <span className="min-w-12 text-center text-[11px] font-medium text-slate-700">
+                {safePage}/{totalPages}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-6 w-6"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={safePage >= totalPages}
+              >
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
         </div>
         <Card className="overflow-hidden border-slate-200">
           {filteredPromotions.length === 0 ? (
@@ -966,7 +1026,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPromotions.map((promotion) => {
+                  {visiblePromotions.map((promotion) => {
                     const remainingLabel =
                       promotion.remainingDays == null
                         ? 'Not available'
@@ -1217,7 +1277,8 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
         </div>
       </SectionShell>
 
-      <Sheet open={Boolean(selectedPromotion)} onOpenChange={(open) => !open && setSelectedPromotionId(null)}>
+      {selectedPromotion ? (
+        <Sheet open={Boolean(selectedPromotion)} onOpenChange={(open) => !open && setSelectedPromotionId(null)}>
         <SheetContent side="right" className="w-full max-w-3xl overflow-y-auto">
           {selectedPromotion ? (
             <div className="space-y-4 p-2">
@@ -1401,9 +1462,11 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
             </div>
           ) : null}
         </SheetContent>
-      </Sheet>
+        </Sheet>
+      ) : null}
 
-      <Sheet open={Boolean(selectedAgency)} onOpenChange={(open) => !open && setSelectedAgencyId(null)}>
+      {selectedAgency ? (
+        <Sheet open={Boolean(selectedAgency)} onOpenChange={(open) => !open && setSelectedAgencyId(null)}>
         <SheetContent side="right" className="w-full max-w-2xl overflow-y-auto">
           {selectedAgency ? (
             <div className="space-y-4 p-2">
@@ -1514,7 +1577,8 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
             </div>
           ) : null}
         </SheetContent>
-      </Sheet>
+        </Sheet>
+      ) : null}
 
       <Dialog open={Boolean(pendingCoinAction)} onOpenChange={(open) => !open && setPendingCoinAction(null)}>
         <DialogContent>

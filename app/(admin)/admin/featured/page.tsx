@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export default async function AdminFeaturedPage() {
   try {
-    const payload = await getAdminPromotionsMaxcoinPanelData();
+    const payload = await getAdminPromotionsMaxcoinPanelData({ mode: 'featured' });
     return <AdminFeaturedContent payload={payload} />;
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown featured promotions loading error';

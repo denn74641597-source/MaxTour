@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo, useState, useTransition } from 'react';
+import { useEffect, useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   AlertTriangle,
   Building2,
   CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   Copy,
   ExternalLink,
   FilterX,
@@ -42,6 +44,7 @@ import type {
   AdminPromotionComputedStatus,
   AdminPromotionsMaxcoinPanelPayload,
 } from '@/features/admin/types';
+import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import { cn, formatNumber, placeholderImage } from '@/lib/utils';
 import {
   type FeaturedIssueFilter,
@@ -61,6 +64,8 @@ import {
   prepareFeaturedPromotions,
   sortFeaturedPromotions,
 } from './featured-promotions-utils';
+
+const FEATURED_PAGE_SIZE = 80;
 
 interface Props {
   payload: AdminPromotionsMaxcoinPanelPayload | null;
@@ -130,7 +135,9 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [sortBy, setSortBy] = useState<FeaturedSortKey>('active_first');
+  const [page, setPage] = useState(1);
   const [selectedPromotionId, setSelectedPromotionId] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   const generatedAtText = useMemo(() => formatDateTime(payload?.generatedAt), [payload?.generatedAt]);
 
@@ -184,7 +191,7 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
   }, [preparedPromotions]);
 
   const filteredPromotions = useMemo(() => {
-    const normalizedSearch = normalizeText(search);
+    const normalizedSearch = normalizeText(debouncedSearch);
     const filtered = preparedPromotions.filter((item) => {
       if (placementFilter !== 'all' && item.placementKey !== placementFilter) return false;
       if (statusFilter !== 'all' && item.status !== statusFilter) return false;
@@ -221,10 +228,38 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
     issueFilter,
     placementFilter,
     preparedPromotions,
-    search,
+    debouncedSearch,
     sortBy,
     statusFilter,
   ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    agencyFilter,
+    dateFrom,
+    dateTo,
+    debouncedSearch,
+    destinationFilter,
+    issueFilter,
+    placementFilter,
+    sortBy,
+    statusFilter,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredPromotions.length / FEATURED_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visiblePromotions = useMemo(() => {
+    const startIndex = (safePage - 1) * FEATURED_PAGE_SIZE;
+    return filteredPromotions.slice(startIndex, startIndex + FEATURED_PAGE_SIZE);
+  }, [filteredPromotions, safePage]);
 
   const selectedPromotion = useMemo(
     () => preparedPromotions.find((item) => item.id === selectedPromotionId) ?? null,
@@ -608,7 +643,30 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                   <FilterX className="mr-2 h-4 w-4" />
                   Reset Filters
                 </Button>
-                <Badge variant="outline">{filteredPromotions.length} rows</Badge>
+                <Badge variant="outline">{visiblePromotions.length}/{filteredPromotions.length} rows</Badge>
+                <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                    disabled={safePage <= 1}
+                  >
+                    <ChevronLeft className="h-3.5 w-3.5" />
+                  </Button>
+                  <span className="min-w-12 text-center text-[11px] font-medium text-slate-700">
+                    {safePage}/{totalPages}
+                  </span>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                    disabled={safePage >= totalPages}
+                  >
+                    <ChevronRight className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -645,7 +703,7 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredPromotions.map((item) => (
+                  {visiblePromotions.map((item) => (
                     <tr key={item.id} className="border-t border-slate-100 align-top">
                       <td className="px-3 py-3">
                         <button
@@ -755,7 +813,7 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
             </div>
 
             <div className="grid gap-3 lg:hidden">
-              {filteredPromotions.map((item) => (
+              {visiblePromotions.map((item) => (
                 <Card key={item.id} className="border-slate-200">
                   <CardContent className="space-y-3 pt-4">
                     <button type="button" onClick={() => openPromotion(item.id)} className="w-full text-left">
@@ -811,9 +869,9 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
         )}
       </SectionShell>
 
-      <Sheet open={Boolean(selectedPromotion)} onOpenChange={(open) => (!open ? setSelectedPromotionId(null) : null)}>
-        <SheetContent side="right" className="w-full overflow-y-auto p-0 sm:max-w-3xl">
-          {selectedPromotion ? (
+      {selectedPromotion ? (
+        <Sheet open={Boolean(selectedPromotion)} onOpenChange={(open) => (!open ? setSelectedPromotionId(null) : null)}>
+          <SheetContent side="right" className="w-full overflow-y-auto p-0 sm:max-w-3xl">
             <div className="space-y-4">
               <SheetHeader className="border-b border-slate-200 bg-slate-50 p-6 text-left">
                 <SheetTitle className="text-xl font-semibold text-slate-900">
@@ -1055,9 +1113,9 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                 </SectionShell>
               </div>
             </div>
-          ) : null}
-        </SheetContent>
-      </Sheet>
+          </SheetContent>
+        </Sheet>
+      ) : null}
     </div>
   );
 }

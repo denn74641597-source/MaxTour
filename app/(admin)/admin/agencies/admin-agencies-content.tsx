@@ -8,6 +8,8 @@ import {
   ArrowUpDown,
   Building2,
   Calendar,
+  ChevronLeft,
+  ChevronRight,
   CheckCircle2,
   CircleSlash,
   Clock3,
@@ -68,8 +70,11 @@ import type {
   AdminAgencyTourPreview,
   AdminVerificationStatus,
 } from '@/features/admin/types';
+import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import { approveVerificationAction, rejectVerificationAction } from '@/features/verification/actions';
 import { cn, formatDate, formatNumber } from '@/lib/utils';
+
+const AGENCIES_PAGE_SIZE = 60;
 
 interface AdminAgenciesContentProps {
   agencies: AdminAgencyListRow[];
@@ -214,6 +219,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
   const [createdFrom, setCreatedFrom] = useState('');
   const [createdTo, setCreatedTo] = useState('');
   const [sortBy, setSortBy] = useState<SortOption>('newest');
+  const [page, setPage] = useState(1);
 
   const [selectedAgencyId, setSelectedAgencyId] = useState<string | null>(null);
   const [selectedTab, setSelectedTab] = useState<'overview' | 'verification' | 'tours' | 'leads' | 'operations'>('overview');
@@ -229,6 +235,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
   } | null>(null);
   const [verificationRejectNote, setVerificationRejectNote] = useState('');
   const [processingActionKey, setProcessingActionKey] = useState<string | null>(null);
+  const debouncedSearch = useDebouncedValue(search, 250);
 
   useEffect(() => {
     setLastUpdatedAt(generatedAt);
@@ -251,7 +258,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
   }, [agencies]);
 
   const filteredAgencies = useMemo(() => {
-    const searchQuery = normalize(search);
+    const searchQuery = normalize(debouncedSearch);
 
     const withFilters = agencies.filter((agency) => {
       const haystack = [
@@ -323,7 +330,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
     });
   }, [
     agencies,
-    search,
+    debouncedSearch,
     approvalFilter,
     verificationFilter,
     subscriptionFilter,
@@ -334,6 +341,35 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
     createdTo,
     sortBy,
   ]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [
+    activityFilter,
+    approvalFilter,
+    cityFilter,
+    createdFrom,
+    createdTo,
+    debouncedSearch,
+    hasToursFilter,
+    sortBy,
+    subscriptionFilter,
+    verificationFilter,
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredAgencies.length / AGENCIES_PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const visibleAgencies = useMemo(() => {
+    const startIndex = (safePage - 1) * AGENCIES_PAGE_SIZE;
+    return filteredAgencies.slice(startIndex, startIndex + AGENCIES_PAGE_SIZE);
+  }, [filteredAgencies, safePage]);
 
   const selectedAgency = useMemo(
     () => agencies.find((agency) => agency.id === selectedAgencyId) ?? null,
@@ -622,8 +658,31 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
               </SelectContent>
             </Select>
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-              Showing <span className="font-semibold text-slate-900">{filteredAgencies.length}</span> of{' '}
+              Showing <span className="font-semibold text-slate-900">{visibleAgencies.length}</span> of{' '}
               <span className="font-semibold text-slate-900">{agencies.length}</span>
+            </div>
+            <div className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                disabled={safePage <= 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="min-w-12 text-center text-xs font-medium text-slate-700">
+                {safePage}/{totalPages}
+              </span>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7"
+                onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+                disabled={safePage >= totalPages}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
             </div>
             <Button variant="outline" size="sm" onClick={resetFilters}>
               Reset filters
@@ -672,7 +731,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAgencies.map((agency) => {
+                  {visibleAgencies.map((agency) => {
                     const pendingRequest = agency.verification.latestStatus === 'pending';
 
                     return (
@@ -844,17 +903,17 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
         </CardContent>
       </Card>
 
-      <Sheet
-        open={Boolean(selectedAgencyId)}
-        onOpenChange={(open) => {
-          if (!open) {
-            setSelectedAgencyId(null);
-            setDetailError(null);
-          }
-        }}
-      >
-        <SheetContent side="right" className="w-full overflow-y-auto border-l border-slate-200 bg-white sm:max-w-3xl">
-          {selectedAgency ? (
+      {selectedAgency ? (
+        <Sheet
+          open={Boolean(selectedAgencyId)}
+          onOpenChange={(open) => {
+            if (!open) {
+              setSelectedAgencyId(null);
+              setDetailError(null);
+            }
+          }}
+        >
+          <SheetContent side="right" className="w-full overflow-y-auto border-l border-slate-200 bg-white sm:max-w-3xl">
             <>
               <SheetHeader className="border-b border-slate-100 px-6 py-5">
                 <div className="flex items-start gap-3">
@@ -953,9 +1012,9 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                 )}
               </div>
             </>
-          ) : null}
-        </SheetContent>
-      </Sheet>
+          </SheetContent>
+        </Sheet>
+      ) : null}
 
       <Dialog open={Boolean(approvalIntent)} onOpenChange={(open) => !open && setApprovalIntent(null)}>
         <DialogContent>

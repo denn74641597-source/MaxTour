@@ -23,52 +23,53 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useTranslation } from '@/lib/i18n';
-import { LANGUAGE_FLAGS, LANGUAGE_LABELS, LANGUAGES } from '@/lib/i18n/config';
+import { LANGUAGES, LANGUAGE_FLAGS } from '@/lib/i18n/config';
 import { createClient } from '@/lib/supabase/client';
 import { Separator } from '@/components/ui/separator';
+import { useAdminI18n } from '@/features/admin/i18n';
+import type { AdminPageKey } from '@/features/admin/i18n/pages';
 
 type NavItem = {
   href: string;
-  label: string;
+  labelKey: AdminPageKey;
   icon: React.ComponentType<{ className?: string }>;
 };
 
 type NavSection = {
-  title: string;
+  titleKey: AdminPageKey;
   items: NavItem[];
 };
 
 const NAV_SECTIONS: NavSection[] = [
   {
-    title: 'Operations',
+    titleKey: 'operations',
     items: [
-      { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-      { href: '/admin/agencies', label: 'Agencies', icon: Building2 },
-      { href: '/admin/tours', label: 'Tours', icon: MapPin },
-      { href: '/admin/users', label: 'Users', icon: UserCog },
-      { href: '/admin/verification', label: 'Verification', icon: ShieldCheck },
-      { href: '/admin/leads', label: 'Leads', icon: MessageSquareText },
+      { href: '/admin', labelKey: 'dashboard', icon: LayoutDashboard },
+      { href: '/admin/agencies', labelKey: 'agencies', icon: Building2 },
+      { href: '/admin/tours', labelKey: 'tours', icon: MapPin },
+      { href: '/admin/users', labelKey: 'users', icon: UserCog },
+      { href: '/admin/verification', labelKey: 'verification', icon: ShieldCheck },
+      { href: '/admin/leads', labelKey: 'leads', icon: MessageSquareText },
     ],
   },
   {
-    title: 'Growth',
+    titleKey: 'growth',
     items: [
-      { href: '/admin/coin-requests', label: 'Promotions / MaxCoin', icon: Coins },
-      { href: '/admin/featured', label: 'Featured Promotions', icon: Star },
-      { href: '/admin/subscriptions', label: 'Subscriptions', icon: Users },
+      { href: '/admin/coin-requests', labelKey: 'promotionsMaxcoin', icon: Coins },
+      { href: '/admin/featured', labelKey: 'featuredPromotions', icon: Star },
+      { href: '/admin/subscriptions', labelKey: 'subscriptions', icon: Users },
     ],
   },
   {
-    title: 'Safety',
+    titleKey: 'safety',
     items: [
-      { href: '/admin/account-deletions', label: 'Delete Account', icon: Trash2 },
-      { href: '/admin/audit-log', label: 'Audit Log', icon: FileText },
+      { href: '/admin/account-deletions', labelKey: 'deleteAccount', icon: Trash2 },
+      { href: '/admin/audit-log', labelKey: 'auditLog', icon: FileText },
     ],
   },
   {
-    title: 'System',
-    items: [{ href: '/admin/settings', label: 'Settings', icon: Settings }],
+    titleKey: 'system',
+    items: [{ href: '/admin/settings', labelKey: 'settings', icon: Settings }],
   },
 ];
 
@@ -77,7 +78,7 @@ export function AdminSidebar() {
   const router = useRouter();
   const supabase = createClient();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { language, setLanguage } = useTranslation();
+  const { language, setLanguage, tc, tp, tInline } = useAdminI18n();
 
   const isItemActive = (href: string) => {
     if (href === '/admin') return pathname === '/admin';
@@ -103,27 +104,27 @@ export function AdminSidebar() {
             MT
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold tracking-wide text-white">MaxTour Remote</p>
-            <p className="truncate text-[11px] font-medium text-slate-400">Operations Console</p>
+            <p className="truncate text-sm font-semibold tracking-wide text-white">MaxTour</p>
+            <p className="truncate text-[11px] font-medium text-slate-400">{tp('remoteConsole')}</p>
           </div>
         </div>
         <div className="mt-3 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-[11px] text-slate-400">
           <span>remote.mxtr.uz</span>
           <span className="inline-flex items-center gap-1 text-emerald-300">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            live
+            {tc('active')}
           </span>
         </div>
       </div>
 
       <div className="relative flex-1 overflow-y-auto px-3 pb-3">
         {NAV_SECTIONS.map((section, sectionIdx) => (
-          <div key={section.title} className={cn(sectionIdx > 0 && 'mt-4')}>
+          <div key={section.titleKey} className={cn(sectionIdx > 0 && 'mt-4')}>
             <p className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              {section.title}
+              {tp(section.titleKey)}
             </p>
             <nav className="space-y-1">
-              {section.items.map(({ href, label, icon: Icon }) => {
+              {section.items.map(({ href, labelKey, icon: Icon }) => {
                 const active = isItemActive(href);
                 return (
                   <Link
@@ -145,7 +146,7 @@ export function AdminSidebar() {
                         !active && 'group-hover:-translate-y-[1px]',
                       )}
                     />
-                    <span className="min-w-0 flex-1 truncate">{label}</span>
+                    <span className="min-w-0 flex-1 truncate">{tp(labelKey)}</span>
                     <ArrowRight
                       className={cn(
                         'h-3.5 w-3.5 transition-all duration-200',
@@ -167,7 +168,7 @@ export function AdminSidebar() {
         <div className="mb-3 rounded-xl border border-slate-800 bg-slate-900/55 p-3">
           <div className="mb-2 flex items-center gap-2 text-[11px] font-medium text-slate-400">
             <Globe className="h-3.5 w-3.5" />
-            Language
+            {tc('language')}
           </div>
           <div className="grid grid-cols-3 gap-1.5">
             {LANGUAGES.map((lang) => (
@@ -181,14 +182,14 @@ export function AdminSidebar() {
                     : 'border-slate-700 bg-slate-800/70 text-slate-400 hover:border-slate-500 hover:text-slate-100',
                 )}
               >
-                {LANGUAGE_FLAGS[lang]} {LANGUAGE_LABELS[lang]}
+                {LANGUAGE_FLAGS[lang]} {lang === 'uz' ? tc('uzbek') : tc('russian')}
               </button>
             ))}
           </div>
         </div>
         <div className="mb-2 rounded-xl border border-slate-800 bg-slate-900/45 px-3 py-2 text-[11px] text-slate-400">
-          <p className="font-medium text-slate-200">Admin Session</p>
-          <p className="mt-0.5">Role-protected control surface</p>
+          <p className="font-medium text-slate-200">{tp('session')}</p>
+          <p className="mt-0.5">{tp('platformOverview')}</p>
         </div>
         <button
           onClick={handleLogout}
@@ -196,7 +197,7 @@ export function AdminSidebar() {
         >
           <span className="inline-flex items-center gap-2">
             <LogOut className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5" />
-            Logout
+            {tc('logout')}
           </span>
           <ArrowRight className="h-3.5 w-3.5 opacity-70 transition-transform duration-200 group-hover:translate-x-0.5" />
         </button>
@@ -217,14 +218,14 @@ export function AdminSidebar() {
               MT
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Admin</p>
-              <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">Remote</p>
+              <p className="text-sm font-semibold text-white">{tp('adminLogin')}</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">{tp('remoteConsole')}</p>
             </div>
           </div>
           <button
             onClick={() => setMobileOpen((prev) => !prev)}
             className="rounded-lg border border-slate-700 bg-slate-900/60 p-2 text-slate-300 transition-colors hover:text-white"
-            aria-label="Toggle admin sidebar"
+            aria-label={tInline('Toggle admin sidebar')}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>

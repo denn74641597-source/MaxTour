@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useAdminI18n } from '@/features/admin/i18n';
 
 function normalizePhone(phone: string): string {
   let cleaned = phone.replace(/[\s\-()]/g, '');
@@ -24,6 +25,7 @@ function phoneToAuthEmail(phone: string): string {
 export default function AdminLoginPage() {
   const router = useRouter();
   const supabase = createClient();
+  const { tp, tInline } = useAdminI18n();
 
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
@@ -116,7 +118,7 @@ export default function AdminLoginPage() {
       }
 
       if (signInError) {
-        setError('Kirish maʼlumotlari notoʻgʻri');
+        setError(tInline("Kirish ma'lumotlari noto'g'ri"));
         return;
       }
 
@@ -125,7 +127,7 @@ export default function AdminLoginPage() {
       } = await supabase.auth.getUser();
 
       if (!user) {
-        setError('Foydalanuvchi topilmadi');
+        setError(tInline('Foydalanuvchi topilmadi'));
         return;
       }
 
@@ -139,13 +141,13 @@ export default function AdminLoginPage() {
         await supabase.auth.signOut({ scope: 'local' }).catch(async () => {
           await supabase.auth.signOut();
         });
-        setError('Admin ruxsati talab qilinadi');
+        setError(tInline('Admin ruxsati talab qilinadi'));
         return;
       }
 
       router.replace('/admin');
     } catch {
-      setError('Tizimda xatolik yuz berdi');
+      setError(tInline('Tizimda xatolik yuz berdi'));
     } finally {
       setLoading(false);
     }
@@ -158,14 +160,14 @@ export default function AdminLoginPage() {
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600/20">
             <Shield className="h-8 w-8 text-blue-400" />
           </div>
-          <h1 className="text-2xl font-bold text-white">MaxTour Admin</h1>
-          <p className="mt-1 text-sm text-slate-400">remote.mxtr.uz boshqaruv paneli</p>
+          <h1 className="text-2xl font-bold text-white">{tp('adminLogin')}</h1>
+          <p className="mt-1 text-sm text-slate-400">remote.mxtr.uz</p>
         </div>
 
         <div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-800/75 p-5">
           <div className="space-y-2">
             <Label htmlFor="adminIdentifier" className="text-slate-300">
-              Email yoki telefon
+              {tInline('Email yoki telefon')}
             </Label>
             <div className="relative">
               {identifier.includes('@') ? (
@@ -176,7 +178,7 @@ export default function AdminLoginPage() {
               <Input
                 id="adminIdentifier"
                 type="text"
-                placeholder="admin email yoki +998..."
+                placeholder={tInline('admin email yoki +998...')}
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
@@ -187,14 +189,14 @@ export default function AdminLoginPage() {
 
           <div className="space-y-2">
             <Label htmlFor="adminPassword" className="text-slate-300">
-              Parol
+              {tInline('Parol')}
             </Label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
               <Input
                 id="adminPassword"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Parol"
+                placeholder={tInline('Parol')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
@@ -220,10 +222,10 @@ export default function AdminLoginPage() {
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                Tekshirilmoqda...
+                {tInline('Tekshirilmoqda...')}
               </>
             ) : (
-              'Admin panelga kirish'
+              tInline('Admin panelga kirish')
             )}
           </Button>
         </div>

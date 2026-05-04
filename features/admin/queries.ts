@@ -1933,19 +1933,28 @@ export async function getAdminAgencyDetailById(agencyId: string): Promise<AdminA
   };
 }
 
+type AdminPromotionsPanelMode = 'full' | 'featured';
+
+interface AdminPromotionsMaxcoinPanelOptions {
+  mode?: AdminPromotionsPanelMode;
+}
+
 /** Admin: Promotions / MaxCoin operations payload */
-export async function getAdminPromotionsMaxcoinPanelData(): Promise<AdminPromotionsMaxcoinPanelPayload> {
+export async function getAdminPromotionsMaxcoinPanelData(
+  options: AdminPromotionsMaxcoinPanelOptions = {}
+): Promise<AdminPromotionsMaxcoinPanelPayload> {
   await assertAdminAccess();
   const supabase = await createAdminClient();
   const generatedAt = new Date().toISOString();
   const errors: string[] = [];
+  const mode = options.mode ?? 'full';
+  const includeFinancialData = mode === 'full';
+  const tourPromotionsLimit = mode === 'featured' ? 320 : 600;
+  const featuredItemsLimit = mode === 'featured' ? 240 : 300;
 
   const [
     tourPromotionsResult,
     featuredItemsResult,
-    maxcoinTransactionsResult,
-    coinRequestsResult,
-    agencyBalancesResult,
     promotionTiersResult,
   ] = await Promise.all([
     supabase
@@ -1954,35 +1963,14 @@ export async function getAdminPromotionsMaxcoinPanelData(): Promise<AdminPromoti
         'id, agency_id, tour_id, placement, cost_coins, starts_at, ends_at, is_active, created_at, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
       )
       .order('created_at', { ascending: false })
-      .limit(600),
+      .limit(tourPromotionsLimit),
     supabase
       .from('featured_items')
       .select(
         'id, agency_id, tour_id, placement_type, starts_at, ends_at, created_at, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
       )
       .order('starts_at', { ascending: false })
-      .limit(300),
-    supabase
-      .from('maxcoin_transactions')
-      .select(
-        'id, agency_id, amount, type, description, tour_id, created_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person), tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district)'
-      )
-      .order('created_at', { ascending: false })
-      .limit(600),
-    supabase
-      .from('coin_requests')
-      .select(
-        'id, agency_id, coins, price_uzs, status, admin_note, created_at, resolved_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
-      )
-      .order('created_at', { ascending: false })
-      .limit(400),
-    supabase
-      .from('agencies')
-      .select(
-        'id, name, slug, maxcoin_balance, is_verified, is_approved, phone, telegram_username, responsible_person, updated_at'
-      )
-      .order('updated_at', { ascending: false })
-      .limit(1200),
+      .limit(featuredItemsLimit),
     supabase
       .from('promotion_tiers')
       .select('id, placement, coins, days, sort_order, created_at')
@@ -1995,25 +1983,60 @@ export async function getAdminPromotionsMaxcoinPanelData(): Promise<AdminPromoti
   if (featuredItemsResult.error) {
     errors.push(`featured_items: ${featuredItemsResult.error.message}`);
   }
-  if (maxcoinTransactionsResult.error) {
-    errors.push(`maxcoin_transactions: ${maxcoinTransactionsResult.error.message}`);
-  }
-  if (coinRequestsResult.error) {
-    errors.push(`coin_requests: ${coinRequestsResult.error.message}`);
-  }
-  if (agencyBalancesResult.error) {
-    errors.push(`agencies: ${agencyBalancesResult.error.message}`);
-  }
   if (promotionTiersResult.error) {
     errors.push(`promotion_tiers: ${promotionTiersResult.error.message}`);
   }
 
   const tourPromotions = (tourPromotionsResult.data ?? []) as PromotionPanelTourPromotionRaw[];
   const featuredItems = (featuredItemsResult.data ?? []) as PromotionPanelFeaturedItemRaw[];
-  const maxcoinTransactionsRaw = (maxcoinTransactionsResult.data ?? []) as PromotionPanelTransactionRaw[];
-  const coinRequestsRaw = (coinRequestsResult.data ?? []) as PromotionPanelCoinRequestRaw[];
-  const agencyBalancesRaw = (agencyBalancesResult.data ?? []) as PromotionPanelAgencyBalanceRaw[];
+  let maxcoinTransactionsRaw: PromotionPanelTransactionRaw[] = [];
+  let coinRequestsRaw: PromotionPanelCoinRequestRaw[] = [];
+  let agencyBalancesRaw: PromotionPanelAgencyBalanceRaw[] = [];
   const promotionTiersRaw = (promotionTiersResult.data ?? []) as PromotionPanelTierRaw[];
+
+  if (includeFinancialData) {
+    const [
+      maxcoinTransactionsResult,
+      coinRequestsResult,
+      agencyBalancesResult,
+    ] = await Promise.all([
+      supabase
+        .from('maxcoin_transactions')
+        .select(
+          'id, agency_id, amount, type, description, tour_id, created_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person), tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district)'
+        )
+        .order('created_at', { ascending: false })
+        .limit(600),
+      supabase
+        .from('coin_requests')
+        .select(
+          'id, agency_id, coins, price_uzs, status, admin_note, created_at, resolved_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
+        )
+        .order('created_at', { ascending: false })
+        .limit(400),
+      supabase
+        .from('agencies')
+        .select(
+          'id, name, slug, maxcoin_balance, is_verified, is_approved, phone, telegram_username, responsible_person, updated_at'
+        )
+        .order('updated_at', { ascending: false })
+        .limit(1200),
+    ]);
+
+    if (maxcoinTransactionsResult.error) {
+      errors.push(`maxcoin_transactions: ${maxcoinTransactionsResult.error.message}`);
+    }
+    if (coinRequestsResult.error) {
+      errors.push(`coin_requests: ${coinRequestsResult.error.message}`);
+    }
+    if (agencyBalancesResult.error) {
+      errors.push(`agencies: ${agencyBalancesResult.error.message}`);
+    }
+
+    maxcoinTransactionsRaw = (maxcoinTransactionsResult.data ?? []) as PromotionPanelTransactionRaw[];
+    coinRequestsRaw = (coinRequestsResult.data ?? []) as PromotionPanelCoinRequestRaw[];
+    agencyBalancesRaw = (agencyBalancesResult.data ?? []) as PromotionPanelAgencyBalanceRaw[];
+  }
 
   const nowMs = Date.now();
 
