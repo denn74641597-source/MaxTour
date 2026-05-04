@@ -256,11 +256,7 @@ export function SettingsContent({ snapshot }: { snapshot: AdminSettingsSnapshot 
           </div>
 
           <Dialog>
-            <DialogTrigger
-              render={
-                <Button variant="outline" className="border-slate-300 bg-white" />
-              }
-            >
+            <DialogTrigger className="inline-flex h-8 items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-2.5 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50">
               <Wrench className="h-4 w-4" />
               Backend Requirements
             </DialogTrigger>

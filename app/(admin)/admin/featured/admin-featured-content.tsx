@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   AlertTriangle,
   Building2,
@@ -40,6 +40,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type {
   AdminPromotionComputedStatus,
   AdminPromotionsMaxcoinPanelPayload,
@@ -64,12 +65,14 @@ import {
   prepareFeaturedPromotions,
   sortFeaturedPromotions,
 } from './featured-promotions-utils';
+import { useAdminI18n } from '@/features/admin/i18n';
 
 const FEATURED_PAGE_SIZE = 80;
 
 interface Props {
   payload: AdminPromotionsMaxcoinPanelPayload | null;
   errorMessage?: string;
+  viewMode?: 'featured' | 'reklama';
 }
 
 function statusBadgeClass(status: AdminPromotionComputedStatus): string {
@@ -79,10 +82,10 @@ function statusBadgeClass(status: AdminPromotionComputedStatus): string {
   return 'bg-slate-200 text-slate-700';
 }
 
-function formatRemaining(days: number | null): string {
-  if (days == null) return 'Not available';
-  if (days < 0) return `${Math.abs(days)}d overdue`;
-  return `${days}d left`;
+function formatRemaining(days: number | null, language: 'uz' | 'ru'): string {
+  if (days == null) return language === 'ru' ? 'Недоступно' : 'Mavjud emas';
+  if (days < 0) return language === 'ru' ? `${Math.abs(days)} дн. просрочено` : `${Math.abs(days)} kun o'tgan`;
+  return language === 'ru' ? `${days} дн. осталось` : `${days} kun qoldi`;
 }
 
 function withinDateRange(
@@ -115,15 +118,19 @@ function filterByIssue(item: FeaturedPreparedPromotion, issueFilter: FeaturedIss
   return true;
 }
 
-function safeCopy(value: string, successText: string) {
+function safeCopy(value: string, successText: string, language: 'uz' | 'ru') {
   navigator.clipboard
     .writeText(value)
     .then(() => toast.success(successText))
-    .catch(() => toast.error('Unable to copy to clipboard'));
+    .catch(() => toast.error(language === 'ru' ? 'Не удалось скопировать' : "Nusxalab bo'lmadi"));
 }
 
-export function AdminFeaturedContent({ payload, errorMessage }: Props) {
+type ReklamaTab = 'all' | 'featured' | 'active' | 'ending' | 'placement';
+
+export function AdminFeaturedContent({ payload, errorMessage, viewMode = 'featured' }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const { language } = useAdminI18n();
   const [isRefreshing, startRefresh] = useTransition();
 
   const [search, setSearch] = useState('');
@@ -137,7 +144,18 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
   const [sortBy, setSortBy] = useState<FeaturedSortKey>('active_first');
   const [page, setPage] = useState(1);
   const [selectedPromotionId, setSelectedPromotionId] = useState<string | null>(null);
+  const [reklamaTab, setReklamaTab] = useState<ReklamaTab>('all');
   const debouncedSearch = useDebouncedValue(search, 250);
+
+  useEffect(() => {
+    if (viewMode !== 'reklama') return;
+    const tab = searchParams.get('tab');
+    if (tab === 'featured' || tab === 'active' || tab === 'ending' || tab === 'placement') {
+      setReklamaTab(tab);
+      return;
+    }
+    setReklamaTab('all');
+  }, [searchParams, viewMode]);
 
   const generatedAtText = useMemo(() => formatDateTime(payload?.generatedAt), [payload?.generatedAt]);
 
@@ -193,6 +211,16 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
   const filteredPromotions = useMemo(() => {
     const normalizedSearch = normalizeText(debouncedSearch);
     const filtered = preparedPromotions.filter((item) => {
+      if (viewMode === 'reklama') {
+        if (reklamaTab === 'featured') {
+          const key = item.placementKey ?? '';
+          const isFeaturedPlacement =
+            key.includes('featured') || key.includes('recommend') || key.includes('tavsiya') || key.includes('banner');
+          if (!isFeaturedPlacement && item.source !== 'featured_item') return false;
+        }
+        if (reklamaTab === 'active' && item.status !== 'active') return false;
+        if (reklamaTab === 'ending' && !item.isEndingSoon) return false;
+      }
       if (placementFilter !== 'all' && item.placementKey !== placementFilter) return false;
       if (statusFilter !== 'all' && item.status !== statusFilter) return false;
       if (agencyFilter !== 'all' && (item.agency?.id ?? item.agency_id) !== agencyFilter) return false;
@@ -228,9 +256,11 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
     issueFilter,
     placementFilter,
     preparedPromotions,
+    reklamaTab,
     debouncedSearch,
     sortBy,
     statusFilter,
+    viewMode,
   ]);
 
   useEffect(() => {
@@ -327,19 +357,59 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
     <div className="space-y-6 p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <PageTitle
-          title="Featured Promotions"
-          subtitle="Recommended placement visibility, featured slot monitoring, and campaign quality control."
+          title={
+            viewMode === 'reklama'
+              ? language === 'ru'
+                ? 'Реклама'
+                : 'Reklama'
+              : language === 'ru'
+                ? 'Рекомендуемая реклама'
+                : 'Tavsiya reklamasi'
+          }
+          subtitle={
+            viewMode === 'reklama'
+              ? language === 'ru'
+                ? 'Все рекламы, рекомендуемые размещения и контроль кампаний.'
+                : 'Barcha reklamalar, tavsiya joylashuvlari va kampaniya nazorati.'
+              : language === 'ru'
+                ? 'Контроль рекомендуемых размещений и качества кампаний.'
+                : 'Tavsiya joylashuvlari va kampaniya sifati nazorati.'
+          }
         />
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="h-9 rounded-full px-3 text-xs text-slate-600">
-            Last updated: {generatedAtText}
+            {language === 'ru' ? 'Обновлено:' : 'Yangilangan vaqt:'} {generatedAtText}
           </Badge>
           <Button onClick={handleRefresh} disabled={isRefreshing} className="h-9 rounded-full px-4">
             <RefreshCw className={cn('mr-2 h-4 w-4', isRefreshing && 'animate-spin')} />
-            Refresh
+            {language === 'ru' ? 'Обновить' : 'Yangilash'}
           </Button>
         </div>
       </div>
+
+      {viewMode === 'reklama' ? (
+        <SectionShell>
+          <Tabs value={reklamaTab} onValueChange={(value) => setReklamaTab(value as ReklamaTab)}>
+            <TabsList className="grid w-full grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 lg:grid-cols-5">
+              <TabsTrigger value="all">
+                {language === 'ru' ? 'Все рекламы' : 'Barcha reklamalar'}
+              </TabsTrigger>
+              <TabsTrigger value="featured">
+                {language === 'ru' ? 'Рекомендуемая реклама' : 'Tavsiya reklamasi'}
+              </TabsTrigger>
+              <TabsTrigger value="active">
+                {language === 'ru' ? 'Активные кампании' : 'Faol kampaniyalar'}
+              </TabsTrigger>
+              <TabsTrigger value="ending">
+                {language === 'ru' ? 'Завершающиеся' : 'Tugayotganlar'}
+              </TabsTrigger>
+              <TabsTrigger value="placement">
+                {language === 'ru' ? 'Размещения' : 'Joylashuvlar'}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </SectionShell>
+      ) : null}
 
       {errorMessage ? (
         <Card className="border-rose-200 bg-rose-50">
@@ -744,7 +814,7 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                         >
                           {getStatusLabel(item.status)}
                         </span>
-                        <p className="mt-2 text-xs text-slate-500">{formatRemaining(item.remainingDays)}</p>
+                        <p className="mt-2 text-xs text-slate-500">{formatRemaining(item.remainingDays, language)}</p>
                       </td>
                       <td className="px-3 py-3 text-xs text-slate-600">
                         <p>Start: {formatShortDate(item.starts_at)}</p>
@@ -790,7 +860,11 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                             onClick={() => {
                               const link = getTourPublicLink(item);
                               if (!link) return;
-                              safeCopy(link, 'Public tour link copied');
+                              safeCopy(
+                                link,
+                                language === 'ru' ? 'Ссылка публичного тура скопирована' : 'Ommaviy tur havolasi nusxalandi',
+                                language
+                              );
                             }}
                           >
                             <Copy className="mr-1 h-3.5 w-3.5" />
@@ -799,7 +873,13 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => safeCopy(item.sourceId, 'Campaign ID copied')}
+                            onClick={() =>
+                              safeCopy(
+                                item.sourceId,
+                                language === 'ru' ? 'ID кампании скопирован' : 'Kampaniya ID nusxalandi',
+                                language
+                              )
+                            }
                           >
                             <Copy className="mr-1 h-3.5 w-3.5" />
                             Copy ID
@@ -855,7 +935,11 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                         onClick={() => {
                           const link = getTourPublicLink(item);
                           if (!link) return;
-                          safeCopy(link, 'Public tour link copied');
+                          safeCopy(
+                            link,
+                            language === 'ru' ? 'Ссылка публичного тура скопирована' : 'Ommaviy tur havolasi nusxalandi',
+                            language
+                          );
                         }}
                       >
                         Copy Link
@@ -1021,7 +1105,7 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wide text-slate-500">Remaining</p>
-                        <p className="font-medium text-slate-900">{formatRemaining(selectedPromotion.remainingDays)}</p>
+                        <p className="font-medium text-slate-900">{formatRemaining(selectedPromotion.remainingDays, language)}</p>
                       </div>
                       <div>
                         <p className="text-xs uppercase tracking-wide text-slate-500">MaxCoin Cost</p>
@@ -1071,7 +1155,13 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                       <div className="grid gap-2 md:grid-cols-2">
                         <Button
                           variant="outline"
-                          onClick={() => safeCopy(selectedPromotion.sourceId, 'Campaign ID copied')}
+                          onClick={() =>
+                            safeCopy(
+                              selectedPromotion.sourceId,
+                              language === 'ru' ? 'ID кампании скопирован' : 'Kampaniya ID nusxalandi',
+                              language
+                            )
+                          }
                         >
                           <Copy className="mr-2 h-4 w-4" />
                           Copy Campaign ID
@@ -1082,7 +1172,11 @@ export function AdminFeaturedContent({ payload, errorMessage }: Props) {
                           onClick={() => {
                             const link = getTourPublicLink(selectedPromotion);
                             if (!link) return;
-                            safeCopy(link, 'Public tour link copied');
+                            safeCopy(
+                              link,
+                              language === 'ru' ? 'Ссылка публичного тура скопирована' : 'Ommaviy tur havolasi nusxalandi',
+                              language
+                            );
                           }}
                         >
                           <Copy className="mr-2 h-4 w-4" />

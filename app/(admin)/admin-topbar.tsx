@@ -14,8 +14,8 @@ function resolvePageKey(pathname: string):
   | 'users'
   | 'verification'
   | 'leads'
-  | 'promotionsMaxcoin'
-  | 'featuredPromotions'
+  | 'reklama'
+  | 'maxcoin'
   | 'subscriptions'
   | 'deleteAccount'
   | 'auditLog'
@@ -26,8 +26,10 @@ function resolvePageKey(pathname: string):
   if (pathname.startsWith('/admin/users')) return 'users';
   if (pathname.startsWith('/admin/verification')) return 'verification';
   if (pathname.startsWith('/admin/leads')) return 'leads';
-  if (pathname.startsWith('/admin/coin-requests')) return 'promotionsMaxcoin';
-  if (pathname.startsWith('/admin/featured')) return 'featuredPromotions';
+  if (pathname.startsWith('/admin/reklama')) return 'reklama';
+  if (pathname.startsWith('/admin/maxcoin')) return 'maxcoin';
+  if (pathname.startsWith('/admin/coin-requests')) return 'maxcoin';
+  if (pathname.startsWith('/admin/featured')) return 'reklama';
   if (pathname.startsWith('/admin/subscriptions')) return 'subscriptions';
   if (pathname.startsWith('/admin/account-deletions')) return 'deleteAccount';
   if (pathname.startsWith('/admin/audit-log')) return 'auditLog';
@@ -47,7 +49,7 @@ export function AdminTopbar() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <p className="truncate text-base font-semibold text-slate-900">{tp(pageKey)}</p>
-          <p className="truncate text-xs text-slate-500">remote.mxtr.uz</p>
+          <p className="truncate text-xs text-slate-500">{tp('platformOverview')}</p>
         </div>
 
         <div className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2">

@@ -19,7 +19,6 @@ import {
   Star,
   Trash2,
   UserCog,
-  Users,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -55,9 +54,8 @@ const NAV_SECTIONS: NavSection[] = [
   {
     titleKey: 'growth',
     items: [
-      { href: '/admin/coin-requests', labelKey: 'promotionsMaxcoin', icon: Coins },
-      { href: '/admin/featured', labelKey: 'featuredPromotions', icon: Star },
-      { href: '/admin/subscriptions', labelKey: 'subscriptions', icon: Users },
+      { href: '/admin/reklama', labelKey: 'reklama', icon: Star },
+      { href: '/admin/maxcoin', labelKey: 'maxcoin', icon: Coins },
     ],
   },
   {
@@ -105,15 +103,8 @@ export function AdminSidebar() {
           </div>
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold tracking-wide text-white">MaxTour</p>
-            <p className="truncate text-[11px] font-medium text-slate-400">{tp('remoteConsole')}</p>
+            <p className="truncate text-[11px] font-medium text-slate-400">{tInline('Admin panel')}</p>
           </div>
-        </div>
-        <div className="mt-3 flex items-center justify-between rounded-xl border border-slate-800 bg-slate-900/40 px-3 py-2 text-[11px] text-slate-400">
-          <span>remote.mxtr.uz</span>
-          <span className="inline-flex items-center gap-1 text-emerald-300">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            {tc('active')}
-          </span>
         </div>
       </div>
 
@@ -218,8 +209,8 @@ export function AdminSidebar() {
               MT
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">{tp('adminLogin')}</p>
-              <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">{tp('remoteConsole')}</p>
+              <p className="text-sm font-semibold text-white">{tInline('Admin panel')}</p>
+              <p className="text-[10px] uppercase tracking-[0.16em] text-slate-400">{tp('session')}</p>
             </div>
           </div>
           <button

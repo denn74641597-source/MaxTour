@@ -629,3 +629,147 @@ Runtime intent:
 ### 10) Build/typecheck result
 - Command: `npx tsc --noEmit`
 - Result: `PASS`
+
+---
+
+## Phase 2 Repair Implementation Update (2026-05-05)
+
+### 1) What was changed
+- Fixed invalid render-target composition patterns that could produce React minified error `#306`.
+- Localized admin shell and major admin management surfaces to `uz`/`ru` only via centralized admin i18n helpers and runtime-localizer coverage.
+- Reworked agency and tour detail views into large centered dialogs with internal scroll and localized tabs.
+- Split advertising and virtual-currency concerns into separate routes:
+  - Reklama: `/admin/reklama`
+  - MaxCoin: `/admin/maxcoin`
+- Redirected legacy duplicate routes to keep behavior intact without sidebar confusion.
+
+### 2) React #306 cause and fix details
+- Suspected cause from audit: invalid React render targets and unsafe render composition patterns in admin detail/actions blocks.
+- Implemented fixes:
+  - Replaced risky `render={<.../>}` composition patterns with safe children composition.
+  - Verified targeted files:
+    - `app/(admin)/admin/coin-requests/admin-coin-requests-content.tsx`
+    - `app/(admin)/admin/users/user-detail-sheet.tsx`
+    - `app/(admin)/admin/settings/settings-content.tsx`
+  - Added safer localized/fallback rendering for status/placement labels to avoid undefined UI nodes.
+- Validation:
+  - Admin TS/TSX scan for `render={...}` returned no active matches.
+  - `npx tsc --noEmit` passes.
+
+### 3) Files changed (Phase 2 set)
+- `app/(admin)/admin-sidebar.tsx`
+- `app/(admin)/admin-topbar.tsx`
+- `app/(admin)/admin/login/page.tsx`
+- `app/(admin)/admin/coin-requests/page.tsx`
+- `app/(admin)/admin/featured/page.tsx`
+- `app/(admin)/admin/maxcoin/page.tsx` (new)
+- `app/(admin)/admin/reklama/page.tsx` (new)
+- `app/(admin)/admin/coin-requests/admin-coin-requests-content.tsx`
+- `app/(admin)/admin/featured/admin-featured-content.tsx`
+- `app/(admin)/admin/agencies/admin-agencies-content.tsx`
+- `app/(admin)/admin/tours/tour-detail-sheet.tsx`
+- `app/(admin)/admin/tours/tour-status-badge.tsx`
+- `app/(admin)/admin/users/user-detail-sheet.tsx`
+- `app/(admin)/admin/settings/settings-content.tsx`
+- `features/admin/i18n/pages.ts`
+- `features/admin/i18n/phrases.ts`
+- `docs/admin_i18n_performance_plan.md`
+
+### 4) English/mixed labels removed (high-impact)
+- Sidebar/topbar/login labels and route naming cleaned to localized admin naming.
+- Reklama/MaxCoin management screen headings, filter labels, table headings, warnings, confirm dialogs, and action labels localized.
+- Agency and tour detail tabs and section titles localized.
+- Status/enum display labels switched through `localizeStatus` and inline dictionary mapping.
+- Runtime localizer phrase map expanded for legacy strings that are still present as source literals in some older admin files.
+
+### 5) New/updated admin i18n structure
+- Continued using centralized admin i18n module:
+  - `features/admin/i18n/common.ts`
+  - `features/admin/i18n/pages.ts`
+  - `features/admin/i18n/phrases.ts`
+  - `features/admin/i18n/index.ts`
+  - `features/admin/i18n/runtime-localizer.tsx`
+- Coverage improvements:
+  - Additional exact phrase mappings for Reklama/MaxCoin, user detail legacy labels, and settings terminology.
+  - Broader word-level fallback mapping to prevent residual visible English on legacy nodes.
+
+### 6) Agency detail modal redesign notes
+- File: `app/(admin)/admin/agencies/admin-agencies-content.tsx`
+- Replaced cramped side panel behavior with large centered dialog:
+  - Width/height: `max-w-6xl`, tall viewport with internal scroll.
+- Tabs localized and aligned with requested structure:
+  - `Umumiy / Общее`
+  - `Aloqa / Контакты`
+  - `Tasdiqlash / Верификация`
+  - `Turlar / Туры`
+  - `So'rovlar / Заявки`
+  - `Faollik / Активность`
+- Labels, badges, and statuses localized; overflow handling improved.
+
+### 7) Tour detail modal redesign notes
+- File: `app/(admin)/admin/tours/tour-detail-sheet.tsx`
+- Replaced cramped side sheet with large centered dialog (`max-w-6xl`) and internal scroll.
+- Tabs localized as requested:
+  - `Umumiy / Общее`
+  - `Media / Медиа`
+  - `Narx va muddat / Цена и сроки`
+  - `Agentlik / Агентство`
+  - `Moderatsiya / Модерация`
+  - `So'rovlar / Заявки`
+  - `Sifat tekshiruvi / Проверка качества`
+- Media rendering cleaned and copy/status actions localized.
+
+### 8) Reklama / MaxCoin separation notes
+- Reklama:
+  - Route: `/admin/reklama`
+  - Uses existing promotions/featured data surface in single advertising section.
+  - Featured mode merged into Reklama tab model instead of standalone confusing sidebar duplicate.
+- MaxCoin:
+  - Route: `/admin/maxcoin`
+  - Focused on balances, transactions, pending coin requests, and agency-level MaxCoin diagnostics.
+- Legacy route behavior preserved through redirects:
+  - `/admin/featured` -> `/admin/reklama?tab=featured`
+  - `/admin/coin-requests` -> `/admin/maxcoin`
+
+### 9) Sidebar cleanup notes
+- Sidebar no longer exposes technical domain strings.
+- `remote.mxtr.uz` is not used as sidebar label text.
+- Sidebar now uses localized structure with separate `Reklama` and `MaxCoin` entries.
+- Duplicate/confusing Featured sidebar entry removed from primary navigation model.
+
+### 10) Animate UI / shared-ui components used
+- Shared admin composition retained and expanded with polished UI primitives:
+  - `Dialog`, `Tabs`, `Card`, `Badge`, `Skeleton`, `Button`, `Sheet` (where still operationally needed).
+- Existing transition classes and progressive interaction states retained.
+- No heavy new UI dependency added.
+
+### 11) Routes changed/redirected
+- Added:
+  - `/admin/reklama` (advertising-focused section)
+  - `/admin/maxcoin` (virtual currency-focused section)
+- Redirected:
+  - `/admin/featured` -> `/admin/reklama?tab=featured`
+  - `/admin/coin-requests` -> `/admin/maxcoin`
+
+### 12) Intentionally not changed
+- No edits to public/user pages (`mxtr.uz`) and no edits to agency panel files (`agency.mxtr.uz`).
+- No edits to Supabase schema/RLS/migrations/database functions.
+- No unsafe client-side service role usage.
+- No fake or fabricated financial data injection.
+
+### 13) Build/typecheck result
+- Command: `npx tsc --noEmit`
+- Result: `PASS`
+
+### 14) Manual QA checklist
+- [ ] Open `/admin` and verify dashboard loads.
+- [ ] Switch language `uz` and `ru`; confirm sidebar/topbar labels switch correctly.
+- [ ] Confirm no translated technical domain label (e.g. no `masofaviy.mxtr.uz`) appears.
+- [ ] Open `/admin/agencies`; verify detail opens as large centered modal with internal scroll and localized tabs.
+- [ ] Open `/admin/tours`; verify detail opens as large centered modal with internal scroll and localized tabs.
+- [ ] Open `/admin/reklama`; verify advertising/featured information is consolidated and understandable.
+- [ ] Open `/admin/maxcoin`; verify virtual-currency data is separated from general advertising UI.
+- [ ] Verify `/admin/featured` redirect behavior and `/admin/coin-requests` redirect behavior.
+- [ ] Trigger coin request approve/reject dialog and verify localized copy.
+- [ ] Confirm no React minified `#306` runtime crash on admin navigation and detail views.
+- [ ] Verify no public/user/agency project files changed.

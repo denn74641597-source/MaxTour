@@ -17,7 +17,7 @@ import {
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
   Sheet,
@@ -344,15 +344,15 @@ export function AdminUserDetailSheet({
                     <CardContent className="space-y-2 px-4">
                       <p className="text-sm font-semibold text-slate-900">Moderation action center</p>
                       <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" render={<Link href="/admin/agencies" />}>
+                        <Link href="/admin/agencies" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
                           View linked agency
-                        </Button>
-                        <Button variant="outline" size="sm" render={<Link href="/admin/leads" />}>
+                        </Link>
+                        <Link href="/admin/leads" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
                           View leads
-                        </Button>
-                        <Button variant="outline" size="sm" render={<Link href="/admin/tours" />}>
+                        </Link>
+                        <Link href="/admin/tours" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
                           View tours
-                        </Button>
+                        </Link>
                       </div>
                       <div className="grid gap-2 pt-2 sm:grid-cols-2">
                         <Button variant="outline" size="sm" disabled title="No safe block mutation flow exists in current admin layer.">

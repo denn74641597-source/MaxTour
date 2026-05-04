@@ -48,13 +48,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Tabs,
@@ -70,6 +63,7 @@ import type {
   AdminAgencyTourPreview,
   AdminVerificationStatus,
 } from '@/features/admin/types';
+import { useAdminI18n } from '@/features/admin/i18n';
 import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import { approveVerificationAction, rejectVerificationAction } from '@/features/verification/actions';
 import { cn, formatDate, formatNumber } from '@/lib/utils';
@@ -87,6 +81,7 @@ type VerificationFilter = 'all' | 'verified' | 'pending' | 'rejected' | 'not_req
 type HasToursFilter = 'all' | 'has_tours' | 'no_tours';
 type ActivityFilter = 'all' | 'active_30d' | 'quiet_30d' | 'dormant_90d';
 type SortOption = 'newest' | 'oldest' | 'most_tours' | 'pending_verification' | 'most_active';
+type AgencyDetailTab = 'general' | 'contacts' | 'verification' | 'tours' | 'leads' | 'activity';
 
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
@@ -107,12 +102,12 @@ function safeImageUrl(value: string | null | undefined): string | null {
 }
 
 function formatDateTime(value: string | null | undefined): string {
-  if (!value) return 'Not available';
+  if (!value) return '—';
   const parsed = new Date(value);
-  if (!Number.isFinite(parsed.getTime())) return 'Not available';
-  return parsed.toLocaleString('en-GB', {
+  if (!Number.isFinite(parsed.getTime())) return '—';
+  return parsed.toLocaleString(undefined, {
     year: 'numeric',
-    month: 'short',
+    month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit',
@@ -129,18 +124,18 @@ function getActivityBucket(lastActivityAt: string | null): ActivityFilter {
   return 'dormant_90d';
 }
 
-function formatRelativeActivity(lastActivityAt: string | null): string {
-  if (!lastActivityAt) return 'No activity';
+function formatRelativeActivity(lastActivityAt: string | null, language: 'uz' | 'ru'): string {
+  if (!lastActivityAt) return language === 'ru' ? 'Нет активности' : 'Faollik yoʻq';
   const ms = new Date(lastActivityAt).getTime();
-  if (!Number.isFinite(ms)) return 'No activity';
+  if (!Number.isFinite(ms)) return language === 'ru' ? 'Нет активности' : 'Faollik yoʻq';
   const delta = Date.now() - ms;
   const hours = Math.floor(delta / (60 * 60 * 1000));
-  if (hours < 1) return 'Active now';
-  if (hours < 24) return `${hours}h ago`;
+  if (hours < 1) return language === 'ru' ? 'Сейчас активен' : 'Hozir faol';
+  if (hours < 24) return language === 'ru' ? `${hours} ч. назад` : `${hours} soat oldin`;
   const days = Math.floor(hours / 24);
-  if (days < 30) return `${days}d ago`;
+  if (days < 30) return language === 'ru' ? `${days} дн. назад` : `${days} kun oldin`;
   const months = Math.floor(days / 30);
-  return `${months}mo ago`;
+  return language === 'ru' ? `${months} мес. назад` : `${months} oy oldin`;
 }
 
 function verificationTone(status: AdminVerificationStatus | null): string {
@@ -150,11 +145,11 @@ function verificationTone(status: AdminVerificationStatus | null): string {
   return 'border-slate-200 bg-slate-50 text-slate-600';
 }
 
-function verificationLabel(status: AdminVerificationStatus | null): string {
-  if (status === 'pending') return 'Pending verification';
-  if (status === 'approved') return 'Verification approved';
-  if (status === 'rejected') return 'Verification rejected';
-  return 'Not requested';
+function verificationLabel(status: AdminVerificationStatus | null, language: 'uz' | 'ru'): string {
+  if (status === 'pending') return language === 'ru' ? 'Ожидает верификацию' : 'Tasdiqlash kutilmoqda';
+  if (status === 'approved') return language === 'ru' ? 'Верификация подтверждена' : 'Tasdiqlash maʼqullangan';
+  if (status === 'rejected') return language === 'ru' ? 'Верификация отклонена' : 'Tasdiqlash rad etilgan';
+  return language === 'ru' ? 'Заявка не отправлена' : 'Soʻrov yuborilmagan';
 }
 
 function AgencyAvatar({ name, logoUrl, className }: { name: string; logoUrl?: string | null; className?: string }) {
@@ -207,6 +202,7 @@ function MetricCard({
 
 export function AdminAgenciesContent({ agencies, generatedAt, loadError }: AdminAgenciesContentProps) {
   const router = useRouter();
+  const { language, tInline, localizeStatus } = useAdminI18n();
 
   const [lastUpdatedAt, setLastUpdatedAt] = useState(generatedAt);
   const [search, setSearch] = useState('');
@@ -222,7 +218,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
   const [page, setPage] = useState(1);
 
   const [selectedAgencyId, setSelectedAgencyId] = useState<string | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'verification' | 'tours' | 'leads' | 'operations'>('overview');
+  const [selectedTab, setSelectedTab] = useState<AgencyDetailTab>('general');
   const [detailCache, setDetailCache] = useState<Record<string, AdminAgencyDetailPayload>>({});
   const [detailLoadingId, setDetailLoadingId] = useState<string | null>(null);
   const [detailError, setDetailError] = useState<string | null>(null);
@@ -396,7 +392,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
     };
   }, [agencies]);
 
-  async function openAgencyDetail(agency: AdminAgencyListRow, tab: 'overview' | 'verification' | 'tours' | 'leads' | 'operations' = 'overview') {
+  async function openAgencyDetail(agency: AdminAgencyListRow, tab: AgencyDetailTab = 'general') {
     setSelectedAgencyId(agency.id);
     setSelectedTab(tab);
     setDetailError(null);
@@ -408,7 +404,12 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
     setDetailLoadingId(null);
 
     if (result.error || !result.data) {
-      setDetailError(result.error ?? 'Unable to load agency details.');
+      setDetailError(
+        result.error ??
+          (language === 'ru'
+            ? 'Не удалось загрузить детали агентства.'
+            : "Agentlik tafsilotlarini yuklab bo'lmadi.")
+      );
       return;
     }
 
@@ -444,11 +445,11 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
     setApprovalIntent(null);
 
     if (result.error) {
-      toast.error('Could not update agency approval status.');
+      toast.error(tInline('Agentlik tasdiq holatini yangilab bo‘lmadi.'));
       return;
     }
 
-    toast.success(nextApproved ? 'Agency approved.' : 'Agency rejected.');
+    toast.success(nextApproved ? tInline('Agentlik tasdiqlandi.') : tInline('Agentlik rad etildi.'));
     setDetailCache((current) => {
       const next = { ...current };
       delete next[agency.id];
@@ -475,11 +476,11 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
     setVerificationRejectNote('');
 
     if (result.error) {
-      toast.error('Could not update verification request.');
+      toast.error(tInline('Tasdiqlash so‘rovini yangilab bo‘lmadi.'));
       return;
     }
 
-    toast.success(action === 'approve' ? 'Verification approved.' : 'Verification rejected.');
+    toast.success(action === 'approve' ? tInline('Tasdiqlash maʼqullandi.') : tInline('Tasdiqlash rad etildi.'));
     setDetailCache((current) => {
       const next = { ...current };
       delete next[agency.id];
@@ -491,15 +492,15 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
 
   async function copyValue(value: string | null | undefined, label: string) {
     if (!value) {
-      toast.error(`${label} is not available.`);
+      toast.error(`${label}: ${tInline('mavjud emas')}`);
       return;
     }
 
     try {
       await navigator.clipboard.writeText(value);
-      toast.success(`${label} copied.`);
+      toast.success(`${label}: ${tInline('nusxalandi')}`);
     } catch {
-      toast.error(`Could not copy ${label.toLowerCase()}.`);
+      toast.error(`${tInline('Nusxalab bo‘lmadi')}: ${label.toLowerCase()}`);
     }
   }
 
@@ -509,8 +510,12 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
     <SectionShell className="space-y-6 p-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <PageTitle
-          title="Agencies"
-          subtitle="Agency onboarding, verification, performance, and moderation overview"
+          title={language === 'ru' ? 'Агентства' : 'Agentliklar'}
+          subtitle={
+            language === 'ru'
+              ? 'Онбординг, верификация, показатели и модерация агентств'
+              : 'Agentliklarni ishga tushirish, tasdiqlash, samaradorlik va moderatsiya'
+          }
         />
         <div className="flex items-center gap-2">
           <Button
@@ -522,21 +527,22 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
             }}
           >
             <RefreshCw />
-            Refresh
+            {language === 'ru' ? 'Обновить' : 'Yangilash'}
           </Button>
           <div className="rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600">
-            Last updated: <span className="font-medium text-slate-900">{formatDateTime(lastUpdatedAt)}</span>
+            {language === 'ru' ? 'Обновлено:' : 'Oxirgi yangilanish:'}{' '}
+            <span className="font-medium text-slate-900">{formatDateTime(lastUpdatedAt)}</span>
           </div>
         </div>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
-        <MetricCard title="Total Agencies" value={overviewStats.total} tone="default" />
-        <MetricCard title="Pending Verification" value={overviewStats.pendingVerification} tone="warning" />
-        <MetricCard title="Verified" value={overviewStats.verified} tone="success" />
-        <MetricCard title="Rejected / Not Approved" value={overviewStats.restricted} tone="danger" />
-        <MetricCard title="With Active Tours" value={overviewStats.activeTours} tone="info" />
-        <MetricCard title="Missing Profile Data" value={overviewStats.missingData} tone="warning" />
+        <MetricCard title={language === 'ru' ? 'Всего агентств' : 'Jami agentliklar'} value={overviewStats.total} tone="default" />
+        <MetricCard title={language === 'ru' ? 'Ожидают верификацию' : 'Tasdiqlash kutilmoqda'} value={overviewStats.pendingVerification} tone="warning" />
+        <MetricCard title={language === 'ru' ? 'Верифицированы' : 'Tasdiqlangan'} value={overviewStats.verified} tone="success" />
+        <MetricCard title={language === 'ru' ? 'Отклонены / не подтверждены' : 'Rad etilgan / tasdiqlanmagan'} value={overviewStats.restricted} tone="danger" />
+        <MetricCard title={language === 'ru' ? 'С активными турами' : 'Faol turlari bor'} value={overviewStats.activeTours} tone="info" />
+        <MetricCard title={language === 'ru' ? 'Неполный профиль' : 'Profil maʼlumotlari yetishmaydi'} value={overviewStats.missingData} tone="warning" />
       </div>
 
       <Card className="rounded-2xl border border-slate-200 bg-white py-3">
@@ -547,45 +553,49 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
-                placeholder="Search name, manager, phone, email, city..."
+                placeholder={
+                  language === 'ru'
+                    ? 'Поиск: название, менеджер, телефон, email, город...'
+                    : 'Qidiruv: nomi, menejer, telefon, email, shahar...'
+                }
                 className="h-9 pl-8"
               />
             </div>
 
             <Select value={approvalFilter} onValueChange={(value) => setApprovalFilter(value as ApprovalFilter)}>
               <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder="Approval" />
+                <SelectValue placeholder={language === 'ru' ? 'Подтверждение' : 'Tasdiqlash'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All approval</SelectItem>
-                <SelectItem value="approved">Approved</SelectItem>
-                <SelectItem value="pending_approval">Pending approval</SelectItem>
+                <SelectItem value="all">{language === 'ru' ? 'Все' : 'Barchasi'}</SelectItem>
+                <SelectItem value="approved">{language === 'ru' ? 'Подтверждены' : 'Tasdiqlangan'}</SelectItem>
+                <SelectItem value="pending_approval">{language === 'ru' ? 'Ожидают подтверждения' : 'Tasdiq kutilmoqda'}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={verificationFilter} onValueChange={(value) => setVerificationFilter(value as VerificationFilter)}>
               <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder="Verification" />
+                <SelectValue placeholder={language === 'ru' ? 'Верификация' : 'Verifikatsiya'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All verification</SelectItem>
-                <SelectItem value="verified">Verified badge</SelectItem>
-                <SelectItem value="pending">Pending request</SelectItem>
-                <SelectItem value="rejected">Rejected request</SelectItem>
-                <SelectItem value="not_requested">No request</SelectItem>
+                <SelectItem value="all">{language === 'ru' ? 'Все' : 'Barchasi'}</SelectItem>
+                <SelectItem value="verified">{language === 'ru' ? 'С бейджем верификации' : 'Tasdiqlangan belgi bor'}</SelectItem>
+                <SelectItem value="pending">{language === 'ru' ? 'Ожидающие заявки' : 'Kutilayotgan soʻrovlar'}</SelectItem>
+                <SelectItem value="rejected">{language === 'ru' ? 'Отклоненные заявки' : 'Rad etilgan soʻrovlar'}</SelectItem>
+                <SelectItem value="not_requested">{language === 'ru' ? 'Без заявки' : 'Soʻrov yoʻq'}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={subscriptionFilter} onValueChange={(value) => setSubscriptionFilter(value ?? 'all')}>
               <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder="Subscription" />
+                <SelectValue placeholder={language === 'ru' ? 'Подписка' : 'Obuna'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All subscriptions</SelectItem>
-                <SelectItem value="none">No subscription</SelectItem>
+                <SelectItem value="all">{language === 'ru' ? 'Все подписки' : 'Barcha obunalar'}</SelectItem>
+                <SelectItem value="none">{language === 'ru' ? 'Без подписки' : 'Obuna yoʻq'}</SelectItem>
                 {subscriptionOptions.map((status) => (
                   <SelectItem key={status} value={status}>
-                    {status}
+                    {localizeStatus(status)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -593,10 +603,10 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
 
             <Select value={cityFilter} onValueChange={(value) => setCityFilter(value ?? 'all')}>
               <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder="City" />
+                <SelectValue placeholder={language === 'ru' ? 'Город' : 'Shahar'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All cities</SelectItem>
+                <SelectItem value="all">{language === 'ru' ? 'Все города' : 'Barcha shaharlar'}</SelectItem>
                 {cityOptions.map((city) => (
                   <SelectItem key={city} value={city}>
                     {city}
@@ -607,24 +617,24 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
 
             <Select value={activityFilter} onValueChange={(value) => setActivityFilter(value as ActivityFilter)}>
               <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder="Activity" />
+                <SelectValue placeholder={language === 'ru' ? 'Активность' : 'Faollik'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All activity</SelectItem>
-                <SelectItem value="active_30d">Active (30d)</SelectItem>
-                <SelectItem value="quiet_30d">Quiet (31-90d)</SelectItem>
-                <SelectItem value="dormant_90d">Dormant (90d+)</SelectItem>
+                <SelectItem value="all">{language === 'ru' ? 'Вся активность' : 'Barcha faollik'}</SelectItem>
+                <SelectItem value="active_30d">{language === 'ru' ? 'Активные (30д)' : 'Faol (30 kun)'}</SelectItem>
+                <SelectItem value="quiet_30d">{language === 'ru' ? 'Тихие (31-90д)' : 'Sokin (31-90 kun)'}</SelectItem>
+                <SelectItem value="dormant_90d">{language === 'ru' ? 'Спящие (90д+)' : 'Sust (90 kun+)'}</SelectItem>
               </SelectContent>
             </Select>
 
             <Select value={hasToursFilter} onValueChange={(value) => setHasToursFilter(value as HasToursFilter)}>
               <SelectTrigger className="h-9 w-full">
-                <SelectValue placeholder="Tours" />
+                <SelectValue placeholder={language === 'ru' ? 'Туры' : 'Turlar'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Any tours</SelectItem>
-                <SelectItem value="has_tours">Has tours</SelectItem>
-                <SelectItem value="no_tours">No tours</SelectItem>
+                <SelectItem value="all">{language === 'ru' ? 'Любые' : 'Barchasi'}</SelectItem>
+                <SelectItem value="has_tours">{language === 'ru' ? 'Есть туры' : 'Turlari bor'}</SelectItem>
+                <SelectItem value="no_tours">{language === 'ru' ? 'Без туров' : 'Tursiz'}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -635,30 +645,32 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
               value={createdFrom}
               onChange={(event) => setCreatedFrom(event.target.value)}
               className="h-9"
-              aria-label="Created from"
+              aria-label={language === 'ru' ? 'Дата создания с' : 'Yaratilgan sanadan'}
             />
             <Input
               type="date"
               value={createdTo}
               onChange={(event) => setCreatedTo(event.target.value)}
               className="h-9"
-              aria-label="Created to"
+              aria-label={language === 'ru' ? 'Дата создания по' : 'Yaratilgan sanagacha'}
             />
             <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
               <SelectTrigger className="h-9 w-full">
                 <ArrowUpDown />
-                <SelectValue placeholder="Sort" />
+                <SelectValue placeholder={language === 'ru' ? 'Сортировка' : 'Saralash'} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest first</SelectItem>
-                <SelectItem value="oldest">Oldest first</SelectItem>
-                <SelectItem value="most_tours">Most tours</SelectItem>
-                <SelectItem value="pending_verification">Pending verification first</SelectItem>
-                <SelectItem value="most_active">Most active</SelectItem>
+                <SelectItem value="newest">{language === 'ru' ? 'Сначала новые' : 'Avval yangi'}</SelectItem>
+                <SelectItem value="oldest">{language === 'ru' ? 'Сначала старые' : 'Avval eski'}</SelectItem>
+                <SelectItem value="most_tours">{language === 'ru' ? 'Больше туров' : 'Koʻp turlar'}</SelectItem>
+                <SelectItem value="pending_verification">{language === 'ru' ? 'Сначала верификация' : 'Avval verifikatsiya'}</SelectItem>
+                <SelectItem value="most_active">{language === 'ru' ? 'Самые активные' : 'Eng faol'}</SelectItem>
               </SelectContent>
             </Select>
             <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-              Showing <span className="font-semibold text-slate-900">{visibleAgencies.length}</span> of{' '}
+              {language === 'ru' ? 'Показано' : 'Koʻrsatilgan'}{' '}
+              <span className="font-semibold text-slate-900">{visibleAgencies.length}</span>{' '}
+              {language === 'ru' ? 'из' : 'dan'}{' '}
               <span className="font-semibold text-slate-900">{agencies.length}</span>
             </div>
             <div className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-1.5 py-1">
@@ -685,7 +697,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
               </Button>
             </div>
             <Button variant="outline" size="sm" onClick={resetFilters}>
-              Reset filters
+              {language === 'ru' ? 'Сбросить фильтры' : 'Filtrlarni tozalash'}
             </Button>
           </div>
         </CardContent>
@@ -699,7 +711,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
               <span className="text-sm font-medium">{loadError}</span>
             </div>
             <Button variant="outline" size="sm" onClick={() => router.refresh()}>
-              Retry
+              {language === 'ru' ? 'Повторить' : 'Qayta urinish'}
             </Button>
           </CardContent>
         </Card>
@@ -710,24 +722,34 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
           {filteredAgencies.length === 0 ? (
             <div className="flex min-h-[340px] flex-col items-center justify-center gap-2 text-center">
               <CircleSlash className="h-10 w-10 text-slate-300" />
-              <h3 className="text-base font-semibold text-slate-800">No agencies match the current filters</h3>
-              <p className="max-w-md text-sm text-slate-500">Try adjusting search terms or filter values to surface more agencies.</p>
-              <Button variant="outline" size="sm" onClick={resetFilters}>Reset filters</Button>
+              <h3 className="text-base font-semibold text-slate-800">
+                {language === 'ru'
+                  ? 'По текущим фильтрам агентства не найдены'
+                  : 'Joriy filtrlarga mos agentlik topilmadi'}
+              </h3>
+              <p className="max-w-md text-sm text-slate-500">
+                {language === 'ru'
+                  ? 'Измените параметры поиска или фильтры.'
+                  : 'Qidiruv yoki filtr qiymatlarini o‘zgartirib ko‘ring.'}
+              </p>
+              <Button variant="outline" size="sm" onClick={resetFilters}>
+                {language === 'ru' ? 'Сбросить фильтры' : 'Filtrlarni tozalash'}
+              </Button>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1180px] text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-                    <th className="px-3 py-3">Agency</th>
-                    <th className="px-3 py-3">Contact</th>
-                    <th className="px-3 py-3">Location</th>
-                    <th className="px-3 py-3">Verification</th>
-                    <th className="px-3 py-3">Subscription</th>
-                    <th className="px-3 py-3">Metrics</th>
-                    <th className="px-3 py-3">Created</th>
-                    <th className="px-3 py-3">Last activity</th>
-                    <th className="px-3 py-3 text-right">Actions</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Агентство' : 'Agentlik'}</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Контакты' : 'Aloqa'}</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Локация' : 'Joylashuv'}</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Верификация' : 'Tasdiqlash'}</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Подписка' : 'Obuna'}</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Метрики' : 'Ko‘rsatkichlar'}</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Создано' : 'Yaratilgan'}</th>
+                    <th className="px-3 py-3">{language === 'ru' ? 'Активность' : 'Faollik'}</th>
+                    <th className="px-3 py-3 text-right">{language === 'ru' ? 'Действия' : 'Amallar'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -748,9 +770,13 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                               <p className="truncate text-xs text-slate-500">/{agency.slug}</p>
                               <div className="mt-1 flex items-center gap-1.5">
                                 {agency.is_approved ? (
-                                  <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Approved</Badge>
+                                  <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">
+                                    {language === 'ru' ? 'Подтверждено' : 'Tasdiqlangan'}
+                                  </Badge>
                                 ) : (
-                                  <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">Pending approval</Badge>
+                                  <Badge variant="outline" className="border-amber-200 bg-amber-50 text-amber-700">
+                                    {language === 'ru' ? 'Ожидает подтверждения' : 'Tasdiq kutilmoqda'}
+                                  </Badge>
                                 )}
                                 {agency.stats.missingFieldCount > 0 ? (
                                   <button
@@ -758,10 +784,10 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                                     className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-medium text-amber-700"
                                     onClick={(event) => {
                                       event.stopPropagation();
-                                      openAgencyDetail(agency, 'operations');
+                                      openAgencyDetail(agency, 'activity');
                                     }}
                                   >
-                                    {agency.stats.missingFieldCount} missing
+                                    {agency.stats.missingFieldCount} {language === 'ru' ? 'пустых полей' : 'bo‘sh maydon'}
                                   </button>
                                 ) : null}
                               </div>
@@ -773,15 +799,15 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                           <div className="space-y-1 text-xs text-slate-600">
                             <p className="flex items-center gap-1">
                               <Phone className="h-3 w-3 text-slate-400" />
-                              {agency.phone ?? 'Not provided'}
+                              {agency.phone ?? (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}
                             </p>
                             <p className="flex items-center gap-1">
                               <Mail className="h-3 w-3 text-slate-400" />
-                              {agency.owner?.email ?? 'Not provided'}
+                              {agency.owner?.email ?? (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}
                             </p>
                             <p className="flex items-center gap-1">
                               <Building2 className="h-3 w-3 text-slate-400" />
-                              {agency.owner?.full_name ?? 'Not provided'}
+                              {agency.owner?.full_name ?? (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}
                             </p>
                           </div>
                         </td>
@@ -790,7 +816,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                           <p className="text-sm font-medium text-slate-800">
                             {agency.city ? `${agency.city}, ${agency.country}` : agency.country}
                           </p>
-                          <p className="text-xs text-slate-500">{agency.address ?? 'Address not provided'}</p>
+                          <p className="text-xs text-slate-500">{agency.address ?? (language === 'ru' ? 'Адрес не указан' : 'Manzil kiritilmagan')}</p>
                         </td>
 
                         <td className="px-3 py-3 align-top">
@@ -810,12 +836,22 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                               {agency.verification.latestStatus === 'approved' ? <ShieldCheck className="h-3 w-3" /> : null}
                               {agency.verification.latestStatus === 'rejected' ? <ShieldX className="h-3 w-3" /> : null}
                               {agency.verification.latestStatus === null ? <CircleSlash className="h-3 w-3" /> : null}
-                              {verificationLabel(agency.verification.latestStatus)}
+                              {verificationLabel(agency.verification.latestStatus, language)}
                             </button>
                             <p className="text-xs text-slate-500">
-                              {agency.is_verified ? 'Badge: verified' : 'Badge: not verified'}
+                              {agency.is_verified
+                                ? language === 'ru'
+                                  ? 'Знак: верифицировано'
+                                  : 'Belgi: tasdiqlangan'
+                                : language === 'ru'
+                                  ? 'Знак: не верифицировано'
+                                  : 'Belgi: tasdiqlanmagan'}
                             </p>
-                            {pendingRequest ? <p className="text-xs font-medium text-amber-700">Requires admin decision</p> : null}
+                            {pendingRequest ? (
+                              <p className="text-xs font-medium text-amber-700">
+                                {language === 'ru' ? 'Требуется решение администратора' : 'Admin qarori talab qilinadi'}
+                              </p>
+                            ) : null}
                           </div>
                         </td>
 
@@ -823,12 +859,14 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                           {agency.subscription ? (
                             <div className="space-y-1">
                               <Badge variant="outline" className="border-sky-200 bg-sky-50 text-sky-700">
-                                {agency.subscription.status}
+                                {localizeStatus(agency.subscription.status)}
                               </Badge>
-                              <p className="text-xs text-slate-600">{agency.subscription.plan?.name ?? 'Plan not linked'}</p>
+                              <p className="text-xs text-slate-600">
+                                {agency.subscription.plan?.name ?? (language === 'ru' ? 'Тариф не связан' : 'Tarif ulanmagan')}
+                              </p>
                             </div>
                           ) : (
-                            <span className="text-xs text-slate-500">Not available</span>
+                            <span className="text-xs text-slate-500">{language === 'ru' ? 'Недоступно' : 'Mavjud emas'}</span>
                           )}
                         </td>
 
@@ -842,9 +880,11 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                               }}
                               className="font-medium text-slate-800 hover:text-blue-600"
                             >
-                              Tours: {formatNumber(agency.stats.totalTours)}
+                              {language === 'ru' ? 'Туры' : 'Turlar'}: {formatNumber(agency.stats.totalTours)}
                             </button>
-                            <p className="text-slate-500">Published: {formatNumber(agency.stats.publishedTours)}</p>
+                            <p className="text-slate-500">
+                              {language === 'ru' ? 'Опубликовано' : 'Nashr etilgan'}: {formatNumber(agency.stats.publishedTours)}
+                            </p>
                             <button
                               type="button"
                               onClick={(event) => {
@@ -853,9 +893,11 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                               }}
                               className="font-medium text-slate-800 hover:text-blue-600"
                             >
-                              Leads: {formatNumber(agency.stats.totalLeads)}
+                              {language === 'ru' ? 'Заявки' : 'So‘rovlar'}: {formatNumber(agency.stats.totalLeads)}
                             </button>
-                            <p className="text-slate-500">30d leads: {formatNumber(agency.stats.recentLeads30d)}</p>
+                            <p className="text-slate-500">
+                              {language === 'ru' ? 'Заявки за 30д' : '30 kundagi so‘rovlar'}: {formatNumber(agency.stats.recentLeads30d)}
+                            </p>
                           </div>
                         </td>
 
@@ -865,7 +907,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                         </td>
 
                         <td className="px-3 py-3 align-top text-xs text-slate-600">
-                          <p className="font-medium text-slate-800">{formatRelativeActivity(agency.stats.lastActivityAt)}</p>
+                          <p className="font-medium text-slate-800">{formatRelativeActivity(agency.stats.lastActivityAt, language)}</p>
                           <p className="text-slate-500">{formatDateTime(agency.stats.lastActivityAt)}</p>
                         </td>
 
@@ -873,7 +915,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                           <div className="flex items-center justify-end gap-1.5" onClick={(event) => event.stopPropagation()}>
                             <Button size="sm" variant="outline" onClick={() => openAgencyDetail(agency)}>
                               <Eye />
-                              View
+                              {language === 'ru' ? 'Открыть' : 'Ochish'}
                             </Button>
                             <Button
                               size="sm"
@@ -882,12 +924,18 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                               disabled={isActionBusy}
                             >
                               {agency.is_approved ? <XCircle /> : <CheckCircle2 />}
-                              {agency.is_approved ? 'Reject' : 'Approve'}
+                              {agency.is_approved
+                                ? language === 'ru'
+                                  ? 'Отклонить'
+                                  : 'Rad etish'
+                                : language === 'ru'
+                                  ? 'Подтвердить'
+                                  : 'Tasdiqlash'}
                             </Button>
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => copyValue(agency.phone ?? agency.owner?.email, 'Contact')}
+                              onClick={() => copyValue(agency.phone ?? agency.owner?.email, language === 'ru' ? 'Контакт' : 'Aloqa')}
                             >
                               <Copy />
                             </Button>
@@ -904,7 +952,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
       </Card>
 
       {selectedAgency ? (
-        <Sheet
+        <Dialog
           open={Boolean(selectedAgencyId)}
           onOpenChange={(open) => {
             if (!open) {
@@ -913,47 +961,59 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
             }
           }}
         >
-          <SheetContent side="right" className="w-full overflow-y-auto border-l border-slate-200 bg-white sm:max-w-3xl">
-            <>
-              <SheetHeader className="border-b border-slate-100 px-6 py-5">
-                <div className="flex items-start gap-3">
-                  <AgencyAvatar name={selectedAgency.name} logoUrl={selectedAgency.logo_url} className="h-14 w-14" />
-                  <div className="min-w-0 space-y-1">
-                    <SheetTitle className="truncate text-xl font-semibold text-slate-900">{selectedAgency.name}</SheetTitle>
-                    <SheetDescription className="text-sm text-slate-500">/{selectedAgency.slug}</SheetDescription>
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      <Badge variant="outline" className={selectedAgency.is_approved ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-amber-200 bg-amber-50 text-amber-700'}>
-                        {selectedAgency.is_approved ? 'Approved' : 'Pending approval'}
-                      </Badge>
-                      <Badge variant="outline" className={verificationTone(selectedAgency.verification.latestStatus)}>
-                        {verificationLabel(selectedAgency.verification.latestStatus)}
-                      </Badge>
+          <DialogContent className="h-[88vh] w-[96vw] max-w-6xl overflow-hidden p-0">
+            <div className="flex h-full flex-col bg-white">
+              <div className="border-b border-slate-100 px-6 py-5">
+                <div className="flex flex-wrap items-start justify-between gap-4">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <AgencyAvatar name={selectedAgency.name} logoUrl={selectedAgency.logo_url} className="h-14 w-14" />
+                    <div className="min-w-0 space-y-1">
+                      <DialogTitle className="truncate text-xl font-semibold text-slate-900">{selectedAgency.name}</DialogTitle>
+                      <DialogDescription className="text-sm text-slate-500">/{selectedAgency.slug}</DialogDescription>
+                      <div className="flex flex-wrap gap-1.5 pt-1">
+                        <Badge
+                          variant="outline"
+                          className={
+                            selectedAgency.is_approved
+                              ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                              : 'border-amber-200 bg-amber-50 text-amber-700'
+                          }
+                        >
+                          {selectedAgency.is_approved ? tInline('Tasdiqlangan') : tInline('Tasdiqlash kutilmoqda')}
+                        </Badge>
+                        <Badge variant="outline" className={verificationTone(selectedAgency.verification.latestStatus)}>
+                          {verificationLabel(selectedAgency.verification.latestStatus, language)}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </SheetHeader>
+              </div>
 
-              <div className="space-y-4 p-6">
-                <div className="grid gap-2 sm:grid-cols-2">
+              <div className="flex-1 space-y-4 overflow-y-auto p-6">
+                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                   <Button
                     variant={selectedAgency.is_approved ? 'destructive' : 'default'}
                     onClick={() => setApprovalIntent({ agency: selectedAgency, nextApproved: !selectedAgency.is_approved })}
                     disabled={isActionBusy}
                   >
                     {selectedAgency.is_approved ? <XCircle /> : <CheckCircle2 />}
-                    {selectedAgency.is_approved ? 'Reject agency' : 'Approve agency'}
+                    {selectedAgency.is_approved ? tInline('Agentlikni rad etish') : tInline('Agentlikni tasdiqlash')}
                   </Button>
-                  <Button variant="outline" onClick={() => copyValue(selectedAgency.phone ?? selectedAgency.owner?.email, 'Primary contact')}>
+                  <Button
+                    variant="outline"
+                    onClick={() => copyValue(selectedAgency.phone ?? selectedAgency.owner?.email, tInline('Asosiy aloqa'))}
+                  >
                     <Copy />
-                    Copy contact
+                    {tInline('Aloqani nusxalash')}
                   </Button>
                   <Button variant="outline" onClick={() => router.push('/admin/tours')}>
                     <Building2 />
-                    View tours list
+                    {tInline('Turlar roʻyxatini ochish')}
                   </Button>
                   <Button variant="outline" onClick={() => router.push('/admin/leads')}>
                     <Building2 />
-                    View leads list
+                    {tInline('Soʻrovlar roʻyxatini ochish')}
                   </Button>
                   <Button
                     variant="outline"
@@ -964,11 +1024,11 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                     }}
                   >
                     <ExternalLink />
-                    Open public profile
+                    {tInline('Ommaviy profilni ochish')}
                   </Button>
                   <Button variant="ghost" disabled>
                     <CircleSlash />
-                    Suspend (not supported)
+                    {tInline('Toʻxtatish mavjud emas')}
                   </Button>
                 </div>
 
@@ -990,7 +1050,7 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                         size="sm"
                         onClick={() => openAgencyDetail(selectedAgency, selectedTab)}
                       >
-                        Retry
+                        {tInline('Qayta urinish')}
                       </Button>
                     </CardContent>
                   </Card>
@@ -1011,32 +1071,36 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
                   />
                 )}
               </div>
-            </>
-          </SheetContent>
-        </Sheet>
+            </div>
+          </DialogContent>
+        </Dialog>
       ) : null}
 
       <Dialog open={Boolean(approvalIntent)} onOpenChange={(open) => !open && setApprovalIntent(null)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {approvalIntent?.nextApproved ? 'Approve agency?' : 'Reject agency?'}
+              {approvalIntent?.nextApproved
+                ? tInline('Agentlikni tasdiqlaysizmi?')
+                : tInline('Agentlikni rad etasizmi?')}
             </DialogTitle>
             <DialogDescription>
               {approvalIntent
-                ? `This will update ${approvalIntent.agency.name} approval status in the agencies table.`
-                : 'Confirm agency approval update.'}
+                ? `${approvalIntent.agency.name}: ${tInline('agentlik tasdiq holati yangilanadi.')}`
+                : tInline('Agentlik tasdiq holatini yangilashni tasdiqlang.')}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setApprovalIntent(null)} disabled={isActionBusy}>Cancel</Button>
+            <Button variant="outline" onClick={() => setApprovalIntent(null)} disabled={isActionBusy}>
+              {tInline('Bekor qilish')}
+            </Button>
             <Button
               variant={approvalIntent?.nextApproved ? 'default' : 'destructive'}
               onClick={executeApprovalAction}
               disabled={isActionBusy}
             >
               {isActionBusy ? <Loader2 className="animate-spin" /> : null}
-              Confirm
+              {tInline('Tasdiqlash')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1046,36 +1110,40 @@ export function AdminAgenciesContent({ agencies, generatedAt, loadError }: Admin
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {verificationIntent?.action === 'approve' ? 'Approve verification request?' : 'Reject verification request?'}
+              {verificationIntent?.action === 'approve'
+                ? tInline('Tasdiqlash soʻrovini maʼqullaysizmi?')
+                : tInline('Tasdiqlash soʻrovini rad etasizmi?')}
             </DialogTitle>
             <DialogDescription>
               {verificationIntent?.action === 'approve'
-                ? 'This marks the request approved and sets agency verified badge to true.'
-                : 'This marks the request rejected and removes the verified badge.'}
+                ? tInline('Soʻrov tasdiqlanadi va agentlik verifikatsiya belgisi yoqiladi.')
+                : tInline('Soʻrov rad etiladi va agentlik verifikatsiya belgisi olib tashlanadi.')}
             </DialogDescription>
           </DialogHeader>
 
           {verificationIntent?.action === 'reject' ? (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-slate-600">Admin note (optional)</p>
+              <p className="text-xs font-medium text-slate-600">{tInline('Admin izohi (ixtiyoriy)')}</p>
               <Textarea
                 value={verificationRejectNote}
                 onChange={(event) => setVerificationRejectNote(event.target.value)}
-                placeholder="Provide rejection reason for audit history"
+                placeholder={tInline('Audit tarixi uchun rad etish sababini kiriting')}
                 className="min-h-24"
               />
             </div>
           ) : null}
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setVerificationIntent(null)} disabled={isActionBusy}>Cancel</Button>
+            <Button variant="outline" onClick={() => setVerificationIntent(null)} disabled={isActionBusy}>
+              {tInline('Bekor qilish')}
+            </Button>
             <Button
               variant={verificationIntent?.action === 'approve' ? 'default' : 'destructive'}
               onClick={executeVerificationAction}
               disabled={isActionBusy}
             >
               {isActionBusy ? <Loader2 className="animate-spin" /> : null}
-              Confirm
+              {tInline('Tasdiqlash')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1095,97 +1163,150 @@ function AgencyDetailTabs({
 }: {
   agency: AdminAgencyListRow;
   detail?: AdminAgencyDetailPayload;
-  activeTab: 'overview' | 'verification' | 'tours' | 'leads' | 'operations';
-  onTabChange: (tab: 'overview' | 'verification' | 'tours' | 'leads' | 'operations') => void;
+  activeTab: AgencyDetailTab;
+  onTabChange: (tab: AgencyDetailTab) => void;
   onCopy: (value: string | null | undefined, label: string) => Promise<void>;
   onApproveVerification: (requestId: string) => void;
   onRejectVerification: (requestId: string) => void;
 }) {
+  const { language, localizeStatus } = useAdminI18n();
   const tours = detail?.tours ?? [];
   const leads = detail?.leads ?? [];
   const verificationRequests = detail?.verificationRequests ?? [];
   const subscriptions = detail?.subscriptions ?? [];
   const maxcoinTransactions = detail?.maxcoinTransactions ?? [];
   const promotions = detail?.promotions ?? [];
+  const notProvided = language === 'ru' ? 'Не указано' : 'Kiritilmagan';
+  const notAvailable = language === 'ru' ? 'Недоступно' : 'Mavjud emas';
+  const tabLabels = language === 'ru'
+    ? {
+        general: 'Общее',
+        contacts: 'Контакты',
+        verification: 'Верификация',
+        tours: 'Туры',
+        leads: 'Заявки',
+        activity: 'Активность',
+      }
+    : {
+        general: 'Umumiy',
+        contacts: 'Aloqa',
+        verification: 'Tasdiqlash',
+        tours: 'Turlar',
+        leads: "So'rovlar",
+        activity: 'Faollik',
+      };
 
   return (
-    <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as typeof activeTab)}>
-      <TabsList className="grid grid-cols-5 rounded-xl bg-slate-100 p-1">
-        <TabsTrigger value="overview">Overview</TabsTrigger>
-        <TabsTrigger value="verification">Verification</TabsTrigger>
-        <TabsTrigger value="tours">Tours</TabsTrigger>
-        <TabsTrigger value="leads">Leads</TabsTrigger>
-        <TabsTrigger value="operations">Ops</TabsTrigger>
+    <Tabs value={activeTab} onValueChange={(value) => onTabChange(value as AgencyDetailTab)} className="space-y-4">
+      <TabsList className="grid grid-cols-2 rounded-xl bg-slate-100 p-1 md:grid-cols-6">
+        <TabsTrigger value="general">{tabLabels.general}</TabsTrigger>
+        <TabsTrigger value="contacts">{tabLabels.contacts}</TabsTrigger>
+        <TabsTrigger value="verification">{tabLabels.verification}</TabsTrigger>
+        <TabsTrigger value="tours">{tabLabels.tours}</TabsTrigger>
+        <TabsTrigger value="leads">{tabLabels.leads}</TabsTrigger>
+        <TabsTrigger value="activity">{tabLabels.activity}</TabsTrigger>
       </TabsList>
 
-      <TabsContent value="overview" className="space-y-4 pt-3">
+      <TabsContent value="general" className="space-y-4">
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="grid gap-3 px-4 sm:grid-cols-2">
-            <InfoLine icon={<Building2 className="h-4 w-4" />} label="Agency name" value={agency.name} />
+            <InfoLine icon={<Building2 className="h-4 w-4" />} label={language === 'ru' ? 'Агентство' : 'Agentlik'} value={agency.name} />
             <InfoLine icon={<Building2 className="h-4 w-4" />} label="Slug" value={agency.slug} />
-            <InfoLine icon={<Phone className="h-4 w-4" />} label="Phone" value={agency.phone ?? 'Not provided'} onCopy={() => onCopy(agency.phone, 'Phone')} />
-            <InfoLine icon={<Mail className="h-4 w-4" />} label="Owner email" value={agency.owner?.email ?? 'Not provided'} onCopy={() => onCopy(agency.owner?.email, 'Owner email')} />
-            <InfoLine icon={<MapPin className="h-4 w-4" />} label="Location" value={agency.city ? `${agency.city}, ${agency.country}` : agency.country} />
-            <InfoLine icon={<Calendar className="h-4 w-4" />} label="Created" value={formatDateTime(agency.created_at)} />
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-2xl border border-slate-200 bg-white py-4">
-          <CardContent className="space-y-2 px-4">
-            <p className="text-sm font-semibold text-slate-900">Manager and company</p>
-            <p className="text-sm text-slate-700">Manager: {agency.owner?.full_name ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">Telegram: {agency.telegram_username ?? agency.owner?.telegram_username ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">Responsible person: {agency.responsible_person ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">INN: {agency.inn ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">Address: {agency.address ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">Website: {agency.website_url ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">Instagram: {agency.instagram_url ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">Google Maps URL: {agency.google_maps_url ?? 'Not provided'}</p>
-            <p className="text-sm text-slate-700">Description: {agency.description ?? 'Not provided'}</p>
+            <InfoLine icon={<MapPin className="h-4 w-4" />} label={language === 'ru' ? 'Локация' : 'Joylashuv'} value={agency.city ? `${agency.city}, ${agency.country}` : agency.country ?? notAvailable} />
+            <InfoLine icon={<Calendar className="h-4 w-4" />} label={language === 'ru' ? 'Создано' : 'Yaratilgan'} value={formatDateTime(agency.created_at)} />
+            <InfoLine icon={<Calendar className="h-4 w-4" />} label={language === 'ru' ? 'Активность' : 'Faollik'} value={formatRelativeActivity(agency.stats.lastActivityAt, language)} />
+            <InfoLine icon={<ShieldCheck className="h-4 w-4" />} label={language === 'ru' ? 'Верификация' : 'Tasdiqlash'} value={verificationLabel(agency.verification.latestStatus, language)} />
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="grid gap-3 px-4 sm:grid-cols-3">
-            <MiniMetric label="Tours" value={agency.stats.totalTours} />
-            <MiniMetric label="Leads" value={agency.stats.totalLeads} />
-            <MiniMetric label="Profile views" value={agency.profile_views} />
-            <MiniMetric label="Rating" value={agency.avg_rating} />
-            <MiniMetric label="Reviews" value={agency.review_count} />
-            <MiniMetric label="MaxCoin balance" value={agency.maxcoin_balance} />
+            <MiniMetric label={language === 'ru' ? 'Туры' : 'Turlar'} value={agency.stats.totalTours} />
+            <MiniMetric label={language === 'ru' ? 'Заявки' : "So'rovlar"} value={agency.stats.totalLeads} />
+            <MiniMetric label={language === 'ru' ? 'Просмотры профиля' : "Profil ko'rishlari"} value={agency.profile_views} />
+            <MiniMetric label={language === 'ru' ? 'Рейтинг' : 'Reyting'} value={agency.avg_rating} />
+            <MiniMetric label={language === 'ru' ? 'Отзывы' : 'Sharhlar'} value={agency.review_count} />
+            <MiniMetric label={language === 'ru' ? 'Баланс MaxCoin' : 'MaxCoin balansi'} value={agency.maxcoin_balance} />
           </CardContent>
         </Card>
       </TabsContent>
 
-      <TabsContent value="verification" className="space-y-4 pt-3">
+      <TabsContent value="contacts" className="space-y-4">
+        <Card className="rounded-2xl border border-slate-200 bg-white py-4">
+          <CardContent className="grid gap-3 px-4 sm:grid-cols-2">
+            <InfoLine
+              icon={<Phone className="h-4 w-4" />}
+              label={language === 'ru' ? 'Телефон' : 'Telefon'}
+              value={agency.phone ?? notProvided}
+              onCopy={() => onCopy(agency.phone, language === 'ru' ? 'Телефон' : 'Telefon')}
+            />
+            <InfoLine
+              icon={<Mail className="h-4 w-4" />}
+              label={language === 'ru' ? 'Email владельца' : 'Egasi emaili'}
+              value={agency.owner?.email ?? notProvided}
+              onCopy={() => onCopy(agency.owner?.email, language === 'ru' ? 'Email' : 'Email')}
+            />
+            <InfoLine
+              icon={<Building2 className="h-4 w-4" />}
+              label={language === 'ru' ? 'Менеджер' : 'Menejer'}
+              value={agency.owner?.full_name ?? notProvided}
+            />
+            <InfoLine
+              icon={<Building2 className="h-4 w-4" />}
+              label={language === 'ru' ? 'Ответственный' : "Mas'ul shaxs"}
+              value={agency.responsible_person ?? notProvided}
+            />
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl border border-slate-200 bg-white py-4">
+          <CardContent className="space-y-2 px-4 text-sm text-slate-700">
+            <p><span className="font-medium">Telegram:</span> {agency.telegram_username ?? agency.owner?.telegram_username ?? notProvided}</p>
+            <p><span className="font-medium">INN:</span> {agency.inn ?? notProvided}</p>
+            <p><span className="font-medium">{language === 'ru' ? 'Адрес' : 'Manzil'}:</span> {agency.address ?? notProvided}</p>
+            <p><span className="font-medium">{language === 'ru' ? 'Сайт' : 'Veb-sayt'}:</span> {agency.website_url ?? notProvided}</p>
+            <p><span className="font-medium">Instagram:</span> {agency.instagram_url ?? notProvided}</p>
+            <p><span className="font-medium">Google Maps:</span> {agency.google_maps_url ?? notProvided}</p>
+            <p><span className="font-medium">{language === 'ru' ? 'Описание' : 'Tavsif'}:</span> {agency.description ?? notProvided}</p>
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent value="verification" className="space-y-4">
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-3 px-4">
             <div className="flex flex-wrap items-center gap-2">
               <Badge variant="outline" className={verificationTone(agency.verification.latestStatus)}>
-                {verificationLabel(agency.verification.latestStatus)}
+                {verificationLabel(agency.verification.latestStatus, language)}
               </Badge>
               <Badge variant="outline" className={agency.is_verified ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-slate-200 bg-slate-50 text-slate-600'}>
-                Badge: {agency.is_verified ? 'verified' : 'not verified'}
+                {agency.is_verified
+                  ? language === 'ru'
+                    ? 'Знак: подтверждено'
+                    : 'Belgi: tasdiqlangan'
+                  : language === 'ru'
+                    ? 'Знак: не подтверждено'
+                    : 'Belgi: tasdiqlanmagan'}
               </Badge>
             </div>
-            <p className="text-sm text-slate-600">Latest submitted: {formatDateTime(agency.verification.latestSubmittedAt)}</p>
-            <p className="text-sm text-slate-600">Latest admin note: {agency.verification.latestAdminNote ?? 'Not available'}</p>
+            <p className="text-sm text-slate-600">{language === 'ru' ? 'Последняя отправка' : 'Oxirgi yuborilgan'}: {formatDateTime(agency.verification.latestSubmittedAt)}</p>
+            <p className="text-sm text-slate-600">{language === 'ru' ? 'Комментарий администратора' : 'Admin izohi'}: {agency.verification.latestAdminNote ?? notAvailable}</p>
             <div className="flex flex-wrap gap-2">
               {agency.verification.latestRequestId && agency.verification.latestStatus === 'pending' ? (
                 <>
                   <Button size="sm" onClick={() => onApproveVerification(agency.verification.latestRequestId!)}>
                     <CheckCircle2 />
-                    Approve verification
+                    {language === 'ru' ? 'Подтвердить' : 'Tasdiqlash'}
                   </Button>
                   <Button size="sm" variant="destructive" onClick={() => onRejectVerification(agency.verification.latestRequestId!)}>
                     <XCircle />
-                    Reject verification
+                    {language === 'ru' ? 'Отклонить' : 'Rad etish'}
                   </Button>
                 </>
               ) : (
                 <Button size="sm" variant="ghost" disabled>
                   <ShieldCheck />
-                  No pending verification action
+                  {language === 'ru' ? 'Нет ожидающих действий' : 'Kutilayotgan amal yoq'}
                 </Button>
               )}
             </div>
@@ -1194,24 +1315,24 @@ function AgencyDetailTabs({
 
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-2 px-4">
-            <p className="text-sm font-semibold text-slate-900">Verification history</p>
+            <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'История верификации' : 'Tasdiqlash tarixi'}</p>
             {verificationRequests.length === 0 ? (
-              <p className="text-sm text-slate-500">No verification requests found for this agency.</p>
+              <p className="text-sm text-slate-500">{language === 'ru' ? 'Заявки на верификацию не найдены.' : "Tasdiqlash so'rovlari topilmadi."}</p>
             ) : (
               verificationRequests.map((request) => (
                 <div key={request.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Badge variant="outline" className={verificationTone(request.status)}>{request.status}</Badge>
+                    <Badge variant="outline" className={verificationTone(request.status)}>{localizeStatus(request.status)}</Badge>
                     <span className="text-xs text-slate-500">{formatDateTime(request.created_at)}</span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-600">Admin note: {request.admin_note ?? 'Not provided'}</p>
-                  <p className="text-sm text-slate-600">Certificate URL: {request.certificate_url ?? 'Not provided'}</p>
+                  <p className="mt-2 text-sm text-slate-600">{language === 'ru' ? 'Комментарий администратора' : 'Admin izohi'}: {request.admin_note ?? notProvided}</p>
+                  <p className="text-sm text-slate-600">{language === 'ru' ? 'Ссылка сертификата' : 'Sertifikat havolasi'}: {request.certificate_url ?? notProvided}</p>
                   {request.form_data ? (
                     <div className="mt-2 grid gap-1 rounded-lg border border-slate-200 bg-white p-2 text-xs text-slate-600">
                       {Object.entries(request.form_data).map(([key, value]) => (
                         <div key={key} className="flex gap-2">
                           <span className="font-medium text-slate-700">{key}:</span>
-                          <span className="break-all">{String(value ?? '') || 'Not provided'}</span>
+                          <span className="break-all">{String(value ?? '') || notProvided}</span>
                         </div>
                       ))}
                     </div>
@@ -1223,33 +1344,33 @@ function AgencyDetailTabs({
         </Card>
       </TabsContent>
 
-      <TabsContent value="tours" className="space-y-4 pt-3">
+      <TabsContent value="tours" className="space-y-4">
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-3 px-4">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-900">Tours preview</p>
-              <Badge variant="outline">{formatNumber(agency.stats.totalTours)} total</Badge>
+              <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'Предпросмотр туров' : "Turlar ko'rinishi"}</p>
+              <Badge variant="outline">{formatNumber(agency.stats.totalTours)} {language === 'ru' ? 'всего' : 'jami'}</Badge>
             </div>
             {tours.length === 0 ? (
-              <p className="text-sm text-slate-500">No tours found for this agency.</p>
+              <p className="text-sm text-slate-500">{language === 'ru' ? 'Туры не найдены.' : 'Turlar topilmadi.'}</p>
             ) : (
               tours.slice(0, 20).map((tour) => (
-                <TourRow key={tour.id} tour={tour} />
+                <TourRow key={tour.id} tour={tour} language={language} localizeStatus={localizeStatus} />
               ))
             )}
           </CardContent>
         </Card>
       </TabsContent>
 
-      <TabsContent value="leads" className="space-y-4 pt-3">
+      <TabsContent value="leads" className="space-y-4">
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-3 px-4">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-semibold text-slate-900">Leads preview</p>
-              <Badge variant="outline">{formatNumber(agency.stats.totalLeads)} total</Badge>
+              <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'Предпросмотр заявок' : "So'rovlar ko'rinishi"}</p>
+              <Badge variant="outline">{formatNumber(agency.stats.totalLeads)} {language === 'ru' ? 'всего' : 'jami'}</Badge>
             </div>
             {leads.length === 0 ? (
-              <p className="text-sm text-slate-500">No leads found for this agency.</p>
+              <p className="text-sm text-slate-500">{language === 'ru' ? 'Заявки не найдены.' : "So'rovlar topilmadi."}</p>
             ) : (
               leads.slice(0, 20).map((lead) => (
                 <div key={lead.id} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
@@ -1258,14 +1379,14 @@ function AgencyDetailTabs({
                       <p className="text-sm font-semibold text-slate-900">{lead.full_name}</p>
                       <p className="text-xs text-slate-500">{formatDateTime(lead.created_at)}</p>
                     </div>
-                    <Badge variant="outline" className="border-slate-300 bg-white text-slate-700">{lead.status}</Badge>
+                    <Badge variant="outline" className="border-slate-300 bg-white text-slate-700">{localizeStatus(lead.status)}</Badge>
                   </div>
                   <div className="mt-2 space-y-1 text-xs text-slate-600">
-                    <p>Phone: {lead.phone}</p>
-                    <p>Telegram: {lead.telegram_username ?? 'Not provided'}</p>
-                    <p>People count: {lead.people_count}</p>
-                    <p>Tour: {lead.tour?.title ?? 'Not linked'}</p>
-                    <p>Comment: {lead.comment ?? 'Not provided'}</p>
+                    <p>{language === 'ru' ? 'Телефон' : 'Telefon'}: {lead.phone}</p>
+                    <p>Telegram: {lead.telegram_username ?? notProvided}</p>
+                    <p>{language === 'ru' ? 'Количество людей' : 'Odam soni'}: {lead.people_count}</p>
+                    <p>{language === 'ru' ? 'Тур' : 'Tur'}: {lead.tour?.title ?? (language === 'ru' ? 'Не связано' : "Bog'lanmagan")}</p>
+                    <p>{language === 'ru' ? 'Комментарий' : 'Izoh'}: {lead.comment ?? notProvided}</p>
                   </div>
                 </div>
               ))
@@ -1274,12 +1395,12 @@ function AgencyDetailTabs({
         </Card>
       </TabsContent>
 
-      <TabsContent value="operations" className="space-y-4 pt-3">
+      <TabsContent value="activity" className="space-y-4">
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-2 px-4">
-            <p className="text-sm font-semibold text-slate-900">Data quality warnings</p>
+            <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'Предупреждения качества' : 'Sifat ogohlantirishlari'}</p>
             {agency.stats.missingFields.length === 0 ? (
-              <p className="text-sm text-emerald-700">No required profile fields are missing.</p>
+              <p className="text-sm text-emerald-700">{language === 'ru' ? 'Обязательные поля заполнены.' : "Majburiy maydonlar to'liq."}</p>
             ) : (
               <ul className="space-y-1 text-sm text-amber-700">
                 {agency.stats.missingFields.map((field) => (
@@ -1295,25 +1416,25 @@ function AgencyDetailTabs({
 
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-2 px-4">
-            <p className="text-sm font-semibold text-slate-900">Subscription and promotion status</p>
-            <p className="text-sm text-slate-700">Current subscription: {agency.subscription?.status ?? 'Not available'}</p>
-            <p className="text-sm text-slate-700">Current plan: {agency.subscription?.plan?.name ?? 'Not available'}</p>
-            <p className="text-sm text-slate-700">Active promotions: {agency.stats.activePromotions}</p>
-            <p className="text-sm text-slate-700">MaxCoin balance: {formatNumber(agency.maxcoin_balance)}</p>
+            <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'Подписка и реклама' : 'Obuna va reklama'}</p>
+            <p className="text-sm text-slate-700">{language === 'ru' ? 'Текущая подписка' : 'Joriy obuna'}: {agency.subscription?.status ? localizeStatus(agency.subscription.status) : notAvailable}</p>
+            <p className="text-sm text-slate-700">{language === 'ru' ? 'Текущий тариф' : 'Joriy tarif'}: {agency.subscription?.plan?.name ?? notAvailable}</p>
+            <p className="text-sm text-slate-700">{language === 'ru' ? 'Активные рекламы' : 'Faol reklamalar'}: {agency.stats.activePromotions}</p>
+            <p className="text-sm text-slate-700">{language === 'ru' ? 'Баланс MaxCoin' : 'MaxCoin balansi'}: {formatNumber(agency.maxcoin_balance)}</p>
           </CardContent>
         </Card>
 
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-3 px-4">
-            <p className="text-sm font-semibold text-slate-900">Recent MaxCoin activity</p>
+            <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'Последние операции MaxCoin' : "So'nggi MaxCoin amallari"}</p>
             {maxcoinTransactions.length === 0 ? (
-              <p className="text-sm text-slate-500">No MaxCoin transaction data available.</p>
+              <p className="text-sm text-slate-500">{language === 'ru' ? 'Транзакции MaxCoin недоступны.' : "MaxCoin tranzaksiyalari mavjud emas."}</p>
             ) : (
               maxcoinTransactions.slice(0, 8).map((transaction) => (
                 <div key={transaction.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-700">
-                  <p className="font-medium">{transaction.type}</p>
-                  <p>Amount: {formatNumber(transaction.amount)}</p>
-                  <p>Description: {transaction.description ?? 'Not provided'}</p>
+                  <p className="font-medium">{localizeStatus(transaction.type)}</p>
+                  <p>{language === 'ru' ? 'Сумма' : 'Miqdor'}: {formatNumber(transaction.amount)}</p>
+                  <p>{language === 'ru' ? 'Описание' : 'Tavsif'}: {transaction.description ?? notProvided}</p>
                   <p>{formatDateTime(transaction.created_at)}</p>
                 </div>
               ))
@@ -1323,16 +1444,16 @@ function AgencyDetailTabs({
 
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-3 px-4">
-            <p className="text-sm font-semibold text-slate-900">Recent promotions</p>
+            <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'Последние рекламы' : "So'nggi reklamalar"}</p>
             {promotions.length === 0 ? (
-              <p className="text-sm text-slate-500">No promotion records available.</p>
+              <p className="text-sm text-slate-500">{language === 'ru' ? 'Рекламные записи недоступны.' : "Reklama yozuvlari mavjud emas."}</p>
             ) : (
               promotions.slice(0, 10).map((promotion) => (
                 <div key={promotion.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-700">
-                  <p className="font-medium">{promotion.placement} {promotion.is_active ? '(active)' : '(inactive)'}</p>
-                  <p>Tour: {promotion.tour?.title ?? promotion.tour_id}</p>
-                  <p>Cost: {formatNumber(promotion.cost_coins)} MC</p>
-                  <p>Ends: {formatDateTime(promotion.ends_at)}</p>
+                  <p className="font-medium">{localizeStatus(promotion.placement)} {promotion.is_active ? `(${localizeStatus('active')})` : `(${localizeStatus('inactive')})`}</p>
+                  <p>{language === 'ru' ? 'Тур' : 'Tur'}: {promotion.tour?.title ?? promotion.tour_id}</p>
+                  <p>{language === 'ru' ? 'Стоимость' : 'Narx'}: {formatNumber(promotion.cost_coins)} MC</p>
+                  <p>{language === 'ru' ? 'Окончание' : 'Tugash'}: {formatDateTime(promotion.ends_at)}</p>
                 </div>
               ))
             )}
@@ -1341,16 +1462,16 @@ function AgencyDetailTabs({
 
         <Card className="rounded-2xl border border-slate-200 bg-white py-4">
           <CardContent className="space-y-2 px-4">
-            <p className="text-sm font-semibold text-slate-900">Subscription history</p>
+            <p className="text-sm font-semibold text-slate-900">{language === 'ru' ? 'История подписок' : 'Obuna tarixi'}</p>
             {subscriptions.length === 0 ? (
-              <p className="text-sm text-slate-500">No subscription history available.</p>
+              <p className="text-sm text-slate-500">{language === 'ru' ? 'История подписок недоступна.' : 'Obuna tarixi mavjud emas.'}</p>
             ) : (
               subscriptions.map((subscription) => (
                 <div key={subscription.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs text-slate-700">
-                  <p className="font-medium">{subscription.status}</p>
-                  <p>Plan: {subscription.plan?.name ?? 'Not linked'}</p>
-                  <p>Starts: {formatDateTime(subscription.startsAt)}</p>
-                  <p>Ends: {formatDateTime(subscription.endsAt)}</p>
+                  <p className="font-medium">{localizeStatus(subscription.status)}</p>
+                  <p>{language === 'ru' ? 'Тариф' : 'Tarif'}: {subscription.plan?.name ?? (language === 'ru' ? 'Не связано' : "Bog'lanmagan")}</p>
+                  <p>{language === 'ru' ? 'Начало' : 'Boshlanish'}: {formatDateTime(subscription.startsAt)}</p>
+                  <p>{language === 'ru' ? 'Окончание' : 'Tugash'}: {formatDateTime(subscription.endsAt)}</p>
                 </div>
               ))
             )}
@@ -1399,7 +1520,15 @@ function InfoLine({
   );
 }
 
-function TourRow({ tour }: { tour: AdminAgencyTourPreview }) {
+function TourRow({
+  tour,
+  language,
+  localizeStatus,
+}: {
+  tour: AdminAgencyTourPreview;
+  language: 'uz' | 'ru';
+  localizeStatus: (value: string | null | undefined) => string;
+}) {
   const safeCover = safeImageUrl(tour.cover_image_url);
 
   return (
@@ -1414,19 +1543,31 @@ function TourRow({ tour }: { tour: AdminAgencyTourPreview }) {
               loading="lazy"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">No image</div>
+            <div className="flex h-full w-full items-center justify-center text-xs text-slate-500">
+              {language === 'ru' ? 'Нет изображения' : "Rasm yo'q"}
+            </div>
           )}
         </div>
         <div className="min-w-0 flex-1 space-y-1">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="truncate text-sm font-semibold text-slate-900">{tour.title}</p>
-            <Badge variant="outline" className="border-slate-300 bg-white text-slate-700">{tour.status}</Badge>
+            <Badge variant="outline" className="border-slate-300 bg-white text-slate-700">
+              {localizeStatus(tour.status)}
+            </Badge>
           </div>
-          <p className="text-xs text-slate-500">{tour.city ? `${tour.city}, ${tour.country}` : tour.country ?? 'Location not provided'}</p>
+          <p className="text-xs text-slate-500">
+            {tour.city
+              ? `${tour.city}, ${tour.country}`
+              : tour.country ?? (language === 'ru' ? 'Локация не указана' : 'Joylashuv kiritilmagan')}
+          </p>
           <p className="text-xs text-slate-500">{formatDateTime(tour.updated_at)}</p>
           <div className="flex flex-wrap gap-2 text-xs">
-            <Link href={`/admin/tours/${tour.id}`} className="text-blue-600 hover:underline">Open admin tour</Link>
-            <Link href={`/tours/${tour.slug}`} className="text-blue-600 hover:underline" target="_blank">Open public tour</Link>
+            <Link href={`/admin/tours/${tour.id}`} className="text-blue-600 hover:underline">
+              {language === 'ru' ? 'Открыть тур в админке' : 'Admin turini ochish'}
+            </Link>
+            <Link href={`/tours/${tour.slug}`} className="text-blue-600 hover:underline" target="_blank">
+              {language === 'ru' ? 'Открыть публичный тур' : 'Ommaviy turni ochish'}
+            </Link>
           </div>
         </div>
       </div>

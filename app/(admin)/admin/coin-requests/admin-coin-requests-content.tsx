@@ -27,7 +27,7 @@ import {
 import { toast } from 'sonner';
 import { PageTitle, SectionShell } from '@/components/shared-ui';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
@@ -59,6 +59,7 @@ import type {
   AdminPromotionPanelRecord,
   AdminPromotionsMaxcoinPanelPayload,
 } from '@/features/admin/types';
+import { useAdminI18n } from '@/features/admin/i18n';
 import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import { cn, formatNumber, placeholderImage } from '@/lib/utils';
 
@@ -92,6 +93,7 @@ interface CoinActionState {
 interface Props {
   payload: AdminPromotionsMaxcoinPanelPayload | null;
   errorMessage?: string;
+  viewMode?: 'combined' | 'maxcoin';
 }
 
 function parseDateMs(value: string | null | undefined): number | null {
@@ -101,36 +103,43 @@ function parseDateMs(value: string | null | undefined): number | null {
 }
 
 function formatDateTime(value: string | null | undefined): string {
-  if (!value) return 'Not available';
+  if (!value) return '—';
   const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return 'Not available';
-  return date.toLocaleString();
+  if (!Number.isFinite(date.getTime())) return '—';
+  return date.toLocaleString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
 }
 
 function formatShortDate(value: string | null | undefined): string {
-  if (!value) return 'Not available';
+  if (!value) return '—';
   const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return 'Not available';
-  return date.toLocaleDateString();
+  if (!Number.isFinite(date.getTime())) return '—';
+  return date.toLocaleDateString(undefined, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
 }
 
 function formatPlacementLabel(value: string | null | undefined): string {
   if (!value) return 'Not provided';
   const normalized = value.trim().toLowerCase();
   if (normalized === 'featured') return 'Featured';
-  if (normalized === 'hot_deals') return 'Good Deals';
-  if (normalized === 'hot_tours') return 'Hot Tours';
-  if (normalized === 'home_featured') return 'Home Featured';
-  if (normalized === 'category_top') return 'Category Top';
-  if (normalized === 'search_boost') return 'Search Boost';
+  if (normalized === 'hot_deals') return 'Hot deals';
+  if (normalized === 'hot_tours') return 'Hot tours';
+  if (normalized === 'home_featured') return 'Home featured';
+  if (normalized === 'category_top') return 'Category top';
+  if (normalized === 'search_boost') return 'Search boost';
   return value.replace(/_/g, ' ');
 }
 
 function formatPromotionStatusLabel(status: PreparedPromotion['status']): string {
-  if (status === 'active') return 'Active';
-  if (status === 'scheduled') return 'Scheduled';
-  if (status === 'expired') return 'Expired';
-  return 'Pending';
+  return status;
 }
 
 function getStatusBadgeVariant(status: PreparedPromotion['status']): 'default' | 'secondary' | 'destructive' | 'outline' {
@@ -187,21 +196,23 @@ function getTourPublicLink(promotion: AdminPromotionPanelRecord): string | null 
   return `/tour/${slug}`;
 }
 
-function tryCopy(value: string, successLabel: string) {
+function tryCopy(value: string, successLabel: string, errorLabel: string) {
   navigator.clipboard
     .writeText(value)
     .then(() => {
       toast.success(successLabel);
     })
     .catch(() => {
-      toast.error('Unable to copy to clipboard');
+      toast.error(errorLabel);
     });
 }
 
-export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
+export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'combined' }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { language, tInline, localizeStatus, tc } = useAdminI18n();
   const [isRefreshing, startRefresh] = useTransition();
+  const isMaxcoinOnly = viewMode === 'maxcoin';
 
   const [search, setSearch] = useState('');
   const [placementFilter, setPlacementFilter] = useState('all');
@@ -230,6 +241,51 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
   const generatedAt = payload?.generatedAt ?? null;
   const generatedAtText = useMemo(() => formatDateTime(generatedAt), [generatedAt]);
+
+  const localizePromotionWarning = (warning: string): string => {
+    const normalized = warning.trim().toLowerCase();
+    if (normalized === 'promotion is linked to a missing tour record.') {
+      return language === 'ru'
+        ? 'Реклама связана с отсутствующей записью тура.'
+        : "Reklama mavjud bo'lmagan tur yozuviga bog'langan.";
+    }
+    if (normalized.startsWith('linked tour is not published')) {
+      return language === 'ru'
+        ? 'Связанный тур не опубликован.'
+        : "Bog'langan tur nashr qilinmagan.";
+    }
+    if (normalized === 'linked agency is not verified.') {
+      return language === 'ru'
+        ? 'Связанное агентство не верифицировано.'
+        : 'Bog‘langan agentlik verifikatsiyadan o‘tmagan.';
+    }
+    if (normalized === 'linked agency is not approved.') {
+      return language === 'ru'
+        ? 'Связанное агентство не подтверждено.'
+        : 'Bog‘langan agentlik tasdiqlanmagan.';
+    }
+    if (normalized === 'invalid date range: start date is after end date.') {
+      return language === 'ru'
+        ? 'Неверный диапазон дат: начало позже окончания.'
+        : 'Sana oralig‘i noto‘g‘ri: boshlanish tugashdan keyin.';
+    }
+    if (normalized === 'promotion is expired but still marked active.') {
+      return language === 'ru'
+        ? 'Реклама завершена, но отмечена как активная.'
+        : 'Reklama tugagan, ammo faol deb belgilangan.';
+    }
+    if (normalized === 'active promotion has no placement value.') {
+      return language === 'ru'
+        ? 'У активной рекламы не указан тип размещения.'
+        : "Faol reklamada joylashuv qiymati kiritilmagan.";
+    }
+    if (normalized === 'promotion cost is missing or zero.') {
+      return language === 'ru'
+        ? 'Стоимость рекламы отсутствует или равна нулю.'
+        : 'Reklama narxi yo‘q yoki nolga teng.';
+    }
+    return tInline(warning);
+  };
 
   const preparedPromotions = useMemo<PreparedPromotion[]>(() => {
     if (!payload) return [];
@@ -659,7 +715,15 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
       return;
     }
 
-    toast.success(action === 'approve' ? 'Coin request approved' : 'Coin request rejected');
+    toast.success(
+      action === 'approve'
+        ? language === 'ru'
+          ? 'Заявка на MaxCoin подтверждена.'
+          : "MaxCoin so'rovi tasdiqlandi."
+        : language === 'ru'
+          ? 'Заявка на MaxCoin отклонена.'
+          : "MaxCoin so'rovi rad etildi."
+    );
     startRefresh(() => {
       router.refresh();
     });
@@ -684,9 +748,16 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
       <div className="p-6">
         <Card className="border-rose-200 bg-rose-50/70">
           <CardHeader>
-            <CardTitle className="text-rose-900">Promotions / MaxCoin failed to load</CardTitle>
+            <CardTitle className="text-rose-900">
+              {language === 'ru'
+                ? 'Не удалось загрузить раздел Реклама / MaxCoin'
+                : 'Reklama / MaxCoin bo‘limini yuklab bo‘lmadi'}
+            </CardTitle>
             <CardDescription className="text-rose-700">
-              {errorMessage ?? 'Unknown error while loading promotions and MaxCoin operations.'}
+              {errorMessage ??
+                (language === 'ru'
+                  ? 'Во время загрузки рекламных операций и MaxCoin произошла неизвестная ошибка.'
+                  : "Reklama operatsiyalari va MaxCoin ma'lumotini yuklashda noma'lum xatolik yuz berdi.")}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -695,7 +766,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
               disabled={isRefreshing}
             >
               <RefreshCw className={cn('mr-2 h-4 w-4', isRefreshing && 'animate-spin')} />
-              Retry
+              {tc('retry')}
             </Button>
           </CardContent>
         </Card>
@@ -708,8 +779,16 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
       <SectionShell className="space-y-3">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <PageTitle
-            title="Promotions / MaxCoin"
-            subtitle="Boost operations, agency balances, ad placements, and marketplace visibility control."
+            title={isMaxcoinOnly ? 'MaxCoin' : (language === 'ru' ? 'Реклама / MaxCoin' : 'Reklama / MaxCoin')}
+            subtitle={
+              isMaxcoinOnly
+                ? language === 'ru'
+                  ? 'Балансы агентств, журнал транзакций и мониторинг низкого баланса.'
+                  : 'Agentlik balanslari, tranzaksiya jurnali va past balans monitoringi.'
+                : language === 'ru'
+                  ? 'Рекламные операции, размещения и контроль видимости вместе с MaxCoin.'
+                  : "Reklama operatsiyalari, joylashuvlar va ko'rinish nazorati MaxCoin bilan birga."
+            }
           />
           <div className="flex items-center gap-2">
             <Button
@@ -718,16 +797,16 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
               disabled={isRefreshing}
             >
               <RefreshCw className={cn('mr-2 h-4 w-4', isRefreshing && 'animate-spin')} />
-              Refresh
+              {tc('refresh')}
             </Button>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
-          <span>Last updated: {generatedAtText}</span>
+          <span>{language === 'ru' ? 'Обновлено:' : 'Oxirgi yangilanish:'} {generatedAtText}</span>
           {payload.health.partialData ? (
-            <Badge variant="destructive">Partial data</Badge>
+            <Badge variant="destructive">{language === 'ru' ? 'Частичные данные' : "Qisman ma'lumot"}</Badge>
           ) : (
-            <Badge variant="outline">Data healthy</Badge>
+            <Badge variant="outline">{language === 'ru' ? 'Данные корректны' : "Ma'lumot holati yaxshi"}</Badge>
           )}
         </div>
       </SectionShell>
@@ -735,9 +814,11 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
       {payload.health.errors.length > 0 ? (
         <Card className="border-amber-200 bg-amber-50/80">
           <CardHeader>
-            <CardTitle className="text-amber-900">Data source warnings</CardTitle>
+            <CardTitle className="text-amber-900">{language === 'ru' ? 'Предупреждения' : 'Ogohlantirishlar'}</CardTitle>
             <CardDescription className="text-amber-800">
-              Some metrics are partially available. No fallback data was fabricated.
+              {language === 'ru'
+                ? 'Некоторые показатели доступны частично. Искусственные данные не добавлялись.'
+                : "Ba'zi ko'rsatkichlar qisman mavjud. Sun'iy ma'lumot qo'shilmagan."}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -752,48 +833,64 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
       <SectionShell>
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-6">
-          <button
-            onClick={() => setStatusFilter('active')}
-            className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-left transition hover:-translate-y-0.5"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">Active promotions</p>
-            <p className="mt-1 text-2xl font-bold text-emerald-900">{formatNumber(promotionStats.active)}</p>
-          </button>
-          <button
-            onClick={() => setStatusFilter('scheduled')}
-            className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 text-left transition hover:-translate-y-0.5"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">Scheduled / pending</p>
-            <p className="mt-1 text-2xl font-bold text-sky-900">
-              {formatNumber(promotionStats.scheduled + promotionStats.pending)}
-            </p>
-          </button>
-          <button
-            onClick={() => setSortBy('ending_soon')}
-            className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-left transition hover:-translate-y-0.5"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">Ending soon</p>
-            <p className="mt-1 text-2xl font-bold text-amber-900">{formatNumber(promotionStats.endingSoon)}</p>
-          </button>
-          <button
-            onClick={() => setStatusFilter('expired')}
-            className="rounded-2xl border border-rose-200 bg-rose-50/80 p-4 text-left transition hover:-translate-y-0.5"
-          >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">Expired promotions</p>
-            <p className="mt-1 text-2xl font-bold text-rose-900">{formatNumber(promotionStats.expired)}</p>
-          </button>
+          {!isMaxcoinOnly ? (
+            <>
+              <button
+                onClick={() => setStatusFilter('active')}
+                className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-4 text-left transition hover:-translate-y-0.5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700">
+                  {language === 'ru' ? 'Активная реклама' : 'Faol reklamalar'}
+                </p>
+                <p className="mt-1 text-2xl font-bold text-emerald-900">{formatNumber(promotionStats.active)}</p>
+              </button>
+              <button
+                onClick={() => setStatusFilter('scheduled')}
+                className="rounded-2xl border border-sky-200 bg-sky-50/80 p-4 text-left transition hover:-translate-y-0.5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-sky-700">
+                  {language === 'ru' ? 'Запланировано / в ожидании' : 'Rejalashtirilgan / kutilmoqda'}
+                </p>
+                <p className="mt-1 text-2xl font-bold text-sky-900">
+                  {formatNumber(promotionStats.scheduled + promotionStats.pending)}
+                </p>
+              </button>
+              <button
+                onClick={() => setSortBy('ending_soon')}
+                className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 text-left transition hover:-translate-y-0.5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-amber-700">
+                  {language === 'ru' ? 'Скоро завершатся' : 'Tez orada tugaydi'}
+                </p>
+                <p className="mt-1 text-2xl font-bold text-amber-900">{formatNumber(promotionStats.endingSoon)}</p>
+              </button>
+              <button
+                onClick={() => setStatusFilter('expired')}
+                className="rounded-2xl border border-rose-200 bg-rose-50/80 p-4 text-left transition hover:-translate-y-0.5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-rose-700">
+                  {language === 'ru' ? 'Завершенные рекламы' : 'Tugagan reklamalar'}
+                </p>
+                <p className="mt-1 text-2xl font-bold text-rose-900">{formatNumber(promotionStats.expired)}</p>
+              </button>
+            </>
+          ) : null}
           <button
             onClick={() => setTransactionTypeFilter('all')}
             className="rounded-2xl border border-indigo-200 bg-indigo-50/80 p-4 text-left transition hover:-translate-y-0.5"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-700">Total MaxCoin spent</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-indigo-700">
+              {language === 'ru' ? 'Потрачено MaxCoin' : 'Sarf qilingan MaxCoin'}
+            </p>
             <p className="mt-1 text-2xl font-bold text-indigo-900">{formatNumber(maxcoinStats.spent)}</p>
           </button>
           <button
             onClick={() => setBalanceMax(String(Math.max(maxcoinStats.lowBalanceThreshold - 1, 0)))}
             className="rounded-2xl border border-orange-200 bg-orange-50/80 p-4 text-left transition hover:-translate-y-0.5"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-orange-700">Low-balance agencies</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-orange-700">
+              {language === 'ru' ? 'Низкий баланс агентств' : 'Balansi past agentliklar'}
+            </p>
             <p className="mt-1 text-2xl font-bold text-orange-900">{formatNumber(maxcoinStats.lowBalanceCount)}</p>
           </button>
         </div>
@@ -801,34 +898,37 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
         <div className="grid gap-3 md:grid-cols-3">
           <Card className="border-slate-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Issued</CardTitle>
+              <CardTitle className="text-sm">{language === 'ru' ? 'Начислено' : 'Berilgan'}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0 text-xl font-semibold text-slate-900">{formatNumber(maxcoinStats.issued)} MC</CardContent>
           </Card>
           <Card className="border-slate-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Current Balance Pool</CardTitle>
+              <CardTitle className="text-sm">{language === 'ru' ? 'Текущий общий баланс' : 'Joriy umumiy balans'}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0 text-xl font-semibold text-slate-900">{formatNumber(maxcoinStats.balance)} MC</CardContent>
           </Card>
           <Card className="border-slate-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">Pending Top-Up Requests</CardTitle>
+              <CardTitle className="text-sm">{language === 'ru' ? 'Ожидающие пополнения' : "Kutilayotgan to'ldirish so'rovlari"}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0 text-xl font-semibold text-slate-900">{formatNumber(maxcoinStats.pendingRequests)}</CardContent>
           </Card>
         </div>
       </SectionShell>
 
+      {!isMaxcoinOnly ? (
       <SectionShell>
         <div className="flex items-center gap-2">
           <Layers3 className="h-4 w-4 text-slate-600" />
-          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-600">Placement Monitoring</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-slate-600">
+            {language === 'ru' ? 'Мониторинг размещений' : 'Joylashuvlar monitoringi'}
+          </h2>
         </div>
         {placementSummary.length === 0 ? (
           <Card>
             <CardContent className="py-10 text-center text-sm text-slate-500">
-              No placement records are available yet.
+              {language === 'ru' ? 'Записи по размещениям пока отсутствуют.' : "Joylashuv yozuvlari hozircha mavjud emas."}
             </CardContent>
           </Card>
         ) : (
@@ -840,23 +940,32 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                 className="rounded-2xl border border-slate-200 bg-white p-4 text-left transition hover:-translate-y-0.5"
               >
                 <div className="mb-3 flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-slate-900">{formatPlacementLabel(item.placement)}</p>
+                  <p className="text-sm font-semibold text-slate-900">{tInline(formatPlacementLabel(item.placement))}</p>
                   <Badge variant={item.warningCount > 0 ? 'destructive' : 'outline'}>
-                    {item.warningCount > 0 ? `${item.warningCount} warnings` : 'Stable'}
+                    {item.warningCount > 0
+                      ? `${item.warningCount} ${language === 'ru' ? 'предупреждений' : 'ogohlantirish'}`
+                      : language === 'ru'
+                        ? 'Стабильно'
+                        : 'Barqaror'}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs text-slate-600">
-                  <span>Active: {item.active}</span>
-                  <span>Scheduled: {item.scheduled}</span>
-                  <span>Ending soon: {item.endingSoon}</span>
-                  <span>Expired: {item.expired}</span>
+                  <span>{language === 'ru' ? 'Активно' : 'Faol'}: {item.active}</span>
+                  <span>{language === 'ru' ? 'Запланировано' : 'Rejalashtirilgan'}: {item.scheduled}</span>
+                  <span>{language === 'ru' ? 'Скоро завершатся' : 'Tez tugaydi'}: {item.endingSoon}</span>
+                  <span>{language === 'ru' ? 'Завершено' : 'Tugagan'}: {item.expired}</span>
                 </div>
-                <p className="mt-3 text-[11px] text-slate-400">Visible slot capacity is not configured in existing schema.</p>
+                <p className="mt-3 text-[11px] text-slate-400">
+                  {language === 'ru'
+                    ? 'В текущей схеме емкость слотов не настроена.'
+                    : "Joriy sxemada slot sig'imi sozlanmagan."}
+                </p>
               </button>
             ))}
           </div>
         )}
       </SectionShell>
+      ) : null}
 
       <SectionShell className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
@@ -865,19 +974,27 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
             <Input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by tour, agency, placement, contact, manager, transaction..."
+              placeholder={
+                isMaxcoinOnly
+                  ? language === 'ru'
+                    ? 'Поиск: агентство, контакт, транзакция, менеджер...'
+                    : 'Qidiruv: agentlik, aloqa, tranzaksiya, menejer...'
+                  : language === 'ru'
+                    ? 'Поиск: тур, агентство, размещение, контакт, менеджер, транзакция...'
+                    : 'Qidiruv: tur, agentlik, joylashuv, aloqa, menejer, tranzaksiya...'
+              }
               className="pl-8"
             />
           </div>
           <Select value={placementFilter} onValueChange={(value) => setPlacementFilter(value ?? 'all')}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Placement" />
+              <SelectValue placeholder={language === 'ru' ? 'Размещение' : 'Joylashuv'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All placements</SelectItem>
+              <SelectItem value="all">{language === 'ru' ? 'Все размещения' : 'Barcha joylashuvlar'}</SelectItem>
               {placementOptions.map((placement) => (
                 <SelectItem key={placement} value={placement}>
-                  {formatPlacementLabel(placement)}
+                  {tInline(formatPlacementLabel(placement))}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -887,22 +1004,22 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
             onValueChange={(value) => setStatusFilter((value as typeof statusFilter) ?? 'all')}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Status" />
+              <SelectValue placeholder={language === 'ru' ? 'Статус' : 'Holat'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="active">Active</SelectItem>
-              <SelectItem value="scheduled">Scheduled</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="expired">Expired</SelectItem>
+              <SelectItem value="all">{language === 'ru' ? 'Все статусы' : 'Barcha holatlar'}</SelectItem>
+              <SelectItem value="active">{language === 'ru' ? 'Активно' : 'Faol'}</SelectItem>
+              <SelectItem value="scheduled">{language === 'ru' ? 'Запланировано' : 'Rejalashtirilgan'}</SelectItem>
+              <SelectItem value="pending">{language === 'ru' ? 'Ожидает' : 'Kutilmoqda'}</SelectItem>
+              <SelectItem value="expired">{language === 'ru' ? 'Завершено' : 'Tugagan'}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={agencyFilter} onValueChange={(value) => setAgencyFilter(value ?? 'all')}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Agency" />
+              <SelectValue placeholder={language === 'ru' ? 'Агентство' : 'Agentlik'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All agencies</SelectItem>
+              <SelectItem value="all">{language === 'ru' ? 'Все агентства' : 'Barcha agentliklar'}</SelectItem>
               {agencyOptions.map((agency) => (
                 <SelectItem key={agency.id} value={agency.id}>
                   {agency.name}
@@ -912,10 +1029,10 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
           </Select>
           <Select value={tourFilter} onValueChange={(value) => setTourFilter(value ?? 'all')}>
             <SelectTrigger className="w-[190px]">
-              <SelectValue placeholder="Tour" />
+              <SelectValue placeholder={language === 'ru' ? 'Тур' : 'Tur'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All tours</SelectItem>
+              <SelectItem value="all">{language === 'ru' ? 'Все туры' : 'Barcha turlar'}</SelectItem>
               {tourOptions.map((tour) => (
                 <SelectItem key={tour.id} value={tour.id}>
                   {tour.title}
@@ -925,10 +1042,10 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
           </Select>
           <Select value={transactionTypeFilter} onValueChange={(value) => setTransactionTypeFilter(value ?? 'all')}>
             <SelectTrigger className="w-[190px]">
-              <SelectValue placeholder="Transaction type" />
+              <SelectValue placeholder={language === 'ru' ? 'Тип транзакции' : 'Tranzaksiya turi'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All transaction types</SelectItem>
+              <SelectItem value="all">{language === 'ru' ? 'Все типы транзакций' : 'Barcha tranzaksiya turlari'}</SelectItem>
               {transactionTypeOptions.map((type) => (
                 <SelectItem key={type} value={type}>
                   {type}
@@ -938,17 +1055,17 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
           </Select>
           <Select value={sortBy} onValueChange={(value) => setSortBy((value as SortKey) ?? 'newest')}>
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Sort" />
+              <SelectValue placeholder={language === 'ru' ? 'Сортировка' : 'Saralash'} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="newest">Newest first</SelectItem>
-              <SelectItem value="oldest">Oldest first</SelectItem>
-              <SelectItem value="ending_soon">Ending soon</SelectItem>
-              <SelectItem value="active_first">Active first</SelectItem>
-              <SelectItem value="placement">Placement</SelectItem>
-              <SelectItem value="agency">Agency</SelectItem>
-              <SelectItem value="maxcoin_amount">MaxCoin amount</SelectItem>
-              <SelectItem value="highest_spend">Highest spend</SelectItem>
+              <SelectItem value="newest">{language === 'ru' ? 'Сначала новые' : 'Avval yangilari'}</SelectItem>
+              <SelectItem value="oldest">{language === 'ru' ? 'Сначала старые' : 'Avval eskilari'}</SelectItem>
+              <SelectItem value="ending_soon">{language === 'ru' ? 'Скоро завершатся' : 'Tez tugaydi'}</SelectItem>
+              <SelectItem value="active_first">{language === 'ru' ? 'Сначала активные' : 'Avval faollari'}</SelectItem>
+              <SelectItem value="placement">{language === 'ru' ? 'Размещение' : 'Joylashuv'}</SelectItem>
+              <SelectItem value="agency">{language === 'ru' ? 'Агентство' : 'Agentlik'}</SelectItem>
+              <SelectItem value="maxcoin_amount">{language === 'ru' ? 'Сумма MaxCoin' : 'MaxCoin miqdori'}</SelectItem>
+              <SelectItem value="highest_spend">{language === 'ru' ? 'Наибольший расход' : 'Eng katta sarf'}</SelectItem>
             </SelectContent>
           </Select>
           <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} className="w-[170px]" />
@@ -958,28 +1075,29 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
             onChange={(e) => setBalanceMin(e.target.value)}
             className="w-[130px]"
             inputMode="numeric"
-            placeholder="Min balance"
+            placeholder={language === 'ru' ? 'Мин. баланс' : 'Minimal balans'}
           />
           <Input
             value={balanceMax}
             onChange={(e) => setBalanceMax(e.target.value)}
             className="w-[130px]"
             inputMode="numeric"
-            placeholder="Max balance"
+            placeholder={language === 'ru' ? 'Макс. баланс' : 'Maksimal balans'}
           />
           <Button variant="outline" onClick={resetFilters}>
             <FilterX className="mr-1 h-4 w-4" />
-            Reset
+            {language === 'ru' ? 'Сбросить' : 'Tozalash'}
           </Button>
         </div>
       </SectionShell>
 
+      {!isMaxcoinOnly ? (
       <SectionShell>
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-slate-900">Promotion Operations</h2>
+          <h2 className="text-lg font-semibold text-slate-900">{language === 'ru' ? 'Рекламные операции' : 'Reklama operatsiyalari'}</h2>
           <div className="flex items-center gap-2">
             <p className="text-xs text-slate-500">
-              {visiblePromotions.length}/{filteredPromotions.length} records
+              {visiblePromotions.length}/{filteredPromotions.length} {language === 'ru' ? 'записей' : 'yozuv'}
             </p>
             <div className="inline-flex items-center gap-1 rounded-lg border border-slate-200 bg-slate-50 px-1.5 py-1">
               <Button
@@ -1009,30 +1127,38 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
         <Card className="overflow-hidden border-slate-200">
           {filteredPromotions.length === 0 ? (
             <CardContent className="py-12 text-center text-sm text-slate-500">
-              No promotions match the selected filters.
+              {language === 'ru'
+                ? 'По выбранным фильтрам реклама не найдена.'
+                : "Tanlangan filtrlarga mos reklama topilmadi."}
             </CardContent>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-[1100px] w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50/80 text-left">
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Promotion</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Placement</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Status</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Schedule</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{language === 'ru' ? 'Реклама' : 'Reklama'}</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{language === 'ru' ? 'Размещение' : 'Joylashuv'}</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{language === 'ru' ? 'Статус' : 'Holat'}</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">{language === 'ru' ? 'Период' : 'Muddat'}</th>
                     <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">MaxCoin</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">Warnings</th>
-                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 text-right">Actions</th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500">
+                      {language === 'ru' ? 'Предупреждения' : 'Ogohlantirishlar'}
+                    </th>
+                    <th className="px-4 py-3 text-xs font-semibold uppercase tracking-[0.08em] text-slate-500 text-right">{language === 'ru' ? 'Действия' : 'Amallar'}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {visiblePromotions.map((promotion) => {
                     const remainingLabel =
                       promotion.remainingDays == null
-                        ? 'Not available'
+                        ? '—'
                         : promotion.remainingDays < 0
-                          ? `Ended ${Math.abs(promotion.remainingDays)}d ago`
-                          : `${promotion.remainingDays}d left`;
+                          ? language === 'ru'
+                            ? `Завершено ${Math.abs(promotion.remainingDays)} дн. назад`
+                            : `${Math.abs(promotion.remainingDays)} kun oldin tugagan`
+                          : language === 'ru'
+                            ? `${promotion.remainingDays} дн. осталось`
+                            : `${promotion.remainingDays} kun qoldi`;
 
                     return (
                       <tr key={promotion.id} className="border-b border-slate-100 align-top">
@@ -1042,31 +1168,33 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                             className="group flex w-full items-start gap-3 text-left"
                           >
                             <Image
-                              src={promotion.tour?.cover_image_url || placeholderImage(120, 90, 'Tour')}
-                              alt={promotion.tour?.title ?? 'Tour'}
+                              src={promotion.tour?.cover_image_url || placeholderImage(120, 90, language === 'ru' ? 'Тур' : 'Tur')}
+                              alt={promotion.tour?.title ?? (language === 'ru' ? 'Тур' : 'Tur')}
                               width={56}
                               height={44}
                               className="h-11 w-14 rounded-lg object-cover"
                             />
                             <div className="min-w-0 flex-1">
                               <p className="truncate font-semibold text-slate-900 group-hover:text-sky-700">
-                                {promotion.tour?.title ?? 'Not provided'}
+                                {promotion.tour?.title ?? (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}
                               </p>
                               <p className="truncate text-xs text-slate-500">
-                                {promotion.agency?.name ?? 'Agency not provided'}
+                                {promotion.agency?.name ?? (language === 'ru' ? 'Агентство не указано' : 'Agentlik kiritilmagan')}
                               </p>
                               <p className="mt-1 text-[11px] text-slate-400">
-                                {promotion.source === 'tour_promotion' ? 'Source: tour_promotions' : 'Source: featured_items'}
+                                {promotion.source === 'tour_promotion'
+                                  ? (language === 'ru' ? 'Источник: реклама тура' : 'Manba: tur reklamasi')
+                                  : (language === 'ru' ? 'Источник: рекомендуемая реклама' : 'Manba: tavsiya reklamasi')}
                               </p>
                             </div>
                           </button>
                         </td>
                         <td className="px-4 py-3">
-                          <Badge variant="outline">{formatPlacementLabel(promotion.placement)}</Badge>
+                          <Badge variant="outline">{tInline(formatPlacementLabel(promotion.placement))}</Badge>
                         </td>
                         <td className="px-4 py-3">
                           <Badge variant={getStatusBadgeVariant(promotion.status)}>
-                            {formatPromotionStatusLabel(promotion.status)}
+                            {localizeStatus(formatPromotionStatusLabel(promotion.status))}
                           </Badge>
                         </td>
                         <td className="px-4 py-3 text-xs text-slate-600">
@@ -1076,19 +1204,21 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                         </td>
                         <td className="px-4 py-3">
                           <p className="font-semibold text-slate-900">
-                            {promotion.maxcoin_cost == null ? 'Not available' : `${formatNumber(promotion.maxcoin_cost)} MC`}
+                            {promotion.maxcoin_cost == null ? '—' : `${formatNumber(promotion.maxcoin_cost)} MC`}
                           </p>
-                          <p className="text-xs text-slate-500">Leads: {formatNumber(promotion.lead_count)}</p>
+                          <p className="text-xs text-slate-500">
+                            {language === 'ru' ? 'Заявки' : "So'rovlar"}: {formatNumber(promotion.lead_count)}
+                          </p>
                         </td>
                         <td className="px-4 py-3">
                           {promotion.warnings.length === 0 ? (
-                            <Badge variant="outline">None</Badge>
+                            <Badge variant="outline">{language === 'ru' ? 'Нет' : "Yo'q"}</Badge>
                           ) : (
                             <button
                               onClick={() => setSelectedPromotionId(promotion.id)}
                               className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-2 py-1 text-[11px] font-medium text-rose-700"
                             >
-                              {promotion.warnings.length} warning(s)
+                              {promotion.warnings.length} {language === 'ru' ? 'предупреждений' : 'ogohlantirish'}
                             </button>
                           )}
                         </td>
@@ -1100,7 +1230,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                               onClick={() => setSelectedPromotionId(promotion.id)}
                             >
                               <Eye className="mr-1 h-3.5 w-3.5" />
-                              View
+                              {tc('open')}
                             </Button>
                             <Button
                               variant="outline"
@@ -1109,7 +1239,11 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                               onClick={() => {
                                 const link = getTourPublicLink(promotion);
                                 if (!link) return;
-                                tryCopy(link, 'Tour link copied');
+                                tryCopy(
+                                  link,
+                                  language === 'ru' ? 'Ссылка тура скопирована.' : 'Tur havolasi nusxalandi.',
+                                  language === 'ru' ? 'Ошибка копирования.' : "Nusxalashda xatolik yuz berdi."
+                                );
                               }}
                             >
                               <Copy className="h-3.5 w-3.5" />
@@ -1125,17 +1259,20 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
           )}
         </Card>
       </SectionShell>
+      ) : null}
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
         <SectionShell>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">MaxCoin Ledger</h2>
-            <p className="text-xs text-slate-500">{filteredTransactions.length} records</p>
+            <h2 className="text-lg font-semibold text-slate-900">{language === 'ru' ? 'Журнал MaxCoin' : 'MaxCoin jurnali'}</h2>
+            <p className="text-xs text-slate-500">{filteredTransactions.length} {language === 'ru' ? 'записей' : 'yozuv'}</p>
           </div>
           <Card className="border-slate-200">
             {filteredTransactions.length === 0 ? (
               <CardContent className="py-10 text-center text-sm text-slate-500">
-                No MaxCoin transactions match the selected filters.
+                {language === 'ru'
+                  ? 'По выбранным фильтрам транзакции MaxCoin не найдены.'
+                  : "Tanlangan filtrlarga mos MaxCoin tranzaksiyalari topilmadi."}
               </CardContent>
             ) : (
               <CardContent className="space-y-2 py-3">
@@ -1148,9 +1285,11 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                     className="flex w-full items-start justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-sky-200"
                   >
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-slate-900">{row.agency?.name ?? 'Agency not provided'}</p>
-                      <p className="truncate text-xs text-slate-500">{row.type ?? 'Unknown type'}</p>
-                      <p className="truncate text-xs text-slate-400">{row.description ?? 'Not provided'}</p>
+                      <p className="truncate font-medium text-slate-900">
+                        {row.agency?.name ?? (language === 'ru' ? 'Агентство не указано' : 'Agentlik kiritilmagan')}
+                      </p>
+                      <p className="truncate text-xs text-slate-500">{row.type ? tInline(row.type) : (language === 'ru' ? 'Неизвестный тип' : "Noma'lum tur")}</p>
+                      <p className="truncate text-xs text-slate-400">{row.description ?? (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}</p>
                       <p className="mt-1 text-[11px] text-slate-400">{formatDateTime(row.created_at)}</p>
                     </div>
                     <div className="text-right">
@@ -1159,7 +1298,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                         {formatNumber(row.amount)} MC
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        Balance: {row.agency?.maxcoin_balance == null ? 'Not available' : `${formatNumber(row.agency.maxcoin_balance)} MC`}
+                        {language === 'ru' ? 'Баланс' : 'Balans'}: {row.agency?.maxcoin_balance == null ? '—' : `${formatNumber(row.agency.maxcoin_balance)} MC`}
                       </p>
                     </div>
                   </button>
@@ -1171,13 +1310,15 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
         <SectionShell>
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">Agency Balances</h2>
-            <p className="text-xs text-slate-500">{filteredAgencyBalances.length} agencies</p>
+            <h2 className="text-lg font-semibold text-slate-900">{language === 'ru' ? 'Балансы агентств' : 'Agentlik balanslari'}</h2>
+            <p className="text-xs text-slate-500">{filteredAgencyBalances.length} {language === 'ru' ? 'агентств' : 'agentlik'}</p>
           </div>
           <Card className="border-slate-200">
             {filteredAgencyBalances.length === 0 ? (
               <CardContent className="py-10 text-center text-sm text-slate-500">
-                No agencies match current search and balance filters.
+                {language === 'ru'
+                  ? 'По текущему поиску и фильтрам баланса агентства не найдены.'
+                  : "Joriy qidiruv va balans filtrlari bo'yicha agentlik topilmadi."}
               </CardContent>
             ) : (
               <CardContent className="space-y-2 py-3">
@@ -1189,7 +1330,9 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                   >
                     <div>
                       <p className="font-medium text-slate-900">{agency.name}</p>
-                      <p className="text-xs text-slate-500">{agency.responsible_person ?? agency.phone ?? 'Contact not provided'}</p>
+                      <p className="text-xs text-slate-500">
+                        {agency.responsible_person ?? agency.phone ?? (language === 'ru' ? 'Контакт не указан' : "Aloqa kiritilmagan")}
+                      </p>
                     </div>
                     <div className="text-right">
                       <p className={cn('font-semibold', agency.maxcoin_balance < maxcoinStats.lowBalanceThreshold ? 'text-orange-700' : 'text-slate-900')}>
@@ -1209,17 +1352,27 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
           <Card className="border-slate-200">
             <CardHeader>
-              <CardTitle className="text-base">Pending MaxCoin Purchases</CardTitle>
-              <CardDescription>Approve or reject existing safe coin top-up requests.</CardDescription>
+              <CardTitle className="text-base">
+                {language === 'ru' ? 'Ожидающие заявки на MaxCoin' : "Kutilayotgan MaxCoin so'rovlari"}
+              </CardTitle>
+              <CardDescription>
+                {language === 'ru'
+                  ? 'Одобрение или отклонение существующих безопасных заявок на пополнение.'
+                  : "Mavjud xavfsiz to'ldirish so'rovlarini tasdiqlash yoki rad etish."}
+              </CardDescription>
             </CardHeader>
             {pendingCoinRequests.length === 0 ? (
-              <CardContent className="pb-8 text-sm text-slate-500">No pending requests.</CardContent>
+              <CardContent className="pb-8 text-sm text-slate-500">
+                {language === 'ru' ? 'Ожидающие заявки отсутствуют.' : "Kutilayotgan so'rovlar mavjud emas."}
+              </CardContent>
             ) : (
               <CardContent className="space-y-2 pb-4">
                 {pendingCoinRequests.map((request) => (
                   <div key={request.id} className="flex items-center justify-between rounded-xl border border-slate-200 p-3">
                     <div className="min-w-0">
-                      <p className="truncate font-medium text-slate-900">{request.agency?.name ?? 'Agency not provided'}</p>
+                      <p className="truncate font-medium text-slate-900">
+                        {request.agency?.name ?? (language === 'ru' ? 'Агентство не указано' : 'Agentlik kiritilmagan')}
+                      </p>
                       <p className="text-xs text-slate-500">{formatDateTime(request.created_at)}</p>
                       <p className="text-xs text-slate-500">
                         {formatNumber(request.coins)} MC / {formatNumber(request.price_uzs)} UZS
@@ -1233,7 +1386,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                         disabled={processingCoinRequestId === request.id}
                       >
                         <XCircle className="mr-1 h-3.5 w-3.5" />
-                        Reject
+                        {language === 'ru' ? 'Отклонить' : 'Rad etish'}
                       </Button>
                       <Button
                         size="sm"
@@ -1241,7 +1394,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                         disabled={processingCoinRequestId === request.id}
                       >
                         <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                        Approve
+                        {language === 'ru' ? 'Подтвердить' : 'Tasdiqlash'}
                       </Button>
                     </div>
                   </div>
@@ -1252,12 +1405,18 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
           <Card className="border-slate-200">
             <CardHeader>
-              <CardTitle className="text-base">Data Quality Indicators</CardTitle>
-              <CardDescription>Warnings are derived from real fields; no automatic blocking applied.</CardDescription>
+              <CardTitle className="text-base">{language === 'ru' ? 'Показатели качества данных' : "Ma'lumot sifati ko'rsatkichlari"}</CardTitle>
+              <CardDescription>
+                {language === 'ru'
+                  ? 'Предупреждения формируются на основе реальных полей, без автоматической блокировки.'
+                  : "Ogohlantirishlar real maydonlarga asoslanadi, avtomatik bloklash qo'llanmaydi."}
+              </CardDescription>
             </CardHeader>
             {promotionWarnings.length === 0 ? (
               <CardContent className="pb-8 text-sm text-emerald-700">
-                No promotion data-quality warnings detected.
+                {language === 'ru'
+                  ? 'Предупреждения по качеству рекламных данных не обнаружены.'
+                  : "Reklama ma'lumotlarida sifat ogohlantirishlari topilmadi."}
               </CardContent>
             ) : (
               <CardContent className="space-y-2 pb-4">
@@ -1268,7 +1427,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                     className="flex w-full items-start gap-2 rounded-xl border border-rose-200 bg-rose-50/70 px-3 py-2 text-left text-xs text-rose-800"
                   >
                     <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <span>{warning.message}</span>
+                    <span>{localizePromotionWarning(warning.message)}</span>
                   </button>
                 ))}
               </CardContent>
@@ -1277,7 +1436,7 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
         </div>
       </SectionShell>
 
-      {selectedPromotion ? (
+      {!isMaxcoinOnly && selectedPromotion ? (
         <Sheet open={Boolean(selectedPromotion)} onOpenChange={(open) => !open && setSelectedPromotionId(null)}>
         <SheetContent side="right" className="w-full max-w-3xl overflow-y-auto">
           {selectedPromotion ? (
@@ -1285,10 +1444,12 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
               <SheetHeader className="px-0 pt-0">
                 <SheetTitle className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-sky-600" />
-                  Promotion Detail
+                  {language === 'ru' ? 'Детали рекламы' : 'Reklama tafsilotlari'}
                 </SheetTitle>
                 <SheetDescription>
-                  Promotion identity, placement, schedule, MaxCoin spend, links, and warning context.
+                  {language === 'ru'
+                    ? 'Идентификатор, размещение, сроки, расходы MaxCoin, ссылки и контекст предупреждений.'
+                    : "Identifikator, joylashuv, muddat, MaxCoin sarfi, havolalar va ogohlantirish konteksti."}
                 </SheetDescription>
               </SheetHeader>
 
@@ -1296,41 +1457,47 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                 <CardContent className="space-y-3 py-4">
                   <div className="flex flex-wrap items-center gap-2">
                     <Badge variant={getStatusBadgeVariant(selectedPromotion.status)}>
-                      {formatPromotionStatusLabel(selectedPromotion.status)}
+                      {localizeStatus(formatPromotionStatusLabel(selectedPromotion.status))}
                     </Badge>
-                    <Badge variant="outline">{formatPlacementLabel(selectedPromotion.placement)}</Badge>
+                    <Badge variant="outline">{tInline(formatPlacementLabel(selectedPromotion.placement))}</Badge>
                     <Badge variant="outline">
-                      {selectedPromotion.source === 'tour_promotion' ? 'tour_promotions' : 'featured_items'}
+                      {selectedPromotion.source === 'tour_promotion'
+                        ? (language === 'ru' ? 'Реклама тура' : 'Tur reklamasi')
+                        : (language === 'ru' ? 'Рекомендуемая реклама' : 'Tavsiya reklamasi')}
                     </Badge>
                   </div>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div>
-                      <p className="text-xs font-medium text-slate-500">Promotion ID</p>
+                      <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'ID рекламы' : 'Reklama ID'}</p>
                       <p className="text-sm text-slate-900">{selectedPromotion.sourceId}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-slate-500">Created</p>
+                      <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Создано' : 'Yaratilgan'}</p>
                       <p className="text-sm text-slate-900">{formatDateTime(selectedPromotion.created_at)}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-slate-500">Start</p>
+                      <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Начало' : 'Boshlanish'}</p>
                       <p className="text-sm text-slate-900">{formatDateTime(selectedPromotion.starts_at)}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-slate-500">End</p>
+                      <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Окончание' : 'Tugash'}</p>
                       <p className="text-sm text-slate-900">{formatDateTime(selectedPromotion.ends_at)}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-slate-500">Duration</p>
+                      <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Длительность' : 'Muddat'}</p>
                       <p className="text-sm text-slate-900">
-                        {selectedPromotion.durationDays == null ? 'Not available' : `${selectedPromotion.durationDays} day(s)`}
+                        {selectedPromotion.durationDays == null
+                          ? '—'
+                          : language === 'ru'
+                            ? `${selectedPromotion.durationDays} дн.`
+                            : `${selectedPromotion.durationDays} kun`}
                       </p>
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-slate-500">MaxCoin cost</p>
+                      <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Стоимость MaxCoin' : 'MaxCoin narxi'}</p>
                       <p className="text-sm text-slate-900">
                         {selectedPromotion.maxcoin_cost == null
-                          ? 'Not available'
+                          ? '—'
                           : `${formatNumber(selectedPromotion.maxcoin_cost)} MC`}
                       </p>
                     </div>
@@ -1340,15 +1507,17 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Linked Tour</CardTitle>
+                  <CardTitle className="text-sm">{language === 'ru' ? 'Связанный тур' : "Bog'langan tur"}</CardTitle>
                 </CardHeader>
                 <CardContent className="py-0 pb-4">
                   {!selectedPromotion.tour ? (
-                    <p className="text-sm text-slate-500">Tour is not available for this promotion.</p>
+                    <p className="text-sm text-slate-500">
+                      {language === 'ru' ? 'Для этой рекламы тур недоступен.' : 'Ushbu reklama uchun tur mavjud emas.'}
+                    </p>
                   ) : (
                     <div className="flex gap-3">
                       <Image
-                        src={selectedPromotion.tour.cover_image_url || placeholderImage(180, 120, 'Tour')}
+                        src={selectedPromotion.tour.cover_image_url || placeholderImage(180, 120, language === 'ru' ? 'Тур' : 'Tur')}
                         alt={selectedPromotion.tour.title}
                         width={120}
                         height={84}
@@ -1356,21 +1525,35 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-semibold text-slate-900">{selectedPromotion.tour.title}</p>
-                        <p className="text-xs text-slate-500">Status: {selectedPromotion.tour.status ?? 'Not provided'}</p>
-                        <p className="text-xs text-slate-500">Views: {selectedPromotion.tour.view_count == null ? 'Not available' : formatNumber(selectedPromotion.tour.view_count)}</p>
-                        <p className="text-xs text-slate-500">Leads: {formatNumber(selectedPromotion.lead_count)}</p>
+                        <p className="text-xs text-slate-500">
+                          {language === 'ru' ? 'Статус' : 'Holat'}: {selectedPromotion.tour.status ? localizeStatus(selectedPromotion.tour.status) : (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {language === 'ru' ? 'Просмотры' : "Ko'rishlar"}: {selectedPromotion.tour.view_count == null ? '—' : formatNumber(selectedPromotion.tour.view_count)}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {language === 'ru' ? 'Заявки' : "So'rovlar"}: {formatNumber(selectedPromotion.lead_count)}
+                        </p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {selectedPromotion.tour_id ? (
-                            <Button variant="outline" size="sm" render={<Link href={`/admin/tours/${selectedPromotion.tour_id}`} />}>
+                            <Link
+                              href={`/admin/tours/${selectedPromotion.tour_id}`}
+                              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                            >
                               <Eye className="mr-1 h-3.5 w-3.5" />
-                              View Tour (Admin)
-                            </Button>
+                              {language === 'ru' ? 'Тур в админке' : 'Admin turini ochish'}
+                            </Link>
                           ) : null}
                           {getTourPublicLink(selectedPromotion) ? (
-                            <Button variant="outline" size="sm" render={<Link href={getTourPublicLink(selectedPromotion) ?? '#'} target="_blank" rel="noreferrer" />}>
+                            <Link
+                              href={getTourPublicLink(selectedPromotion) ?? '#'}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                            >
                               <ExternalLink className="mr-1 h-3.5 w-3.5" />
-                              Public Tour
-                            </Button>
+                              {language === 'ru' ? 'Публичный тур' : 'Ommaviy tur'}
+                            </Link>
                           ) : null}
                         </div>
                       </div>
@@ -1381,30 +1564,35 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Linked Agency / Action Center</CardTitle>
+                  <CardTitle className="text-sm">{language === 'ru' ? 'Связанное агентство / Действия' : "Bog'langan agentlik / Amallar"}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 py-0 pb-4">
                   {!selectedPromotion.agency ? (
-                    <p className="text-sm text-slate-500">Agency is not available for this promotion.</p>
+                    <p className="text-sm text-slate-500">
+                      {language === 'ru' ? 'Для этой рекламы агентство недоступно.' : 'Ushbu reklama uchun agentlik mavjud emas.'}
+                    </p>
                   ) : (
                     <>
                       <div className="rounded-xl border border-slate-200 p-3">
                         <p className="font-semibold text-slate-900">{selectedPromotion.agency.name}</p>
                         <p className="text-xs text-slate-500">
-                          {selectedPromotion.agency.responsible_person ?? selectedPromotion.agency.phone ?? 'Contact not provided'}
+                          {selectedPromotion.agency.responsible_person ?? selectedPromotion.agency.phone ?? (language === 'ru' ? 'Контакт не указан' : 'Aloqa kiritilmagan')}
                         </p>
                         <p className="text-xs text-slate-500">
-                          Balance: {selectedPromotion.agency.maxcoin_balance == null ? 'Not available' : `${formatNumber(selectedPromotion.agency.maxcoin_balance)} MC`}
+                          {language === 'ru' ? 'Баланс' : 'Balans'}: {selectedPromotion.agency.maxcoin_balance == null ? '—' : `${formatNumber(selectedPromotion.agency.maxcoin_balance)} MC`}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <Button variant="outline" size="sm" onClick={() => setSelectedAgencyId(selectedPromotion.agency!.id)}>
                             <Wallet className="mr-1 h-3.5 w-3.5" />
-                            Agency MaxCoin Detail
+                            {language === 'ru' ? 'Детали MaxCoin агентства' : 'Agentlik MaxCoin tafsiloti'}
                           </Button>
-                          <Button variant="outline" size="sm" render={<Link href="/admin/agencies" />}>
+                          <Link
+                            href="/admin/agencies"
+                            className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                          >
                             <Building2 className="mr-1 h-3.5 w-3.5" />
-                            Agencies Panel
-                          </Button>
+                            {language === 'ru' ? 'Панель агентств' : 'Agentliklar paneli'}
+                          </Link>
                         </div>
                       </div>
                       <div className="grid gap-2 sm:grid-cols-2">
@@ -1415,23 +1603,48 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                           onClick={() => {
                             const link = getTourPublicLink(selectedPromotion);
                             if (!link) return;
-                            tryCopy(link, 'Promotion link copied');
+                            tryCopy(
+                              link,
+                              language === 'ru' ? 'Ссылка рекламы скопирована.' : 'Reklama havolasi nusxalandi.',
+                              language === 'ru' ? 'Ошибка копирования.' : "Nusxalashda xatolik yuz berdi."
+                            );
                           }}
                         >
                           <Copy className="mr-1 h-3.5 w-3.5" />
-                          Copy promotion link
+                          {language === 'ru' ? 'Скопировать ссылку рекламы' : 'Reklama havolasini nusxalash'}
                         </Button>
-                        <Button variant="outline" size="sm" disabled title="No safe admin mutation exists for cancellation in current codebase">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          title={language === 'ru'
+                            ? 'В текущем коде нет безопасной админ-мутации для отмены.'
+                            : "Joriy kodda bekor qilish uchun xavfsiz admin mutatsiyasi yo'q."}
+                        >
                           <XCircle className="mr-1 h-3.5 w-3.5" />
-                          Cancel promotion (Unavailable)
+                          {language === 'ru' ? 'Отмена рекламы (недоступно)' : 'Reklamani bekor qilish (mavjud emas)'}
                         </Button>
-                        <Button variant="outline" size="sm" disabled title="No safe admin mutation exists for force-expire in current codebase">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          title={language === 'ru'
+                            ? 'В текущем коде нет безопасной админ-мутации для принудительного завершения.'
+                            : "Joriy kodda majburiy tugatish uchun xavfsiz admin mutatsiyasi yo'q."}
+                        >
                           <Timer className="mr-1 h-3.5 w-3.5" />
-                          Expire now (Unavailable)
+                          {language === 'ru' ? 'Завершить сейчас (недоступно)' : 'Hozir tugatish (mavjud emas)'}
                         </Button>
-                        <Button variant="outline" size="sm" disabled title="No safe admin mutation exists for extending duration in current codebase">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled
+                          title={language === 'ru'
+                            ? 'В текущем коде нет безопасной админ-мутации для продления.'
+                            : "Joriy kodda uzaytirish uchun xavfsiz admin mutatsiyasi yo'q."}
+                        >
                           <CalendarDays className="mr-1 h-3.5 w-3.5" />
-                          Extend campaign (Unavailable)
+                          {language === 'ru' ? 'Продлить кампанию (недоступно)' : 'Kampaniyani uzaytirish (mavjud emas)'}
                         </Button>
                       </div>
                     </>
@@ -1441,21 +1654,25 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Warnings & Fairness</CardTitle>
+                  <CardTitle className="text-sm">{language === 'ru' ? 'Предупреждения' : 'Ogohlantirishlar'}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 py-0 pb-4">
                   {selectedPromotion.warnings.length === 0 ? (
-                    <p className="text-sm text-emerald-700">No active warnings for this promotion.</p>
+                    <p className="text-sm text-emerald-700">
+                      {language === 'ru' ? 'Активных предупреждений нет.' : 'Faol ogohlantirishlar yoʻq.'}
+                    </p>
                   ) : (
                     selectedPromotion.warnings.map((warning) => (
                       <div key={warning} className="rounded-xl border border-rose-200 bg-rose-50/70 px-3 py-2 text-xs text-rose-800">
-                        {warning}
+                        {localizePromotionWarning(warning)}
                       </div>
                     ))
                   )}
                   <Separator />
                   <p className="text-xs text-slate-500">
-                    Slot rotation/capacity controls are read-only here. Rotation algorithm and placement RPC logic were intentionally not changed.
+                    {language === 'ru'
+                      ? 'Эти элементы доступны только для чтения. Алгоритм ротации и RPC-логика размещений намеренно не изменялись.'
+                      : "Bu boshqaruvlar faqat o'qish rejimida. Joylashuv rotatsiyasi algoritmi va RPC logikasi ataylab o'zgartirilmadi."}
                   </p>
                 </CardContent>
               </Card>
@@ -1473,45 +1690,56 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
               <SheetHeader className="px-0 pt-0">
                 <SheetTitle className="flex items-center gap-2">
                   <Wallet className="h-4 w-4 text-sky-600" />
-                  Agency MaxCoin Detail
+                  {language === 'ru' ? 'Детали MaxCoin агентства' : 'Agentlik MaxCoin tafsiloti'}
                 </SheetTitle>
                 <SheetDescription>
-                  Agency balance, recent transactions, active promotions, and spend by placement.
+                  {language === 'ru'
+                    ? 'Баланс агентства, последние транзакции, активная реклама и расходы по размещениям.'
+                    : "Agentlik balansi, so'nggi tranzaksiyalar, faol reklamalar va joylashuv bo'yicha sarf."}
                 </SheetDescription>
               </SheetHeader>
 
               <Card className="border-slate-200">
                 <CardContent className="grid gap-3 py-4 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs font-medium text-slate-500">Agency</p>
+                    <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Агентство' : 'Agentlik'}</p>
                     <p className="text-sm font-semibold text-slate-900">{selectedAgency.name}</p>
-                    <p className="text-xs text-slate-500">{selectedAgency.responsible_person ?? selectedAgency.phone ?? 'Not provided'}</p>
+                    <p className="text-xs text-slate-500">
+                      {selectedAgency.responsible_person ?? selectedAgency.phone ?? (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-slate-500">Current balance</p>
+                    <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Текущий баланс' : 'Joriy balans'}</p>
                     <p className={cn('text-xl font-bold', selectedAgency.maxcoin_balance < maxcoinStats.lowBalanceThreshold ? 'text-orange-700' : 'text-slate-900')}>
                       {formatNumber(selectedAgency.maxcoin_balance)} MC
                     </p>
                     {selectedAgency.maxcoin_balance < maxcoinStats.lowBalanceThreshold ? (
-                      <p className="text-xs text-orange-700">Low balance warning</p>
+                      <p className="text-xs text-orange-700">
+                        {language === 'ru' ? 'Предупреждение: низкий баланс' : 'Ogohlantirish: past balans'}
+                      </p>
                     ) : null}
                   </div>
                   <div className="sm:col-span-2">
-                    <Button variant="outline" size="sm" render={<Link href="/admin/agencies" />}>
+                    <Link
+                      href="/admin/agencies"
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'inline-flex')}
+                    >
                       <ArrowUpRight className="mr-1 h-3.5 w-3.5" />
-                      Open Agencies Panel
-                    </Button>
+                      {language === 'ru' ? 'Открыть агентства' : 'Agentliklarni ochish'}
+                    </Link>
                   </div>
                 </CardContent>
               </Card>
 
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Active Promotions</CardTitle>
+                  <CardTitle className="text-sm">{language === 'ru' ? 'Активная реклама' : 'Faol reklamalar'}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 py-0 pb-4">
                   {selectedAgencyActivePromotions.length === 0 ? (
-                    <p className="text-sm text-slate-500">No promotions found for this agency.</p>
+                    <p className="text-sm text-slate-500">
+                      {language === 'ru' ? 'Для этого агентства реклама не найдена.' : 'Ushbu agentlik uchun reklama topilmadi.'}
+                    </p>
                   ) : (
                     selectedAgencyActivePromotions.slice(0, 20).map((promotion) => (
                       <button
@@ -1520,11 +1748,13 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
                         className="flex w-full items-center justify-between rounded-xl border border-slate-200 px-3 py-2 text-left transition hover:border-sky-200"
                       >
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-slate-900">{promotion.tour?.title ?? 'Tour not provided'}</p>
-                          <p className="text-xs text-slate-500">{formatPlacementLabel(promotion.placement)}</p>
+                          <p className="truncate text-sm font-medium text-slate-900">
+                            {promotion.tour?.title ?? (language === 'ru' ? 'Тур не указан' : 'Tur kiritilmagan')}
+                          </p>
+                          <p className="text-xs text-slate-500">{tInline(formatPlacementLabel(promotion.placement))}</p>
                         </div>
                         <Badge variant={getStatusBadgeVariant(promotion.status)}>
-                          {formatPromotionStatusLabel(promotion.status)}
+                          {localizeStatus(formatPromotionStatusLabel(promotion.status))}
                         </Badge>
                       </button>
                     ))
@@ -1534,15 +1764,19 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Spend by Placement</CardTitle>
+                  <CardTitle className="text-sm">{language === 'ru' ? 'Расход по размещениям' : 'Joylashuv bo‘yicha sarf'}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 py-0 pb-4">
                   {selectedAgencySpendByPlacement.length === 0 ? (
-                    <p className="text-sm text-slate-500">Not available from current promotion cost records.</p>
+                    <p className="text-sm text-slate-500">
+                      {language === 'ru'
+                        ? 'По текущим данным расходов информация недоступна.'
+                        : "Joriy xarajat yozuvlari bo'yicha ma'lumot mavjud emas."}
+                    </p>
                   ) : (
                     selectedAgencySpendByPlacement.map((item) => (
                       <div key={item.placement} className="flex items-center justify-between rounded-lg border border-slate-200 px-3 py-2">
-                        <p className="text-sm text-slate-700">{formatPlacementLabel(item.placement)}</p>
+                        <p className="text-sm text-slate-700">{tInline(formatPlacementLabel(item.placement))}</p>
                         <p className="text-sm font-semibold text-slate-900">{formatNumber(item.total)} MC</p>
                       </div>
                     ))
@@ -1552,22 +1786,28 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
 
               <Card className="border-slate-200">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Recent Transactions</CardTitle>
+                  <CardTitle className="text-sm">{language === 'ru' ? 'Последние транзакции' : "So'nggi tranzaksiyalar"}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 py-0 pb-4">
                   {selectedAgencyTransactions.length === 0 ? (
-                    <p className="text-sm text-slate-500">No transaction history available for this agency.</p>
+                    <p className="text-sm text-slate-500">
+                      {language === 'ru'
+                        ? 'История транзакций для этого агентства недоступна.'
+                        : 'Ushbu agentlik uchun tranzaksiya tarixi mavjud emas.'}
+                    </p>
                   ) : (
                     selectedAgencyTransactions.map((row) => (
                       <div key={row.id} className="rounded-xl border border-slate-200 px-3 py-2">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-sm text-slate-900">{row.type ?? 'Unknown type'}</p>
+                          <p className="text-sm text-slate-900">{row.type ? tInline(row.type) : (language === 'ru' ? 'Неизвестный тип' : "Noma'lum tur")}</p>
                           <p className={cn('text-sm font-semibold', row.amount >= 0 ? 'text-emerald-700' : 'text-rose-700')}>
                             {row.amount >= 0 ? '+' : ''}
                             {formatNumber(row.amount)} MC
                           </p>
                         </div>
-                        <p className="text-xs text-slate-500">{row.description ?? 'No description'}</p>
+                        <p className="text-xs text-slate-500">
+                          {row.description ?? (language === 'ru' ? 'Описание не указано' : 'Tavsif kiritilmagan')}
+                        </p>
                         <p className="text-[11px] text-slate-400">{formatDateTime(row.created_at)}</p>
                       </div>
                     ))
@@ -1584,15 +1824,23 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {pendingCoinAction?.action === 'approve' ? 'Approve coin request?' : 'Reject coin request?'}
+              {pendingCoinAction?.action === 'approve'
+                ? language === 'ru'
+                  ? 'Подтвердить заявку MaxCoin?'
+                  : "MaxCoin so'rovini tasdiqlaysizmi?"
+                : language === 'ru'
+                  ? 'Отклонить заявку MaxCoin?'
+                  : "MaxCoin so'rovini rad etasizmi?"}
             </DialogTitle>
             <DialogDescription>
-              This action uses existing admin-safe server logic. It will update request status and refresh the panel.
+              {language === 'ru'
+                ? 'Действие использует существующую безопасную серверную логику. Статус заявки будет обновлен, панель перезагрузится.'
+                : "Amal mavjud xavfsiz server logikasidan foydalanadi. So'rov holati yangilanadi va panel yangilanadi."}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" onClick={() => setPendingCoinAction(null)}>
-              Cancel
+              {tc('cancel')}
             </Button>
             <Button
               variant={pendingCoinAction?.action === 'approve' ? 'default' : 'destructive'}
@@ -1607,7 +1855,13 @@ export function AdminCoinRequestsContent({ payload, errorMessage }: Props) {
               }}
               disabled={pendingCoinAction == null}
             >
-              {pendingCoinAction?.action === 'approve' ? 'Approve' : 'Reject'}
+              {pendingCoinAction?.action === 'approve'
+                ? language === 'ru'
+                  ? 'Подтвердить'
+                  : 'Tasdiqlash'
+                : language === 'ru'
+                  ? 'Отклонить'
+                  : 'Rad etish'}
             </Button>
           </DialogFooter>
         </DialogContent>

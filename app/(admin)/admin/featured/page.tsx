@@ -1,14 +1,7 @@
-import { getAdminPromotionsMaxcoinPanelData } from '@/features/admin/queries';
-import { AdminFeaturedContent } from './admin-featured-content';
+import { redirect } from 'next/navigation';
 
 export const dynamic = 'force-dynamic';
 
 export default async function AdminFeaturedPage() {
-  try {
-    const payload = await getAdminPromotionsMaxcoinPanelData({ mode: 'featured' });
-    return <AdminFeaturedContent payload={payload} />;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown featured promotions loading error';
-    return <AdminFeaturedContent payload={null} errorMessage={message} />;
-  }
+  redirect('/admin/reklama?tab=featured');
 }

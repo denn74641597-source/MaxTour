@@ -161,7 +161,7 @@ export default function AdminLoginPage() {
             <Shield className="h-8 w-8 text-blue-400" />
           </div>
           <h1 className="text-2xl font-bold text-white">{tp('adminLogin')}</h1>
-          <p className="mt-1 text-sm text-slate-400">remote.mxtr.uz</p>
+          <p className="mt-1 text-sm text-slate-400">{tInline('Admin panel')}</p>
         </div>
 
         <div className="space-y-4 rounded-2xl border border-slate-700 bg-slate-800/75 p-5">

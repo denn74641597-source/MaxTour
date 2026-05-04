@@ -1,10 +1,12 @@
 'use client';
 
 import { Badge } from '@/components/ui/badge';
+import { useAdminI18n } from '@/features/admin/i18n';
 import { cn } from '@/lib/utils';
 import { TOUR_STATUS_META, toTourStatus } from './tour-admin-utils';
 
 export function TourStatusBadge({ status }: { status: string }) {
+  const { localizeStatus } = useAdminI18n();
   const key = toTourStatus(status);
   const meta = TOUR_STATUS_META[key];
 
@@ -16,7 +18,7 @@ export function TourStatusBadge({ status }: { status: string }) {
         meta.tone
       )}
     >
-      {meta.label}
+      {localizeStatus(key)}
     </Badge>
   );
 }

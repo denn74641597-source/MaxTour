@@ -284,8 +284,8 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
       settingCard({
         id: 'admin-domain',
         name: 'Admin Domain',
-        description: 'Admin surface is expected to run only on remote.mxtr.uz.',
-        value: 'remote.mxtr.uz',
+        description: 'Admin surface is expected to run only on configured admin domain.',
+        value: 'Configured in routing config',
         state: 'expected',
         editability: 'read_only',
         source: 'docs',
@@ -367,8 +367,8 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
       }),
       settingCard({
         id: 'remote-domain-routing',
-        name: 'remote.mxtr.uz Routing',
-        description: 'Expected host routing on admin domain for / and non-admin routes.',
+        name: 'Admin Domain Routing',
+        description: 'Expected host routing on admin domain for root and non-admin routes.',
         value:
           !remoteRootGate.allow && remoteRootGate.redirectPath === '/admin'
             ? 'Root and non-admin paths redirect to /admin (expected)'
@@ -790,9 +790,9 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
       settingCard({
         id: 'domain-split-readiness',
         name: 'Domain Split Readiness',
-        description: 'mxtr.uz/public and remote.mxtr.uz/admin split inferred from routing config.',
+        description: 'Public/admin domain split inferred from routing config.',
         value: domainSplitLooksConfigured
-          ? 'Expected by config: mxtr.uz/public, remote.mxtr.uz/admin'
+          ? 'Expected by config: public domain/public routes, admin domain/admin routes'
           : 'Unknown / verify runtime configuration',
         state: domainSplitLooksConfigured ? 'expected' : 'unknown',
         editability: 'read_only',
@@ -865,7 +865,7 @@ export async function getAdminSettingsSnapshot(): Promise<AdminSettingsSnapshot>
       title: 'Admin Domain Configured',
       value: domainSplitLooksConfigured ? 'Expected by config' : 'Unknown',
       state: domainSplitLooksConfigured ? 'expected' : 'unknown',
-      note: 'remote.mxtr.uz should serve admin and redirect non-admin paths to /admin.',
+      note: 'Configured admin domain should serve admin and redirect non-admin paths to /admin.',
     },
     {
       id: 'readiness-supabase',
