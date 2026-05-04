@@ -21,7 +21,7 @@ export const ADMIN_PAGES = {
     system: 'Tizim',
     platformOverview: 'Platforma boshqaruvi',
     session: 'Admin sessiyasi',
-    remoteConsole: 'Masofaviy boshqaruv',
+    remoteConsole: 'Admin panel',
   },
   ru: {
     dashboard: 'Панель управления',
@@ -45,7 +45,7 @@ export const ADMIN_PAGES = {
     system: 'Система',
     platformOverview: 'Управление платформой',
     session: 'Сессия администратора',
-    remoteConsole: 'Удаленная консоль',
+    remoteConsole: 'Админ-панель',
   },
 } as const;
 

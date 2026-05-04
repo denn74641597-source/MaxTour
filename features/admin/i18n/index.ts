@@ -15,6 +15,25 @@ function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+function containsTechnicalToken(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return false;
+
+  if (/https?:\/\//i.test(trimmed)) return true;
+  if (/\b_next\/static\b/i.test(trimmed)) return true;
+  if (/\/chunks?\//i.test(trimmed)) return true;
+  if (/app\/\([^)]+\)\//i.test(trimmed)) return true;
+  if (/(^|[\s"'`(])\/(?:admin|agency|api|_next)\b/i.test(trimmed)) return true;
+  if (/[A-Za-z0-9._-]+\.(?:js|mjs|css|map|json)(?:[?#][^\s]*)?/i.test(trimmed)) return true;
+  if (/\b(?=[a-z0-9.-]*[a-z])[a-z0-9-]+(?:\.[a-z0-9-]+)+\b/i.test(trimmed)) return true;
+
+  return false;
+}
+
+export function isAdminInlineTechnicalText(value: string): boolean {
+  return containsTechnicalToken(value);
+}
+
 const STATUS_KEY_MAP: Record<string, AdminCommonKey> = {
   pending: 'pending',
   approved: 'approved',
@@ -41,6 +60,7 @@ export function toAdminLanguage(language: Language): Language {
 
 export function translateAdminInlineText(value: string, language: Language): string {
   if (!value) return value;
+  if (isAdminInlineTechnicalText(value)) return value;
 
   const adminLanguage = toAdminLanguage(language);
   const normalized = normalizePhrase(value);
