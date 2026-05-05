@@ -10,6 +10,7 @@ Date: 2026-05-06
    - `www.mxtr.uz/*`
    - `remote.mxtr.uz/*`
 3. Monolith keeps domain-target awareness for `agency.mxtr.uz`, but no longer exposes public UI links or redirects into private agency panel paths.
+4. Public auth on `mxtr.uz` is user-only; agency management auth is standalone at `https://agency.mxtr.uz/agency/login`.
 
 ## Domain Responsibilities (Monolith Runtime)
 

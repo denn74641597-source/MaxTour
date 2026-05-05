@@ -1,16 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Building2,
   User,
   Phone,
   Lock,
   Loader2,
   Eye,
   EyeOff,
-  Mail,
   LogIn,
   ShieldCheck,
   Sparkles,
@@ -22,12 +20,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
-import { slugify } from '@/lib/utils';
 
-type AuthStep = 'login' | 'register' | 'otp-verify';
-type RegisterTab = 'user' | 'agency';
-
-const OTP_COOLDOWN = 60;
+type AuthStep = 'login' | 'register';
 const UZ_PHONE_REGEX = /^\+?998\d{9}$/;
 
 function isValidUzPhone(phone: string): boolean {
@@ -53,7 +47,6 @@ export function AuthScreen() {
   const supabase = createClient();
 
   const [step, setStep] = useState<AuthStep>('login');
-  const [registerTab, setRegisterTab] = useState<RegisterTab>('user');
 
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -64,33 +57,9 @@ export function AuthScreen() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  const [agencyFullName, setAgencyFullName] = useState('');
-  const [agencyEmail, setAgencyEmail] = useState('');
-  const [agencyPhone, setAgencyPhone] = useState('');
-  const [agencyPassword, setAgencyPassword] = useState('');
-  const [showAgencyPassword, setShowAgencyPassword] = useState(false);
-
-  const [otpCode, setOtpCode] = useState('');
-  const [cooldown, setCooldown] = useState(0);
-
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [legalAccepted, setLegalAccepted] = useState(false);
-
-  const pendingAgencyRef = useRef<{
-    fullName: string;
-    email: string;
-    phone: string;
-    password: string;
-  } | null>(null);
-
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setInterval(() => {
-      setCooldown((prev) => (prev <= 1 ? 0 : prev - 1));
-    }, 1000);
-    return () => clearInterval(timer);
-  }, [cooldown]);
 
   const handleLogin = async () => {
     const identifier = loginIdentifier.trim();
@@ -208,12 +177,6 @@ export function AuthScreen() {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
-
       router.push('/profile');
     } catch (err) {
       console.error('Login error:', err);
@@ -309,181 +272,7 @@ export function AuthScreen() {
     }
   };
 
-  const sendOtp = useCallback(
-    async (targetEmail: string) => {
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-        email: targetEmail,
-        options: { shouldCreateUser: true },
-      });
-      if (otpError) throw otpError;
-      setCooldown(OTP_COOLDOWN);
-    },
-    [supabase.auth]
-  );
-
-  const handleAgencyRegister = async () => {
-    const trimmedName = agencyFullName.trim();
-    const trimmedEmail = agencyEmail.trim().toLowerCase();
-    const trimmedPhone = normalizePhone(agencyPhone.trim());
-    const trimmedPassword = agencyPassword.trim();
-
-    if (!trimmedName || !trimmedEmail || !trimmedPhone || !trimmedPassword) return;
-
-    if (!legalAccepted) {
-      setError('Please accept Terms and Privacy Policy.');
-      return;
-    }
-
-    if (!isValidUzPhone(trimmedPhone)) {
-      setError("Telefon raqami noto'g'ri. Format: +998XXXXXXXXX");
-      return;
-    }
-
-    if (trimmedPassword.length < 6) {
-      setError(t.auth.passwordTooShort);
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-
-    try {
-      await sendOtp(trimmedEmail);
-
-      pendingAgencyRef.current = {
-        fullName: trimmedName,
-        email: trimmedEmail,
-        phone: trimmedPhone,
-        password: trimmedPassword,
-      };
-      setStep('otp-verify');
-    } catch (err) {
-      console.error('Agency OTP error:', err);
-      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleVerifyOtp = async () => {
-    const trimmedCode = otpCode.trim();
-    const pending = pendingAgencyRef.current;
-    if (!trimmedCode || !pending) return;
-
-    setLoading(true);
-    setError('');
-
-    try {
-      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
-        email: pending.email,
-        token: trimmedCode,
-        type: 'email',
-      });
-
-      if (verifyError) {
-        if (verifyError.message?.toLowerCase().includes('expired')) {
-          setError(t.auth.otpExpired);
-        } else {
-          setError(t.auth.otpInvalid);
-        }
-        return;
-      }
-
-      const userId = verifyData.user?.id;
-      if (!userId) {
-        setError('Xatolik yuz berdi');
-        return;
-      }
-
-      if (verifyData.session?.access_token && verifyData.session?.refresh_token) {
-        await supabase.auth.setSession({
-          access_token: verifyData.session.access_token,
-          refresh_token: verifyData.session.refresh_token,
-        });
-      }
-
-      let { error: pwdError } = await supabase.auth.updateUser({
-        password: pending.password,
-      });
-
-      if (pwdError && /session/i.test(pwdError.message ?? '')) {
-        await new Promise((resolve) => setTimeout(resolve, 400));
-        const retry = await supabase.auth.updateUser({ password: pending.password });
-        pwdError = retry.error;
-      }
-
-      if (pwdError) {
-        const msg = (pwdError.message ?? '').toLowerCase();
-        if (
-          !msg.includes('should be different') &&
-          !msg.includes('same password')
-        ) {
-          setError(pwdError.message || "Parolni saqlashda xatolik. Qayta urinib ko'ring.");
-          return;
-        }
-      }
-
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        id: userId,
-        role: 'agency_manager' as const,
-        full_name: pending.fullName,
-        phone: normalizePhone(pending.phone),
-        email: pending.email,
-        updated_at: new Date().toISOString(),
-      });
-
-      if (profileError) {
-        setError(profileError.message);
-        return;
-      }
-
-      const slug = slugify(pending.fullName) || `agency-${userId.slice(0, 8)}`;
-
-      const { error: agencyError } = await supabase.from('agencies').upsert({
-        owner_id: userId,
-        name: pending.fullName,
-        slug,
-        phone: normalizePhone(pending.phone),
-        country: 'Uzbekistan',
-      });
-
-      if (agencyError) {
-        setError(agencyError.message);
-        return;
-      }
-
-      router.push('/profile');
-    } catch (err) {
-      console.error('Verify OTP error:', err);
-      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleResendOtp = async () => {
-    if (cooldown > 0) return;
-    const pending = pendingAgencyRef.current;
-    if (!pending) return;
-
-    setLoading(true);
-    setError('');
-    try {
-      await sendOtp(pending.email);
-    } catch (err) {
-      console.error('Resend OTP error:', err);
-      setError(err instanceof Error ? err.message : 'Xatolik yuz berdi');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const isUserFormValid = fullName.trim() && phone.trim() && password.trim();
-  const isAgencyFormValid =
-    agencyFullName.trim() &&
-    agencyEmail.trim() &&
-    agencyPhone.trim() &&
-    agencyPassword.trim();
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-6 lg:py-10">
@@ -495,11 +284,11 @@ export function AuthScreen() {
               MaxTour account
             </div>
             <h1 className="mt-4 text-2xl font-bold sm:text-3xl">
-              Keep your trips, inquiries and agency growth in one place
+              Keep your trips and inquiries in one place
             </h1>
             <p className="mt-3 text-sm text-muted-foreground">
               Sign in to manage saved tours, receive updates and access your
-              personal or agency tools with the same account logic as mobile.
+              profile tools with the same account logic as mobile.
             </p>
 
             <div className="mt-6 grid gap-3">
@@ -511,12 +300,7 @@ export function AuthScreen() {
               <BenefitCard
                 icon={<ShieldCheck className="h-4 w-4 text-emerald-600" />}
                 title="Secure role-based access"
-                subtitle="User, agency manager and admin roles stay consistent."
-              />
-              <BenefitCard
-                icon={<Building2 className="h-4 w-4 text-amber-600" />}
-                title="Agency panel entry"
-                subtitle="Agency managers can continue straight to their dashboard."
+                subtitle="User account access stays consistent across devices."
               />
             </div>
           </CardContent>
@@ -615,111 +399,33 @@ export function AuthScreen() {
                   <p className="text-sm text-muted-foreground">{t.auth.registerHint}</p>
                 </div>
 
-                <div className="flex rounded-xl bg-muted p-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRegisterTab('user');
-                      setError('');
-                    }}
-                    className={`flex-1 rounded-lg py-2.5 text-sm font-medium transition ${
-                      registerTab === 'user'
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <User className="h-4 w-4" />
-                      {t.auth.tabUser}
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setRegisterTab('agency');
-                      setError('');
-                    }}
-                    className={`flex-1 rounded-lg py-2.5 text-sm font-medium transition ${
-                      registerTab === 'agency'
-                        ? 'bg-background text-foreground shadow-sm'
-                        : 'text-muted-foreground hover:text-foreground'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <Building2 className="h-4 w-4" />
-                      {t.auth.tabAgency}
-                    </span>
-                  </button>
+                <div className="space-y-4">
+                  <FieldWithIcon
+                    id="userName"
+                    label={`${t.auth.fullName} *`}
+                    value={fullName}
+                    onChange={setFullName}
+                    placeholder={t.auth.fullNamePlaceholder}
+                    icon={<User className="h-4 w-4 text-muted-foreground" />}
+                  />
+                  <FieldWithIcon
+                    id="userPhone"
+                    label={`${t.auth.phone} *`}
+                    value={phone}
+                    onChange={setPhone}
+                    placeholder={t.auth.phonePlaceholder}
+                    icon={<Phone className="h-4 w-4 text-muted-foreground" />}
+                  />
+                  <PasswordField
+                    id="userPassword"
+                    label={`${t.auth.password} *`}
+                    value={password}
+                    onChange={setPassword}
+                    placeholder={t.auth.passwordPlaceholder}
+                    shown={showPassword}
+                    onToggle={() => setShowPassword(!showPassword)}
+                  />
                 </div>
-
-                {registerTab === 'user' && (
-                  <div className="space-y-4">
-                    <FieldWithIcon
-                      id="userName"
-                      label={`${t.auth.fullName} *`}
-                      value={fullName}
-                      onChange={setFullName}
-                      placeholder={t.auth.fullNamePlaceholder}
-                      icon={<User className="h-4 w-4 text-muted-foreground" />}
-                    />
-                    <FieldWithIcon
-                      id="userPhone"
-                      label={`${t.auth.phone} *`}
-                      value={phone}
-                      onChange={setPhone}
-                      placeholder={t.auth.phonePlaceholder}
-                      icon={<Phone className="h-4 w-4 text-muted-foreground" />}
-                    />
-                    <PasswordField
-                      id="userPassword"
-                      label={`${t.auth.password} *`}
-                      value={password}
-                      onChange={setPassword}
-                      placeholder={t.auth.passwordPlaceholder}
-                      shown={showPassword}
-                      onToggle={() => setShowPassword(!showPassword)}
-                    />
-                  </div>
-                )}
-
-                {registerTab === 'agency' && (
-                  <div className="space-y-4">
-                    <FieldWithIcon
-                      id="agencyName"
-                      label={`${t.auth.fullName} *`}
-                      value={agencyFullName}
-                      onChange={setAgencyFullName}
-                      placeholder={t.auth.fullNamePlaceholder}
-                      icon={<User className="h-4 w-4 text-muted-foreground" />}
-                    />
-                    <FieldWithIcon
-                      id="agencyEmail"
-                      type="email"
-                      label={`${t.auth.email} *`}
-                      value={agencyEmail}
-                      onChange={setAgencyEmail}
-                      placeholder={t.auth.emailPlaceholder}
-                      icon={<Mail className="h-4 w-4 text-muted-foreground" />}
-                    />
-                    <FieldWithIcon
-                      id="agencyPhone"
-                      label={`${t.auth.phone} *`}
-                      value={agencyPhone}
-                      onChange={setAgencyPhone}
-                      placeholder={t.auth.phonePlaceholder}
-                      icon={<Phone className="h-4 w-4 text-muted-foreground" />}
-                    />
-                    <PasswordField
-                      id="agencyPassword"
-                      label={`${t.auth.password} *`}
-                      value={agencyPassword}
-                      onChange={setAgencyPassword}
-                      placeholder={t.auth.passwordPlaceholder}
-                      shown={showAgencyPassword}
-                      onToggle={() => setShowAgencyPassword(!showAgencyPassword)}
-                    />
-                  </div>
-                )}
 
                 <label className="flex items-start gap-2 text-sm text-muted-foreground">
                   <input
@@ -753,37 +459,20 @@ export function AuthScreen() {
 
                 {error && <p className="text-center text-sm text-destructive">{error}</p>}
 
-                {registerTab === 'user' ? (
-                  <Button
-                    onClick={handleUserRegister}
-                    disabled={!isUserFormValid || loading}
-                    className="h-12 w-full text-base"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        {t.auth.registering}
-                      </>
-                    ) : (
-                      t.auth.register
-                    )}
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleAgencyRegister}
-                    disabled={!isAgencyFormValid || loading}
-                    className="h-12 w-full text-base"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                        {t.auth.sendingOtp}
-                      </>
-                    ) : (
-                      t.auth.sendOtp
-                    )}
-                  </Button>
-                )}
+                <Button
+                  onClick={handleUserRegister}
+                  disabled={!isUserFormValid || loading}
+                  className="h-12 w-full text-base"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      {t.auth.registering}
+                    </>
+                  ) : (
+                    t.auth.register
+                  )}
+                </Button>
 
                 <p className="text-center text-sm text-muted-foreground">
                   {t.auth.alreadyHaveAccount}{' '}
@@ -800,85 +489,6 @@ export function AuthScreen() {
               </div>
             )}
 
-            {step === 'otp-verify' && (
-              <div className="space-y-5">
-                <div className="space-y-2 text-center">
-                  <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-                    <Mail className="h-7 w-7 text-primary" />
-                  </div>
-                  <h2 className="text-2xl font-bold">{t.auth.otpCode}</h2>
-                  <p className="text-sm text-muted-foreground">{t.auth.otpSentTo}</p>
-                  <p className="text-sm font-semibold">
-                    {pendingAgencyRef.current?.email}
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="otpCode">{t.auth.otpCode}</Label>
-                  <Input
-                    id="otpCode"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder={t.auth.otpCodePlaceholder}
-                    value={otpCode}
-                    onChange={(e) =>
-                      setOtpCode(e.target.value.replace(/\D/g, '').slice(0, 6))
-                    }
-                    onKeyDown={(e) =>
-                      e.key === 'Enter' && otpCode.length === 6 && handleVerifyOtp()
-                    }
-                    className="h-14 text-center font-mono text-2xl tracking-[0.42em]"
-                    maxLength={6}
-                    autoFocus
-                  />
-                </div>
-
-                {error && <p className="text-center text-sm text-destructive">{error}</p>}
-
-                <Button
-                  onClick={handleVerifyOtp}
-                  disabled={otpCode.length !== 6 || loading}
-                  className="h-12 w-full text-base"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      {t.auth.verifyingOtp}
-                    </>
-                  ) : (
-                    t.auth.verifyOtp
-                  )}
-                </Button>
-
-                <div className="text-center text-sm">
-                  {cooldown > 0 ? (
-                    <span className="text-muted-foreground">
-                      {t.auth.resendIn} {cooldown}s
-                    </span>
-                  ) : (
-                    <button
-                      onClick={handleResendOtp}
-                      disabled={loading}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      {t.auth.resendCode}
-                    </button>
-                  )}
-                </div>
-
-                <button
-                  onClick={() => {
-                    setOtpCode('');
-                    setError('');
-                    setStep('register');
-                    setRegisterTab('agency');
-                  }}
-                  className="w-full text-center text-sm text-muted-foreground hover:text-foreground"
-                >
-                  {t.auth.changeEmail}
-                </button>
-              </div>
-            )}
           </CardContent>
         </Card>
       </div>

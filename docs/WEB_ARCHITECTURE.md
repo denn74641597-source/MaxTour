@@ -18,7 +18,8 @@ The structure is prepared for:
 1. `agency.mxtr.uz/*` is now served by the standalone project at `C:/Projects/MaxTour-agency`.
 2. This monolith serves `mxtr.uz/*`, `www.mxtr.uz/*`, and `remote.mxtr.uz/*`.
 3. Monolith does not host private agency panel routes and no longer exposes public UI coupling to `/agency*`; agency management lives only in standalone app.
-4. Rollback notes:
+4. Public auth surface in monolith is user-focused; agency auth/registration flows are handled only in standalone agency app.
+5. Rollback notes:
    - monolith: `C:/Users/adbax/OneDrive/Desktop/MaxTour/AGENCY_MONOLITH_CLEANUP_PLAN.md`
    - standalone: `C:/Projects/MaxTour-agency/AGENCY_CUTOVER_STATUS.md`
 

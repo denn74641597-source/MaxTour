@@ -275,6 +275,28 @@ Goal:
 - `npx tsc --noEmit`: **passed**
 - `npm run build`: **passed**
 
+## 15) Step 36 Execution Status (Public Auth/User-Only Finalization)
+
+Date: 2026-05-06
+
+Scope:
+- Remove remaining agency-management entry points from monolith public auth/profile UI.
+- Keep public agency ecosystem (`/agencies/[slug]`, follow/subscription, reviews/comments/ratings, public agency-tour display).
+
+Changes:
+1. Public auth (`app/(public)/profile/auth-screen.tsx`)
+   - Removed agency registration/login tabs and agency OTP registration path.
+   - Removed agency-manager onboarding path from monolith auth UI.
+   - Kept user login/register flow unchanged.
+2. Public profile/sidebar agency panel links were already removed in Step 34 and remain removed.
+3. Monolith `/agency*` forced redirect behavior remains removed (no redirect to standalone panel).
+4. Defensive routing branch in `lib/routing/guards.ts` for `domainTarget === 'agency'` remains intentionally kept.
+
+Public/standalone split policy:
+- `mxtr.uz` public auth is user-focused only.
+- Agency management auth is standalone at `https://agency.mxtr.uz/agency/login`.
+- Public and agency apps remain connected through shared Supabase data, not shared UI routes.
+
 ## 13) Step 33 Execution Status (Final Migration Closeout + Cleanup Freeze)
 
 Date: 2026-05-06
