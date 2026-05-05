@@ -9,7 +9,7 @@ Date: 2026-05-06
    - `mxtr.uz/*`
    - `www.mxtr.uz/*`
    - `remote.mxtr.uz/*`
-3. Monolith keeps cross-domain helpers/redirects so public users can still open the agency portal.
+3. Monolith keeps domain-target awareness for `agency.mxtr.uz`, but no longer exposes public UI links or redirects into private agency panel paths.
 
 ## Domain Responsibilities (Monolith Runtime)
 
@@ -40,7 +40,7 @@ Date: 2026-05-06
 ### Agency routes in monolith
 
 1. `/agency*` is not served by monolith pages.
-2. On `mxtr.uz` / `www.mxtr.uz`, `/agency*` is redirected to `https://agency.mxtr.uz`.
+2. On `mxtr.uz` / `www.mxtr.uz`, `/agency*` is no longer force-redirected; those paths are treated as non-public monolith routes.
 
 ## Middleware Policy
 
@@ -53,7 +53,6 @@ File: `middleware.ts`
    - any non-`/admin*` path redirects to `/admin`
 2. If host resolves to `mxtr.uz` or `www.mxtr.uz`:
    - any `/admin*` path redirects to remote admin host
-   - any `/agency*` path redirects to `agency.mxtr.uz`
 3. Unknown/dev hosts:
    - no strict domain split is enforced (helps local development).
 
@@ -68,7 +67,7 @@ File: `middleware.ts`
 
 1. Normalizes hostnames from request headers.
 2. Resolves domain target: `mxtr`, `agency`, `remote`, or `unknown`.
-3. Exposes `getAgencyPortalHref(...)` used by public/profile/sidebar portal links.
+3. Keeps shared domain constants used by host-target resolution.
 
 ### `lib/routing/guards.ts`
 

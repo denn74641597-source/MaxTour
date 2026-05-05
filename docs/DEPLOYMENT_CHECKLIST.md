@@ -61,7 +61,7 @@ Set secrets with `wrangler secret put ...` (or Cloudflare dashboard Worker secre
 2. Confirm `/admin*` is blocked on `mxtr.uz` and accessible only on `remote.mxtr.uz`.
 3. Confirm admin access requires `profiles.role = 'admin'`.
 4. Confirm non-admin users cannot enter admin pages even with valid credentials.
-5. Confirm `/agency*` on `mxtr.uz`/`www.mxtr.uz` redirects to `https://agency.mxtr.uz`.
+5. Confirm `/agency*` is not exposed as a public monolith route on `mxtr.uz`/`www.mxtr.uz`.
 6. Confirm no secrets are present in repo files or client bundles.
 7. Confirm Supabase service-role usage remains server-side only.
 8. Confirm admin/user smoke tests on desktop + mobile responsive layouts.
@@ -81,7 +81,7 @@ Optional local preview:
 ## 7) Post-Deploy Verification Matrix
 
 1. `https://mxtr.uz/` -> public homepage loads.
-2. `https://mxtr.uz/agency` -> redirects to `https://agency.mxtr.uz/agency`.
+2. `https://mxtr.uz/agency` -> no public monolith page should be served for this path.
 3. `https://mxtr.uz/admin` -> redirects to `/`.
 4. `https://remote.mxtr.uz/` -> redirects to `/admin`.
 5. `https://remote.mxtr.uz/admin/login` -> login page available.

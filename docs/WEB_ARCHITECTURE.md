@@ -17,7 +17,7 @@ The structure is prepared for:
 
 1. `agency.mxtr.uz/*` is now served by the standalone project at `C:/Projects/MaxTour-agency`.
 2. This monolith serves `mxtr.uz/*`, `www.mxtr.uz/*`, and `remote.mxtr.uz/*`.
-3. Monolith keeps public-to-agency redirects and link helpers, but does not host agency feature development.
+3. Monolith does not host private agency panel routes and no longer exposes public UI coupling to `/agency*`; agency management lives only in standalone app.
 4. Rollback notes:
    - monolith: `C:/Users/adbax/OneDrive/Desktop/MaxTour/AGENCY_MONOLITH_CLEANUP_PLAN.md`
    - standalone: `C:/Projects/MaxTour-agency/AGENCY_CUTOVER_STATUS.md`
@@ -143,8 +143,8 @@ Responsibilities:
 3. Admin auth gate:
    - `/admin/login` is allowed
    - other `/admin*` routes require `admin_authenticated=true` cookie
-4. Agency legacy bridge:
-   - `/agency*` requests on `mxtr.uz`/`www.mxtr.uz` are redirected to standalone `agency.mxtr.uz`.
+4. Public/private separation:
+   - `/agency*` is not an active monolith surface and is not part of public route UX.
 
 ## Query-Param Admin Mode Removal (Implemented)
 

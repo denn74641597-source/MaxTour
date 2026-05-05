@@ -37,7 +37,7 @@ export function evaluateDomainAccess(
     return { allow: true };
   }
 
-  if (domainTarget === 'mxtr' && (pathname.startsWith('/admin') || pathname.startsWith('/agency'))) {
+  if (domainTarget === 'mxtr' && pathname.startsWith('/admin')) {
     return { allow: false, redirectPath: '/' };
   }
 

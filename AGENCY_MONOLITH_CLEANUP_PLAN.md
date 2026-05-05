@@ -220,6 +220,61 @@ Post-cleanup stale reference scan:
 Validation:
 - `npx tsc --noEmit`: **passed**
 
+## 14) Step 34 Execution Status (Public-to-Private Agency Coupling Removal)
+
+Date: 2026-05-06
+
+Goal:
+- Remove only public monolith UI/link coupling to private agency panel (`/agency*`).
+- Preserve full public agency ecosystem (`/agencies/[slug]`, agency cards, follows/subscriptions, comments/reviews/ratings, and public agency-tour data flows).
+
+### Classification summary
+
+- `REMOVE_PRIVATE_PANEL_LINK`
+  - `components/shared/public-desktop-sidebar.tsx`
+  - `app/(public)/profile/user-profile-view.tsx`
+  - `app/(public)/profile/auth-screen.tsx` (private-panel redirect behavior only)
+- `KEEP_PUBLIC_AGENCY_FEATURE`
+  - `app/(public)/agencies/[slug]/page.tsx`
+  - `app/(public)/agencies/[slug]/agency-profile-content.tsx`
+  - `components/shared/agency-card.tsx`
+  - public tour pages that render agency/provider data
+- `KEEP_DATA_QUERY`
+  - public `agencies`/`tours`/favorites/review-comment-related data modules used by `(public)` and `(admin)` surfaces
+- `KEEP_ADMIN`
+  - all `app/(admin)` surfaces and admin routing protections
+- `KEEP_CONFIG_ONLY`
+  - domain target awareness for `agency.mxtr.uz` in host resolution
+
+### Code changes made
+
+1. Removed private agency panel links/buttons from public monolith UI:
+   - sidebar agency panel entry removed
+   - profile quick-action agency panel button removed
+   - profile "agency" tab block removed
+2. Removed public profile/auth redirect coupling to private panel:
+   - agency manager login/register completion now stays in monolith user profile flow (`/profile`) instead of portal jump.
+3. Removed private-link helper after zero consumers:
+   - `getAgencyPortalHref(...)` removed from `lib/routing/domains.ts`.
+4. `mxtr.uz/agency` redirect decision:
+   - **Option B applied** (no forced cross-domain redirect from monolith middleware).
+   - `/agency*` is no longer a public monolith UX path.
+5. Defensive branch decision:
+   - kept `domainTarget === 'agency'` branch in `lib/routing/guards.ts` unchanged for defensive/rollback safety.
+
+### Explicitly preserved
+
+- Public agency profile routes and rendering remain intact:
+  - `/agencies/[slug]`
+- Public follow/subscribe agency behavior remains intact.
+- Public reviews/comments/ratings behavior remains intact where implemented.
+- Public agency/tour/promotions data relationship remains unchanged (shared Supabase data, split app surfaces).
+
+### Validation
+
+- `npx tsc --noEmit`: **passed**
+- `npm run build`: **passed**
+
 ## 13) Step 33 Execution Status (Final Migration Closeout + Cleanup Freeze)
 
 Date: 2026-05-06

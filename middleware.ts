@@ -26,10 +26,6 @@ export async function middleware(request: NextRequest) {
         return redirectToHost(request, 'remote.mxtr.uz', pathname, request.nextUrl.search);
       }
 
-      if (hostContext.domainTarget === 'mxtr' && pathname.startsWith('/agency')) {
-        return redirectToHost(request, 'agency.mxtr.uz', pathname, request.nextUrl.search);
-      }
-
       const redirectUrl = request.nextUrl.clone();
       redirectUrl.pathname = domainAccess.redirectPath;
       redirectUrl.search = '';

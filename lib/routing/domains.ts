@@ -3,7 +3,6 @@ import type { DomainTarget, HostContext } from '@/types/shared';
 const PUBLIC_WEB_HOSTS = new Set(['mxtr.uz', 'www.mxtr.uz']);
 const AGENCY_WEB_HOSTS = new Set(['agency.mxtr.uz']);
 const ADMIN_WEB_HOSTS = new Set(['remote.mxtr.uz']);
-export const AGENCY_PORTAL_ORIGIN = 'https://agency.mxtr.uz';
 
 export function normalizeHostname(rawHost: string | null | undefined): string {
   if (!rawHost) return '';
@@ -35,20 +34,4 @@ export function resolveHostContext(rawHost: string | null | undefined): HostCont
     domainTarget: resolveDomainTarget(hostname),
     isDevelopmentHost: isDevelopmentHost(hostname),
   };
-}
-
-export function getAgencyPortalHref(pathname: string = '/agency', currentHostname?: string | null): string {
-  const normalizedPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
-
-  if (process.env.NODE_ENV !== 'production') {
-    return normalizedPath;
-  }
-
-  const hostname = normalizeHostname(currentHostname);
-
-  if (hostname && (hostname === 'agency.mxtr.uz' || isDevelopmentHost(hostname))) {
-    return normalizedPath;
-  }
-
-  return `${AGENCY_PORTAL_ORIGIN}${normalizedPath}`;
 }

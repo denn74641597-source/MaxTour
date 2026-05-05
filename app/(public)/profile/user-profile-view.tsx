@@ -42,10 +42,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { updatePasswordAction } from '@/features/auth/security-actions';
-import { getAgencyPortalHref } from '@/lib/routing/domains';
 import type { Profile } from '@/types';
 
-type ProfileTab = 'overview' | 'personal' | 'saved' | 'inquiries' | 'agency' | 'settings';
+type ProfileTab = 'overview' | 'personal' | 'saved' | 'inquiries' | 'settings';
 
 interface UserProfileViewProps {
   profile: Profile;
@@ -82,7 +81,6 @@ const TELEGRAM_REGEX = /^[A-Za-z0-9_]{5,32}$/;
 export function UserProfileView({ profile }: UserProfileViewProps) {
   const { t } = useTranslation();
   const supabase = useMemo(() => createClient(), []);
-  const agencyPortalHref = useMemo(() => getAgencyPortalHref('/agency'), []);
 
   const [currentProfile, setCurrentProfile] = useState(profile);
   const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
@@ -203,7 +201,6 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
     currentProfile.telegram_username,
   ]);
 
-  const isAgencyManager = currentProfile.role === 'agency_manager';
   const isAdmin = currentProfile.role === 'admin';
 
   const tabs = useMemo(() => {
@@ -214,11 +211,8 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
       { id: 'inquiries', label: 'My inquiries' },
       { id: 'settings', label: 'Settings & safety' },
     ];
-    if (isAgencyManager) {
-      baseTabs.splice(4, 0, { id: 'agency', label: 'Agency profile' });
-    }
     return baseTabs;
-  }, [isAgencyManager]);
+  }, []);
 
   async function handleSaveProfile() {
     setEditError(null);
@@ -434,17 +428,6 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
                   <ChevronRight className="h-4 w-4" />
                 </Button>
               </Link>
-              {isAgencyManager && (
-                <Link href={agencyPortalHref}>
-                  <Button className="w-full justify-between gap-2">
-                    <span className="inline-flex items-center gap-2">
-                      <Building2 className="h-4 w-4" />
-                      {t.nav.agencyPanel}
-                    </span>
-                    <ChevronRight className="h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
             </div>
           </div>
         </CardContent>
@@ -676,26 +659,6 @@ export function UserProfileView({ profile }: UserProfileViewProps) {
                     ))}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          )}
-
-          {activeTab === 'agency' && isAgencyManager && (
-            <Card className="market-subtle-border rounded-2xl border-none">
-              <CardHeader>
-                <CardTitle>{t.nav.agencyPanel}</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 text-sm text-slate-700">
-                  Agency workspace is now hosted on `agency.mxtr.uz`. Open the dedicated portal to manage tours, leads, ads, statistics, verification, and profile tools.
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Link href={agencyPortalHref}>
-                    <Button>
-                      Open agency portal
-                    </Button>
-                  </Link>
-                </div>
               </CardContent>
             </Card>
           )}

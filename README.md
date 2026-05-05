@@ -11,6 +11,8 @@ A Telegram Mini App marketplace where users can browse, search, filter, and cont
   - `www.mxtr.uz/*`
   - `remote.mxtr.uz/*`
 - The monolith no longer owns `agency.mxtr.uz/*` route mapping in production.
+- Public monolith UI no longer links users directly into the private agency management panel (`/agency*`).
+- Public agency ecosystem remains in monolith (`/agencies/[slug]`, agency cards, and public tour-agency presentation).
 - Rollback/cutover operational notes are tracked in the standalone project:
   - `C:/Projects/MaxTour-agency/AGENCY_CUTOVER_STATUS.md`
 - Monolith-side rollback/cleanup notes are tracked in:
