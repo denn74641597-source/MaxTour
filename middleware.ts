@@ -11,22 +11,6 @@ function redirectToHost(request: NextRequest, host: string, pathname: string, se
   return NextResponse.redirect(url);
 }
 
-function normalizeAgencyNext(nextPath: string | null | undefined): string {
-  if (!nextPath || !nextPath.startsWith('/agency') || nextPath.startsWith('/agency/login')) {
-    return '/agency';
-  }
-
-  return nextPath;
-}
-
-function redirectToAgencyLogin(request: NextRequest, nextPath: string) {
-  const loginUrl = request.nextUrl.clone();
-  loginUrl.pathname = '/agency/login';
-  loginUrl.search = '';
-  loginUrl.searchParams.set('next', normalizeAgencyNext(nextPath));
-  return NextResponse.redirect(loginUrl);
-}
-
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   if (isStaticOrInternalPath(pathname)) {
@@ -87,49 +71,7 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse;
   }
 
-  const { supabaseResponse, user, supabase } = await updateSession(request);
-
-  if (pathname.startsWith('/agency')) {
-    const isAgencyAuthRoute = pathname === '/agency/login';
-
-    if (!user) {
-      if (isAgencyAuthRoute) {
-        return supabaseResponse;
-      }
-      return redirectToAgencyLogin(request, `${pathname}${request.nextUrl.search}`);
-    }
-
-    let role: string | null = null;
-    if (supabase) {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
-      if (!error) {
-        role = profile?.role ?? null;
-      }
-    }
-
-    if (role !== 'agency_manager') {
-      if (role === 'admin' && hostContext.domainTarget === 'agency' && !hostContext.isDevelopmentHost) {
-        return redirectToHost(request, 'remote.mxtr.uz', '/admin');
-      }
-
-      if (isAgencyAuthRoute) {
-        return supabaseResponse;
-      }
-
-      return redirectToAgencyLogin(request, `${pathname}${request.nextUrl.search}`);
-    }
-
-    if (isAgencyAuthRoute) {
-      const dashboardUrl = request.nextUrl.clone();
-      dashboardUrl.pathname = normalizeAgencyNext(request.nextUrl.searchParams.get('next'));
-      dashboardUrl.search = '';
-      return NextResponse.redirect(dashboardUrl);
-    }
-  }
+  const { supabaseResponse } = await updateSession(request);
 
   return supabaseResponse;
 }

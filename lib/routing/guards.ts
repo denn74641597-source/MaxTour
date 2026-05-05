@@ -14,7 +14,6 @@ export function isStaticOrInternalPath(pathname: string): boolean {
 
 export function resolveRouteArea(pathname: string): RouteArea {
   if (pathname.startsWith('/admin')) return 'admin';
-  if (pathname.startsWith('/agency')) return 'agency';
   return 'public';
 }
 

@@ -1,3 +1,5 @@
+> Historical/archived note (Step 33, 2026-05-06): This document reflects pre-split planning when agency lived in the monolith. `agency.mxtr.uz` is now served by the standalone project at `C:/Projects/MaxTour-agency`.
+
 # Agency Panel Migration Design (mxtr.uz -> agency.mxtr.uz)
 
 Audit scope: planning only (no code implementation in this step).

@@ -1,4 +1,4 @@
-import { getAllVerificationRequests } from '@/features/verification/actions';
+import { getAllVerificationRequests } from '@/features/verification/admin-actions';
 import { AdminVerificationContent } from './admin-verification-content';
 
 export const dynamic = 'force-dynamic';

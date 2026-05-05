@@ -1,15 +1,24 @@
 # Routing And Domains
 
-Date: 2026-05-03
+Date: 2026-05-06
 
-## Domain Responsibilities
+## Split Status
+
+1. `agency.mxtr.uz/*` is served by the standalone project: `C:/Projects/MaxTour-agency`.
+2. This monolith serves only:
+   - `mxtr.uz/*`
+   - `www.mxtr.uz/*`
+   - `remote.mxtr.uz/*`
+3. Monolith keeps cross-domain helpers/redirects so public users can still open the agency portal.
+
+## Domain Responsibilities (Monolith Runtime)
 
 | Domain | Allowed Surface | Blocked Surface |
 |---|---|---|
-| `mxtr.uz`, `www.mxtr.uz` | Public, User, Agency | Admin |
+| `mxtr.uz`, `www.mxtr.uz` | Public, User | Admin, direct agency rendering |
 | `remote.mxtr.uz` | Admin | Public, User, Agency |
 
-## Route Surface Map
+## Route Surface Map (Monolith)
 
 ### Public website
 
@@ -23,21 +32,15 @@ Date: 2026-05-03
 1. `/profile`
 2. `/profile/notifications`
 
-### Agency dashboard
-
-1. `/agency`
-2. `/agency/tours/*`
-3. `/agency/leads`
-4. `/agency/advertising`
-5. `/agency/interests`
-6. `/agency/analytics`
-7. `/agency/verification`
-8. `/agency/subscription`
-
 ### Admin dashboard
 
 1. `/admin`
 2. `/admin/*` (agencies, tours, users, verification, leads, settings, and related admin tools)
+
+### Agency routes in monolith
+
+1. `/agency*` is not served by monolith pages.
+2. On `mxtr.uz` / `www.mxtr.uz`, `/agency*` is redirected to `https://agency.mxtr.uz`.
 
 ## Middleware Policy
 
@@ -49,7 +52,8 @@ File: `middleware.ts`
    - `/` redirects to `/admin`
    - any non-`/admin*` path redirects to `/admin`
 2. If host resolves to `mxtr.uz` or `www.mxtr.uz`:
-   - any `/admin*` path redirects to `/`
+   - any `/admin*` path redirects to remote admin host
+   - any `/agency*` path redirects to `agency.mxtr.uz`
 3. Unknown/dev hosts:
    - no strict domain split is enforced (helps local development).
 
@@ -57,24 +61,23 @@ File: `middleware.ts`
 
 1. `/admin/login` is public, but authenticated `admin` users are redirected to `/admin`.
 2. Other `/admin*` routes require Supabase-authenticated user with `profiles.role = 'admin'`.
-3. `/agency*` routes require Supabase authenticated session.
 
 ## Routing Utility Modules
 
 ### `lib/routing/domains.ts`
 
 1. Normalizes hostnames from request headers.
-2. Resolves domain target: `mxtr`, `remote`, or `unknown`.
-3. Exposes host context for middleware decisions.
+2. Resolves domain target: `mxtr`, `agency`, `remote`, or `unknown`.
+3. Exposes `getAgencyPortalHref(...)` used by public/profile/sidebar portal links.
 
 ### `lib/routing/guards.ts`
 
 1. Defines internal/static path bypass logic.
-2. Defines route-area and domain-access checks.
-3. Exposes request helper for host-context resolution.
+2. Defines domain-access checks used by middleware and admin readiness checks.
+3. Keeps `domainTarget === 'agency'` branch temporarily as rollback/defensive safety.
 
 ## Risk Notes
 
 1. If DNS/proxy is misconfigured and `Host` is not preserved, domain split behavior can be incorrect.
-2. Unknown hosts intentionally bypass strict split for development; production traffic should use only `mxtr.uz`, `www.mxtr.uz`, `remote.mxtr.uz`.
-3. Any future auth refactor must preserve the same host split contract to avoid exposing admin routes on `mxtr.uz`.
+2. Unknown hosts intentionally bypass strict split for development; production traffic should use only `mxtr.uz`, `www.mxtr.uz`, `remote.mxtr.uz`, and standalone `agency.mxtr.uz`.
+3. Any future auth refactor must preserve the same host split contract to avoid exposing admin routes on public hosts.

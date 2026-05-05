@@ -65,7 +65,7 @@ import type {
 } from '@/features/admin/types';
 import { useAdminI18n } from '@/features/admin/i18n';
 import { useDebouncedValue } from '@/features/admin/use-debounced-value';
-import { approveVerificationAction, rejectVerificationAction } from '@/features/verification/actions';
+import { approveVerificationAction, rejectVerificationAction } from '@/features/verification/admin-actions';
 import { cn, formatDate, formatNumber } from '@/lib/utils';
 
 const AGENCIES_PAGE_SIZE = 60;

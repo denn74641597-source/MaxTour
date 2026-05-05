@@ -2,9 +2,23 @@
 
 ## Overview
 
-MaxTour is a full-stack Next.js application structured as a Telegram Mini App travel marketplace. The app connects travelers with travel agencies in Uzbekistan. It uses a single Next.js codebase for the public marketplace, agency dashboard, and admin panel.
+MaxTour is a full-stack Next.js application structured as a Telegram Mini App travel marketplace. The app connects travelers with travel agencies in Uzbekistan.
+
+Current split status:
+- `agency.mxtr.uz/*` is served by standalone project: `C:/Projects/MaxTour-agency`
+- This monolith serves:
+  - `mxtr.uz/*`
+  - `www.mxtr.uz/*`
+  - `remote.mxtr.uz/*`
+- Agency feature development should not be done in this monolith.
+- Rollback references:
+  - monolith: `C:/Users/adbax/OneDrive/Desktop/MaxTour/AGENCY_MONOLITH_CLEANUP_PLAN.md`
+  - standalone: `C:/Projects/MaxTour-agency/AGENCY_CUTOVER_STATUS.md`
 
 ## Architecture Diagram
+
+The diagram below reflects the original unified app structure and is kept for historical context.
+Current production ownership is defined in the split-status section above.
 
 ```
 ┌──────────────────────────────────────┐
@@ -44,12 +58,11 @@ MaxTour is a full-stack Next.js application structured as a Telegram Mini App tr
 
 ## Route Groups
 
-The app uses three Next.js route groups, each with its own layout:
+The monolith uses these active Next.js route groups:
 
 | Route Group | URL Prefix | Layout | Purpose |
 |---|---|---|---|
 | `(public)` | `/` | Header + Bottom Nav | Marketplace for all users |
-| `(agency)` | `/agency` | Sidebar Dashboard Nav | Agency management panel |
 | `(admin)` | `/admin` | Sidebar Dashboard Nav | Platform administration |
 
 Route groups do **not** create URL segments — they only organize layouts and code.
@@ -64,7 +77,7 @@ Page (server) → Feature Query → Supabase Server Client → DB
                               Render HTML (RSC)
 ```
 
-### Agency/Admin Forms (Client Components)
+### Admin Forms (Client Components)
 
 ```
 Form (client) → Server Action → Supabase Server Client → DB
@@ -151,7 +164,7 @@ See `supabase/migrations/001_initial_schema.sql` for the full schema.
 ### Current MVP
 
 - Middleware refreshes Supabase sessions on every request
-- Protected routes (`/agency/*`, `/admin/*`) are detected but allow access for development
+- Protected admin routes (`/admin/*`) are guarded by middleware and role checks
 - Feature queries use `getCurrentProfile()` which returns null if not authenticated
 
 ### Production Path

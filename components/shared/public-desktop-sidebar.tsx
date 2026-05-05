@@ -11,7 +11,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
-import { useProfile } from '@/hooks';
+import { useProfile } from '@/hooks/use-profile';
 import { LanguageSwitcher } from './language-switcher';
 import { cn } from '@/lib/utils';
 import { getAgencyPortalHref } from '@/lib/routing/domains';

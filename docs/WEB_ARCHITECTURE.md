@@ -11,8 +11,16 @@ The structure is prepared for:
 
 1. Public website (`mxtr.uz`)
 2. User area (`mxtr.uz/profile/*`)
-3. Agency dashboard (`mxtr.uz/agency/*`)
-4. Admin dashboard (`remote.mxtr.uz/admin/*`)
+3. Admin dashboard (`remote.mxtr.uz/admin/*`)
+
+## Post-Cutover Note (Current Production)
+
+1. `agency.mxtr.uz/*` is now served by the standalone project at `C:/Projects/MaxTour-agency`.
+2. This monolith serves `mxtr.uz/*`, `www.mxtr.uz/*`, and `remote.mxtr.uz/*`.
+3. Monolith keeps public-to-agency redirects and link helpers, but does not host agency feature development.
+4. Rollback notes:
+   - monolith: `C:/Users/adbax/OneDrive/Desktop/MaxTour/AGENCY_MONOLITH_CLEANUP_PLAN.md`
+   - standalone: `C:/Projects/MaxTour-agency/AGENCY_CUTOVER_STATUS.md`
 
 ## Core Principles
 
@@ -30,7 +38,6 @@ Current route groups are retained and treated as the canonical surface split:
 ```text
 app/
   (public)/
-  (agency)/
   (admin)/
   api/
 ```
@@ -38,9 +45,8 @@ app/
 Role of each group:
 
 1. `(public)` contains public pages and user profile/auth area.
-2. `(agency)` contains agency-manager tools.
-3. `(admin)` contains admin panel pages.
-4. `api` contains backend endpoints used by web flows.
+2. `(admin)` contains admin panel pages.
+3. `api` contains backend endpoints used by web flows.
 
 ### 2) Layout Components (Shared Architectural Shells)
 
@@ -50,7 +56,6 @@ New architectural layout components:
 components/layouts/
   public-website-layout.tsx
   user-area-layout.tsx
-  agency-dashboard-layout.tsx
   admin-dashboard-layout.tsx
   index.ts
 ```
@@ -59,8 +64,7 @@ Wiring completed:
 
 1. `app/(public)/layout.tsx` now uses `PublicWebsiteLayout`.
 2. `app/(public)/profile/layout.tsx` now uses `UserAreaLayout`.
-3. `app/(agency)/layout.tsx` keeps role check and uses `AgencyDashboardLayout`.
-4. `app/(admin)/layout.tsx` now uses `AdminDashboardLayout`.
+3. `app/(admin)/layout.tsx` now uses `AdminDashboardLayout`.
 
 ### 3) Shared UI Foundation
 
@@ -139,8 +143,8 @@ Responsibilities:
 3. Admin auth gate:
    - `/admin/login` is allowed
    - other `/admin*` routes require `admin_authenticated=true` cookie
-4. Agency gate:
-   - `/agency*` requires Supabase-authenticated user (session refresh remains active)
+4. Agency legacy bridge:
+   - `/agency*` requests on `mxtr.uz`/`www.mxtr.uz` are redirected to standalone `agency.mxtr.uz`.
 
 ## Query-Param Admin Mode Removal (Implemented)
 
@@ -158,7 +162,7 @@ Completed in this phase:
 
 1. Domain and route-guard architecture
 2. Shared architecture folders and entrypoints
-3. Layout component separation for public/user/agency/admin shells
+3. Layout component separation for public/user/admin shells
 4. Documentation for architecture and domain routing
 
 Explicitly not completed in this phase:
@@ -172,5 +176,5 @@ Explicitly not completed in this phase:
 
 1. Data parity track: move web feature queries to mobile RPC-first contracts.
 2. Auth parity track: role-select parity, social auth parity, pending-deletion lockout parity.
-3. Agency parity track: translation trigger integration and fair promotion RPC integration.
-4. Admin hardening track: migrate from cookie-only admin gate to Supabase role-backed admin authorization.
+3. Admin hardening track: migrate from cookie-only admin gate to Supabase role-backed admin authorization.
+4. Agency feature parity work continues in the standalone agency project (`C:/Projects/MaxTour-agency`).

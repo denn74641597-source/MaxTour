@@ -2,6 +2,21 @@
 
 A Telegram Mini App marketplace where users can browse, search, filter, and contact travel agencies. Built with Next.js, TypeScript, Tailwind CSS, shadcn/ui, and Supabase.
 
+## Split Architecture Status (Post-Cutover)
+
+- `agency.mxtr.uz/*` is now served by the standalone project at:
+  - `C:/Projects/MaxTour-agency`
+- This monolith now serves:
+  - `mxtr.uz/*`
+  - `www.mxtr.uz/*`
+  - `remote.mxtr.uz/*`
+- The monolith no longer owns `agency.mxtr.uz/*` route mapping in production.
+- Rollback/cutover operational notes are tracked in the standalone project:
+  - `C:/Projects/MaxTour-agency/AGENCY_CUTOVER_STATUS.md`
+- Monolith-side rollback/cleanup notes are tracked in:
+  - `C:/Users/adbax/OneDrive/Desktop/MaxTour/AGENCY_MONOLITH_CLEANUP_PLAN.md`
+- Do not run new agency feature development from this monolith; use the standalone agency project.
+
 ## Quick Start
 
 ### Prerequisites
@@ -69,13 +84,6 @@ MaxTour/
 │   │   ├── agencies/[slug]/     # Agency profile
 │   │   ├── favorites/           # Saved tours
 │   │   └── search/              # Search results
-│   ├── (agency)/                # Agency dashboard (route group)
-│   │   └── agency/
-│   │       ├── page.tsx         # Dashboard home
-│   │       ├── profile/         # Edit agency profile
-│   │       ├── tours/           # Manage tours
-│   │       ├── leads/           # Lead management
-│   │       └── subscription/    # Subscription plans
 │   ├── (admin)/                 # Admin panel (route group)
 │   │   └── admin/
 │   │       ├── page.tsx         # Admin overview
@@ -151,7 +159,7 @@ NEXT_PUBLIC_TELEGRAM_BOT_USERNAME
 
 ## Key Design Decisions
 
-- **Route Groups**: `(public)`, `(agency)`, `(admin)` separate layouts without affecting URL paths
+- **Route Groups**: `(public)` and `(admin)` are active in this monolith. Agency routes are served by the standalone `MaxTour-agency` project.
 - **Server Components**: Data fetching in server components for better performance
 - **Feature Modules**: Queries and actions are organized by feature domain
 - **MVP Auth**: Auth structure is prepared for Supabase Auth + Telegram login. Currently, dashboard pages are accessible without auth for development

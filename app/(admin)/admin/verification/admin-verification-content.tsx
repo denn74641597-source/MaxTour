@@ -51,7 +51,7 @@ import { useDebouncedValue } from '@/features/admin/use-debounced-value';
 import {
   approveVerificationAction,
   rejectVerificationAction,
-} from '@/features/verification/actions';
+} from '@/features/verification/admin-actions';
 import type { AdminVerificationRequest } from '@/features/verification/types';
 import { cn, formatDate, formatNumber } from '@/lib/utils';
 import {
