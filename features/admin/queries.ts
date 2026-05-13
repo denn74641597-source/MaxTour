@@ -63,6 +63,8 @@ interface AgencyRowRaw {
   is_verified: boolean;
   is_approved: boolean;
   maxcoin_balance: number | string | null;
+  maxcoin_bonus_balance?: number | string | null;
+  maxcoin_bonus_earned_total?: number | string | null;
   profile_views: number | string | null;
   review_count: number | string | null;
   avg_rating: number | string | null;
@@ -286,6 +288,7 @@ interface MaxcoinTransactionRaw {
   type: string;
   description: string | null;
   tour_id: string | null;
+  wallet_type?: string | null;
   created_at: string;
 }
 
@@ -309,6 +312,8 @@ interface PromotionPanelAgencyRaw {
   is_verified: boolean | null;
   is_approved: boolean | null;
   maxcoin_balance: number | string | null;
+  maxcoin_bonus_balance?: number | string | null;
+  maxcoin_bonus_earned_total?: number | string | null;
   phone: string | null;
   telegram_username: string | null;
   responsible_person: string | null;
@@ -347,6 +352,7 @@ interface PromotionPanelTransactionRaw {
   type: string | null;
   description: string | null;
   tour_id: string | null;
+  wallet_type?: string | null;
   created_at: string;
   agency?: PromotionPanelAgencyRaw | PromotionPanelAgencyRaw[] | null;
   tour?: PromotionPanelTourRaw | PromotionPanelTourRaw[] | null;
@@ -369,6 +375,8 @@ interface PromotionPanelAgencyBalanceRaw {
   name: string;
   slug: string;
   maxcoin_balance: number | string | null;
+  maxcoin_bonus_balance?: number | string | null;
+  maxcoin_bonus_earned_total?: number | string | null;
   is_verified: boolean | null;
   is_approved: boolean | null;
   phone: string | null;
@@ -509,6 +517,8 @@ function buildPromotionAgencyPreview(
     is_verified: agency.is_verified,
     is_approved: agency.is_approved,
     maxcoin_balance: agency.maxcoin_balance == null ? null : toNumber(agency.maxcoin_balance),
+    maxcoin_bonus_balance: agency.maxcoin_bonus_balance == null ? null : toNumber(agency.maxcoin_bonus_balance),
+    maxcoin_bonus_earned_total: agency.maxcoin_bonus_earned_total == null ? null : toNumber(agency.maxcoin_bonus_earned_total),
     phone: agency.phone,
     telegram_username: agency.telegram_username,
     responsible_person: agency.responsible_person,
@@ -1960,14 +1970,14 @@ export async function getAdminPromotionsMaxcoinPanelData(
     supabase
       .from('tour_promotions')
       .select(
-        'id, agency_id, tour_id, placement, cost_coins, starts_at, ends_at, is_active, created_at, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
+        'id, agency_id, tour_id, placement, cost_coins, starts_at, ends_at, is_active, created_at, wallet_type, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, maxcoin_bonus_balance, maxcoin_bonus_earned_total, phone, telegram_username, responsible_person)'
       )
       .order('created_at', { ascending: false })
       .limit(tourPromotionsLimit),
     supabase
       .from('featured_items')
       .select(
-        'id, agency_id, tour_id, placement_type, starts_at, ends_at, created_at, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
+        'id, agency_id, tour_id, placement_type, starts_at, ends_at, created_at, tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district), agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, maxcoin_bonus_balance, maxcoin_bonus_earned_total, phone, telegram_username, responsible_person)'
       )
       .order('starts_at', { ascending: false })
       .limit(featuredItemsLimit),
@@ -2003,21 +2013,21 @@ export async function getAdminPromotionsMaxcoinPanelData(
       supabase
         .from('maxcoin_transactions')
         .select(
-          'id, agency_id, amount, type, description, tour_id, created_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person), tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district)'
+          'id, agency_id, amount, type, description, tour_id, wallet_type, created_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, maxcoin_bonus_balance, maxcoin_bonus_earned_total, phone, telegram_username, responsible_person), tour:tours(id, title, slug, cover_image_url, status, view_count, country, city, region, district)'
         )
         .order('created_at', { ascending: false })
         .limit(600),
       supabase
         .from('coin_requests')
         .select(
-          'id, agency_id, coins, price_uzs, status, admin_note, created_at, resolved_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, phone, telegram_username, responsible_person)'
+          'id, agency_id, coins, price_uzs, status, admin_note, created_at, resolved_at, agency:agencies(id, name, slug, is_verified, is_approved, maxcoin_balance, maxcoin_bonus_balance, maxcoin_bonus_earned_total, phone, telegram_username, responsible_person)'
         )
         .order('created_at', { ascending: false })
         .limit(400),
       supabase
         .from('agencies')
         .select(
-          'id, name, slug, maxcoin_balance, is_verified, is_approved, phone, telegram_username, responsible_person, updated_at'
+          'id, name, slug, maxcoin_balance, maxcoin_bonus_balance, maxcoin_bonus_earned_total, is_verified, is_approved, phone, telegram_username, responsible_person, updated_at'
         )
         .order('updated_at', { ascending: false })
         .limit(1200),
@@ -2156,6 +2166,7 @@ export async function getAdminPromotionsMaxcoinPanelData(
     type: item.type,
     description: item.description,
     tour_id: item.tour_id,
+    wallet_type: item.wallet_type === 'bonus' ? 'bonus' : 'main',
     created_at: item.created_at,
     agency: buildPromotionAgencyPreview(item.agency),
     tour: buildPromotionTourPreview(item.tour),
@@ -2178,6 +2189,8 @@ export async function getAdminPromotionsMaxcoinPanelData(
     name: item.name,
     slug: item.slug,
     maxcoin_balance: toNumber(item.maxcoin_balance),
+    maxcoin_bonus_balance: toNumber(item.maxcoin_bonus_balance),
+    maxcoin_bonus_earned_total: toNumber(item.maxcoin_bonus_earned_total),
     is_verified: item.is_verified === true,
     is_approved: item.is_approved === true,
     phone: item.phone,
@@ -2185,6 +2198,18 @@ export async function getAdminPromotionsMaxcoinPanelData(
     responsible_person: item.responsible_person,
     updated_at: item.updated_at,
   }));
+
+  const bonusSummary = {
+    totalBonusBalance: agencyBalances.reduce((sum, row) => sum + row.maxcoin_bonus_balance, 0),
+    totalBonusEarned: agencyBalances.reduce((sum, row) => sum + row.maxcoin_bonus_earned_total, 0),
+    totalBonusGranted: maxcoinTransactions
+      .filter((row) => row.wallet_type === 'bonus' && row.amount > 0)
+      .reduce((sum, row) => sum + row.amount, 0),
+    totalBonusSpent: maxcoinTransactions
+      .filter((row) => row.wallet_type === 'bonus' && row.amount < 0)
+      .reduce((sum, row) => sum + Math.abs(row.amount), 0),
+    agenciesWithBonusBalance: agencyBalances.filter((row) => row.maxcoin_bonus_balance > 0).length,
+  };
 
   const seenTierKeys = new Set<string>();
   const promotionTiers: AdminPromotionTierPanelRecord[] = promotionTiersRaw
@@ -2216,5 +2241,6 @@ export async function getAdminPromotionsMaxcoinPanelData(
     coinRequests,
     agencyBalances,
     promotionTiers,
+    bonusSummary,
   };
 }

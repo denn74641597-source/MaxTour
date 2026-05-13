@@ -828,9 +828,15 @@ export function AdminFeaturedContent({ payload, errorMessage, viewMode = 'featur
                           {item.agency?.is_verified === true ? 'Verified' : item.agency ? 'Unverified' : 'Not available'}
                         </p>
                         <p className="mt-1">
-                          MaxCoin:{' '}
+                          Main MaxCoin:{' '}
                           {item.agency?.maxcoin_balance != null
                             ? formatNumber(item.agency.maxcoin_balance)
+                            : 'Not available'}
+                        </p>
+                        <p className="mt-1">
+                          Bonus MaxCoin:{' '}
+                          {item.agency?.maxcoin_bonus_balance != null
+                            ? formatNumber(item.agency.maxcoin_bonus_balance)
                             : 'Not available'}
                         </p>
                       </td>
@@ -1066,9 +1072,15 @@ export function AdminFeaturedContent({ payload, errorMessage, viewMode = 'featur
                           'Not provided'}
                       </p>
                       <p className="text-slate-600">
-                        MaxCoin balance:{' '}
+                        Main MaxCoin balance:{' '}
                         {selectedPromotion.agency?.maxcoin_balance != null
                           ? `${formatNumber(selectedPromotion.agency.maxcoin_balance)} MC`
+                          : 'Not available'}
+                      </p>
+                      <p className="text-slate-600">
+                        Bonus MaxCoin balance:{' '}
+                        {selectedPromotion.agency?.maxcoin_bonus_balance != null
+                          ? `${formatNumber(selectedPromotion.agency.maxcoin_bonus_balance)} MC`
                           : 'Not available'}
                       </p>
                       <div>

@@ -5,8 +5,17 @@ import { notifySystemError } from '@/lib/telegram/admin-bot';
 import { assertAdminAccess } from './guard';
 import { getAdminAgencyDetailById } from './queries';
 
-export async function updateTourStatusAction(tourId: string, status: string) {
-  await assertAdminAccess();
+interface UpdateTourStatusOptions {
+  grantApprovalBonus?: boolean;
+  bonusAmount?: number;
+}
+
+export async function updateTourStatusAction(
+  tourId: string,
+  status: string,
+  options: UpdateTourStatusOptions = {}
+) {
+  const { userId } = await assertAdminAccess();
   const validStatuses = ['draft', 'pending', 'published', 'archived'];
   if (!validStatuses.includes(status)) {
     return { error: 'Invalid status' };
@@ -23,7 +32,55 @@ export async function updateTourStatusAction(tourId: string, status: string) {
     return { error: error.message };
   }
 
-  return { success: true };
+  const shouldGrantBonus = status === 'published' && options.grantApprovalBonus === true;
+  if (!shouldGrantBonus) {
+    return { success: true, bonusGranted: false, bonusSkipped: true };
+  }
+
+  const safeBonusAmount = Number.isFinite(options.bonusAmount)
+    ? Math.max(1, Math.floor(Number(options.bonusAmount)))
+    : 2;
+
+  const bonusResult = await supabase.rpc('grant_tour_approval_bonus_v1', {
+    p_tour_id: tourId,
+    p_admin_user_id: userId,
+    p_bonus_amount: safeBonusAmount,
+  });
+
+  if (bonusResult.error) {
+    await notifySystemError({
+      source: 'Action: updateTourStatusAction.bonusGrant',
+      message: bonusResult.error.message,
+      extra: `Tour: ${tourId}, Admin: ${userId}`,
+    });
+    return {
+      success: true,
+      bonusGranted: false,
+      bonusError: bonusResult.error.message,
+    };
+  }
+
+  const payload = bonusResult.data as {
+    success?: boolean;
+    granted?: boolean;
+    bonusAmount?: number;
+    error?: string;
+  } | null;
+
+  if (payload?.success === false) {
+    return {
+      success: true,
+      bonusGranted: false,
+      bonusError: payload.error ?? 'bonus_grant_failed',
+    };
+  }
+
+  return {
+    success: true,
+    bonusGranted: payload?.granted === true,
+    bonusSkipped: payload?.granted === false,
+    bonusAmount: Number(payload?.bonusAmount ?? safeBonusAmount),
+  };
 }
 
 export async function updateAgencyApprovalAction(agencyId: string, approved: boolean) {

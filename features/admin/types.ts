@@ -296,6 +296,8 @@ export interface AdminPromotionAgencyPreview {
   is_verified: boolean | null;
   is_approved: boolean | null;
   maxcoin_balance: number | null;
+  maxcoin_bonus_balance: number | null;
+  maxcoin_bonus_earned_total: number | null;
   phone: string | null;
   telegram_username: string | null;
   responsible_person: string | null;
@@ -327,6 +329,7 @@ export interface AdminMaxcoinLedgerRecord {
   type: string | null;
   description: string | null;
   tour_id: string | null;
+  wallet_type: 'main' | 'bonus';
   created_at: string;
   agency: AdminPromotionAgencyPreview | null;
   tour: AdminPromotionTourPreview | null;
@@ -349,12 +352,22 @@ export interface AdminAgencyBalancePanelRecord {
   name: string;
   slug: string;
   maxcoin_balance: number;
+  maxcoin_bonus_balance: number;
+  maxcoin_bonus_earned_total: number;
   is_verified: boolean;
   is_approved: boolean;
   phone: string | null;
   telegram_username: string | null;
   responsible_person: string | null;
   updated_at: string;
+}
+
+export interface AdminBonusSummary {
+  totalBonusBalance: number;
+  totalBonusEarned: number;
+  totalBonusGranted: number;
+  totalBonusSpent: number;
+  agenciesWithBonusBalance: number;
 }
 
 export interface AdminPromotionTierPanelRecord {
@@ -380,6 +393,7 @@ export interface AdminPromotionsMaxcoinPanelPayload {
   coinRequests: AdminCoinRequestPanelRecord[];
   agencyBalances: AdminAgencyBalancePanelRecord[];
   promotionTiers: AdminPromotionTierPanelRecord[];
+  bonusSummary: AdminBonusSummary;
 }
 
 export type AdminLeadStatus = 'new' | 'contacted' | 'closed' | 'won' | 'lost';

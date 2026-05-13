@@ -578,20 +578,31 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
       return {
         issued: 0,
         spent: 0,
-        balance: 0,
+        mainBalance: 0,
+        totalBalance: 0,
         lowBalanceCount: 0,
         lowBalanceThreshold: 50,
         pendingRequests: 0,
+        bonusBalance: 0,
+        bonusEarned: 0,
+        bonusGranted: 0,
+        bonusSpent: 0,
+        agenciesWithBonusBalance: 0,
       };
     }
 
     const issued = payload.maxcoinTransactions
-      .filter((row) => row.amount > 0)
+      .filter((row) => row.wallet_type === 'main' && row.amount > 0)
       .reduce((sum, row) => sum + row.amount, 0);
     const spent = payload.maxcoinTransactions
-      .filter((row) => row.amount < 0)
+      .filter((row) => row.wallet_type === 'main' && row.amount < 0)
       .reduce((sum, row) => sum + Math.abs(row.amount), 0);
-    const balance = payload.agencyBalances.reduce((sum, row) => sum + row.maxcoin_balance, 0);
+    const mainBalance = payload.agencyBalances.reduce((sum, row) => sum + row.maxcoin_balance, 0);
+    const bonusBalance = payload.bonusSummary.totalBonusBalance;
+    const bonusEarned = payload.bonusSummary.totalBonusEarned;
+    const bonusGranted = payload.bonusSummary.totalBonusGranted;
+    const bonusSpent = payload.bonusSummary.totalBonusSpent;
+    const totalBalance = mainBalance + bonusBalance;
 
     const tierMinimum = payload.promotionTiers
       .filter((row) => row.coins > 0)
@@ -604,10 +615,16 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
     return {
       issued,
       spent,
-      balance,
+      mainBalance,
+      totalBalance,
       lowBalanceCount,
       lowBalanceThreshold,
       pendingRequests,
+      bonusBalance,
+      bonusEarned,
+      bonusGranted,
+      bonusSpent,
+      agenciesWithBonusBalance: payload.bonusSummary.agenciesWithBonusBalance,
     };
   }, [payload]);
 
@@ -895,18 +912,38 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
           </button>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-3">
+        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
           <Card className="border-slate-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{language === 'ru' ? 'Начислено' : 'Berilgan'}</CardTitle>
+              <CardTitle className="text-sm">{language === 'ru' ? 'Выдано (основной)' : 'Berilgan (asosiy)'}</CardTitle>
             </CardHeader>
             <CardContent className="pt-0 text-xl font-semibold text-slate-900">{formatNumber(maxcoinStats.issued)} MC</CardContent>
           </Card>
           <Card className="border-slate-200">
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm">{language === 'ru' ? 'Текущий общий баланс' : 'Joriy umumiy balans'}</CardTitle>
+              <CardTitle className="text-sm">{language === 'ru' ? 'Основной баланс' : 'Asosiy balans'}</CardTitle>
             </CardHeader>
-            <CardContent className="pt-0 text-xl font-semibold text-slate-900">{formatNumber(maxcoinStats.balance)} MC</CardContent>
+            <CardContent className="pt-0 text-xl font-semibold text-slate-900">{formatNumber(maxcoinStats.mainBalance)} MC</CardContent>
+          </Card>
+          <Card className="border-slate-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{language === 'ru' ? 'Бонусный баланс' : 'Bonus balans'}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 text-xl font-semibold text-slate-900">{formatNumber(maxcoinStats.bonusBalance)} MC</CardContent>
+            <CardDescription className="px-6 pb-4 text-xs">
+              {language === 'ru' ? 'Агентств с бонусом:' : 'Bonusli agentliklar:'} {formatNumber(maxcoinStats.agenciesWithBonusBalance)}
+            </CardDescription>
+          </Card>
+          <Card className="border-slate-200">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">{language === 'ru' ? 'Бонус выдан / списан' : 'Bonus berilgan / sarflangan'}</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-0 text-sm font-semibold text-slate-900">
+              +{formatNumber(maxcoinStats.bonusGranted)} MC / -{formatNumber(maxcoinStats.bonusSpent)} MC
+            </CardContent>
+            <CardDescription className="px-6 pb-4 text-xs">
+              {language === 'ru' ? 'Всего заработано бонусом:' : 'Jami bonus to‘plangan:'} {formatNumber(maxcoinStats.bonusEarned)} MC
+            </CardDescription>
           </Card>
           <Card className="border-slate-200">
             <CardHeader className="pb-2">
@@ -1289,6 +1326,11 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
                         {row.agency?.name ?? (language === 'ru' ? 'Агентство не указано' : 'Agentlik kiritilmagan')}
                       </p>
                       <p className="truncate text-xs text-slate-500">{row.type ? tInline(row.type) : (language === 'ru' ? 'Неизвестный тип' : "Noma'lum tur")}</p>
+                      <p className="truncate text-xs text-sky-600">
+                        {row.wallet_type === 'bonus'
+                          ? language === 'ru' ? 'Бонусный кошелёк' : 'Bonus hamyon'
+                          : language === 'ru' ? 'Основной кошелёк' : 'Asosiy hamyon'}
+                      </p>
                       <p className="truncate text-xs text-slate-400">{row.description ?? (language === 'ru' ? 'Не указано' : 'Kiritilmagan')}</p>
                       <p className="mt-1 text-[11px] text-slate-400">{formatDateTime(row.created_at)}</p>
                     </div>
@@ -1298,7 +1340,9 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
                         {formatNumber(row.amount)} MC
                       </p>
                       <p className="text-[11px] text-slate-400">
-                        {language === 'ru' ? 'Баланс' : 'Balans'}: {row.agency?.maxcoin_balance == null ? '—' : `${formatNumber(row.agency.maxcoin_balance)} MC`}
+                        {language === 'ru' ? 'Основной' : 'Asosiy'}: {row.agency?.maxcoin_balance == null ? '—' : `${formatNumber(row.agency.maxcoin_balance)} MC`}
+                        {' • '}
+                        {language === 'ru' ? 'Бонус' : 'Bonus'}: {row.agency?.maxcoin_bonus_balance == null ? '—' : `${formatNumber(row.agency.maxcoin_bonus_balance)} MC`}
                       </p>
                     </div>
                   </button>
@@ -1337,6 +1381,9 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
                     <div className="text-right">
                       <p className={cn('font-semibold', agency.maxcoin_balance < maxcoinStats.lowBalanceThreshold ? 'text-orange-700' : 'text-slate-900')}>
                         {formatNumber(agency.maxcoin_balance)} MC
+                      </p>
+                      <p className="text-[11px] text-slate-500">
+                        {language === 'ru' ? 'Бонус' : 'Bonus'}: {formatNumber(agency.maxcoin_bonus_balance)} MC
                       </p>
                       <p className="text-[11px] text-slate-400">{formatDateTime(agency.updated_at)}</p>
                     </div>
@@ -1579,7 +1626,9 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
                           {selectedPromotion.agency.responsible_person ?? selectedPromotion.agency.phone ?? (language === 'ru' ? 'Контакт не указан' : 'Aloqa kiritilmagan')}
                         </p>
                         <p className="text-xs text-slate-500">
-                          {language === 'ru' ? 'Баланс' : 'Balans'}: {selectedPromotion.agency.maxcoin_balance == null ? '—' : `${formatNumber(selectedPromotion.agency.maxcoin_balance)} MC`}
+                          {language === 'ru' ? 'Основной' : 'Asosiy'}: {selectedPromotion.agency.maxcoin_balance == null ? '—' : `${formatNumber(selectedPromotion.agency.maxcoin_balance)} MC`}
+                          {' • '}
+                          {language === 'ru' ? 'Бонус' : 'Bonus'}: {selectedPromotion.agency.maxcoin_bonus_balance == null ? '—' : `${formatNumber(selectedPromotion.agency.maxcoin_bonus_balance)} MC`}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-2">
                           <Button variant="outline" size="sm" onClick={() => setSelectedAgencyId(selectedPromotion.agency!.id)}>
@@ -1712,6 +1761,12 @@ export function AdminCoinRequestsContent({ payload, errorMessage, viewMode = 'co
                     <p className="text-xs font-medium text-slate-500">{language === 'ru' ? 'Текущий баланс' : 'Joriy balans'}</p>
                     <p className={cn('text-xl font-bold', selectedAgency.maxcoin_balance < maxcoinStats.lowBalanceThreshold ? 'text-orange-700' : 'text-slate-900')}>
                       {formatNumber(selectedAgency.maxcoin_balance)} MC
+                    </p>
+                    <p className="text-xs text-slate-600">
+                      {language === 'ru' ? 'Бонусный баланс' : 'Bonus balans'}: {formatNumber(selectedAgency.maxcoin_bonus_balance)} MC
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {language === 'ru' ? 'Всего выдано бонусов' : 'Jami berilgan bonus'}: {formatNumber(selectedAgency.maxcoin_bonus_earned_total)} MC
                     </p>
                     {selectedAgency.maxcoin_balance < maxcoinStats.lowBalanceThreshold ? (
                       <p className="text-xs text-orange-700">

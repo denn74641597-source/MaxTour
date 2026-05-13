@@ -21,14 +21,33 @@ export function AdminTourActions({ tourId, currentStatus }: Props) {
 
   async function handleStatusChange(newStatus: string | null) {
     if (!newStatus) return;
-    const result = await updateTourStatusAction(tourId, newStatus);
+    let grantApprovalBonus = false;
+    if (newStatus === 'published') {
+      grantApprovalBonus = window.confirm('Give 2 MaxCoin approval bonus to this tour\'s agency?');
+    }
+
+    const result = await updateTourStatusAction(
+      tourId,
+      newStatus,
+      newStatus === 'published' ? { grantApprovalBonus } : {}
+    );
 
     if (result.error) {
       toast.error('Tizimda xatolik');
       return;
     }
 
-    toast.success('Tur holati yangilandi');
+    if (newStatus === 'published') {
+      if (result.bonusError) {
+        toast.error(`Tur nashr qilindi, bonus berishda xatolik: ${result.bonusError}`);
+      } else if (result.bonusGranted) {
+        toast.success('Tur nashr qilindi va 2 MaxCoin bonus berildi');
+      } else {
+        toast.success('Tur nashr qilindi (bonus berilmadi)');
+      }
+    } else {
+      toast.success('Tur holati yangilandi');
+    }
     router.refresh();
   }
 

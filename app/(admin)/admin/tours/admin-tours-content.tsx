@@ -80,6 +80,7 @@ type FeaturedFilter = 'all' | 'featured' | 'not_featured';
 interface PendingStatusChange {
   tourId: string;
   nextStatus: TourStatusKey;
+  grantApprovalBonus: boolean;
 }
 
 interface PreparedTour extends AdminTourPanelItem {
@@ -417,7 +418,11 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
 
   function requestStatusChange(tour: AdminTourPanelItem, nextStatus: TourStatusKey) {
     if (tour.status === nextStatus) return;
-    setPendingStatusChange({ tourId: tour.id, nextStatus });
+    setPendingStatusChange({
+      tourId: tour.id,
+      nextStatus,
+      grantApprovalBonus: nextStatus === 'published',
+    });
   }
 
   async function confirmStatusChange() {
@@ -429,7 +434,13 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
     }
 
     setStatusBusyId(tour.id);
-    const result = await updateTourStatusAction(tour.id, pendingStatusChange.nextStatus);
+    const result = await updateTourStatusAction(
+      tour.id,
+      pendingStatusChange.nextStatus,
+      pendingStatusChange.nextStatus === 'published'
+        ? { grantApprovalBonus: pendingStatusChange.grantApprovalBonus }
+        : {}
+    );
     setStatusBusyId(null);
 
     if (result.error) {
@@ -449,7 +460,17 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
       )
     );
     setPendingStatusChange(null);
-    toast.success('Tour status updated');
+    if (pendingStatusChange.nextStatus === 'published') {
+      if (result.bonusError) {
+        toast.error(`Tour published, but bonus grant failed: ${result.bonusError}`);
+      } else if (result.bonusGranted) {
+        toast.success('Tour published and approval bonus granted');
+      } else {
+        toast.success('Tour published (approval bonus skipped)');
+      }
+    } else {
+      toast.success('Tour status updated');
+    }
     router.refresh();
   }
 
@@ -975,6 +996,40 @@ export function AdminToursContent({ payload }: AdminToursContentProps) {
                 : 'Please confirm this status change.'}
             </DialogDescription>
           </DialogHeader>
+          {pendingStatusChange?.nextStatus === 'published' ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p className="text-sm font-medium text-slate-900">Approval bonus</p>
+              <p className="mt-1 text-xs text-slate-600">
+                Grant 2 MaxCoin bonus to the agency after this tour is published.
+              </p>
+              <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white p-1">
+                <Button
+                  size="sm"
+                  variant={pendingStatusChange.grantApprovalBonus ? 'default' : 'outline'}
+                  onClick={() =>
+                    setPendingStatusChange((current) =>
+                      current ? { ...current, grantApprovalBonus: true } : current
+                    )
+                  }
+                  disabled={statusBusyId != null}
+                >
+                  Bonus ON
+                </Button>
+                <Button
+                  size="sm"
+                  variant={!pendingStatusChange.grantApprovalBonus ? 'default' : 'outline'}
+                  onClick={() =>
+                    setPendingStatusChange((current) =>
+                      current ? { ...current, grantApprovalBonus: false } : current
+                    )
+                  }
+                  disabled={statusBusyId != null}
+                >
+                  Bonus OFF
+                </Button>
+              </div>
+            </div>
+          ) : null}
           <DialogFooter>
             <Button variant="outline" onClick={() => setPendingStatusChange(null)}>
               Cancel
