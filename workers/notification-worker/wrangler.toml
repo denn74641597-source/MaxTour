@@ -1,0 +1,14 @@
+name = "maxtour-notification-worker"
+main = "src/index.ts"
+compatibility_date = "2026-05-06"
+workers_dev = true
+preview_urls = false
+
+[triggers]
+crons = ["* * * * *"]
+
+# Required secrets (set with `wrangler secret put`, do not store in git):
+# - SUPABASE_URL
+# - SUPABASE_SERVICE_ROLE_KEY
+# - INTERNAL_NOTIFICATION_SECRET
+# - EXPO_ACCESS_TOKEN (optional but recommended)
